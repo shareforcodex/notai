@@ -4,6 +4,40 @@ class NotionEditor {
         this.toolbar = document.querySelector('.toolbar');
         this.setupEventListeners();
         this.currentBlock = null;
+        this.content = ''; // Store markdown content
+    }
+
+    // Convert HTML to Markdown
+    htmlToMarkdown(html) {
+        // Basic HTML to MD conversion
+        let md = html;
+        // Headers
+        md = md.replace(/<h1>(.*?)<\/h1>/gi, '# $1\n');
+        md = md.replace(/<h2>(.*?)<\/h2>/gi, '## $1\n');
+        md = md.replace(/<h3>(.*?)<\/h3>/gi, '### $1\n');
+        // Bold
+        md = md.replace(/<strong>(.*?)<\/strong>/gi, '**$1**');
+        // Italic
+        md = md.replace(/<em>(.*?)<\/em>/gi, '*$1*');
+        // Links
+        md = md.replace(/<a href="(.*?)">(.*?)<\/a>/gi, '[$2]($1)');
+        // Images
+        md = md.replace(/<img src="(.*?)".*?>/gi, '![]($1)');
+        // Lists
+        md = md.replace(/<ul>(.*?)<\/ul>/gi, '$1\n');
+        md = md.replace(/<ol>(.*?)<\/ol>/gi, '$1\n');
+        md = md.replace(/<li>(.*?)<\/li>/gi, '- $1\n');
+        // Paragraphs
+        md = md.replace(/<p>(.*?)<\/p>/gi, '$1\n\n');
+        // Clean up
+        md = md.replace(/&nbsp;/g, ' ');
+        return md.trim();
+    }
+
+    // Update markdown content
+    updateContent() {
+        this.content = this.htmlToMarkdown(this.editor.innerHTML);
+        console.log('Markdown content:', this.content); // For debugging
     }
 
     setupEventListeners() {
@@ -125,7 +159,15 @@ class NotionEditor {
         }
 
         block.appendChild(mediaElement);
-        this.editor.appendChild(block);
+        
+        // Insert at cursor position
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(block);
+        
+        // Update markdown content
+        this.updateContent();
     }
 
     insertIframe() {
