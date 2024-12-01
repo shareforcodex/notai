@@ -7,6 +7,9 @@ class NotionEditor {
         this.currentBlock = null;
         this.content = ''; // Store markdown content
         this.isSourceView = false;
+        
+        // Initialize content
+        this.updateContent();
     }
 
     // Convert HTML to Markdown
