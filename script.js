@@ -1,10 +1,12 @@
 class NotionEditor {
     constructor() {
         this.editor = document.getElementById('editor');
+        this.sourceView = document.getElementById('sourceView');
         this.toolbar = document.querySelector('.toolbar');
         this.setupEventListeners();
         this.currentBlock = null;
         this.content = ''; // Store markdown content
+        this.isSourceView = false;
     }
 
     // Convert HTML to Markdown
@@ -37,7 +39,21 @@ class NotionEditor {
     // Update markdown content
     updateContent() {
         this.content = this.htmlToMarkdown(this.editor.innerHTML);
-        console.log('Markdown content:', this.content); // For debugging
+        if (this.sourceView) {
+            this.sourceView.textContent = this.content;
+        }
+    }
+
+    toggleSourceView() {
+        this.isSourceView = !this.isSourceView;
+        if (this.isSourceView) {
+            this.updateContent();
+            this.editor.style.display = 'none';
+            this.sourceView.style.display = 'block';
+        } else {
+            this.editor.style.display = 'block';
+            this.sourceView.style.display = 'none';
+        }
     }
 
     setupEventListeners() {
@@ -68,6 +84,11 @@ class NotionEditor {
         // Add block button
         document.getElementById('addBlockBtn').addEventListener('click', () => {
             this.addNewBlock();
+        });
+
+        // View source button
+        document.getElementById('viewSourceBtn').addEventListener('click', () => {
+            this.toggleSourceView();
         });
 
         // Handle keyboard shortcuts
