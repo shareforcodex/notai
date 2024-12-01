@@ -7,6 +7,12 @@ class NotionEditor {
     }
 
     setupEventListeners() {
+        // Media insert buttons
+        document.getElementById('insertImage').addEventListener('click', () => this.insertMedia('image'));
+        document.getElementById('insertAudio').addEventListener('click', () => this.insertMedia('audio'));
+        document.getElementById('insertVideo').addEventListener('click', () => this.insertMedia('video'));
+        document.getElementById('insertIframe').addEventListener('click', () => this.insertIframe());
+
         // Format buttons
         document.querySelectorAll('.formatting-tools button[data-command]').forEach(button => {
             button.addEventListener('click', () => {
@@ -90,6 +96,54 @@ class NotionEditor {
         if (url) {
             document.execCommand('createLink', false, url);
         }
+    }
+
+    insertMedia(type) {
+        const url = prompt(`Enter ${type} URL:`);
+        if (!url) return;
+
+        const block = document.createElement('div');
+        block.className = `block media-block ${type}-block`;
+        
+        let mediaElement;
+        switch(type) {
+            case 'image':
+                mediaElement = document.createElement('img');
+                mediaElement.src = url;
+                mediaElement.alt = 'Inserted image';
+                break;
+            case 'audio':
+                mediaElement = document.createElement('audio');
+                mediaElement.src = url;
+                mediaElement.controls = true;
+                break;
+            case 'video':
+                mediaElement = document.createElement('video');
+                mediaElement.src = url;
+                mediaElement.controls = true;
+                break;
+        }
+
+        block.appendChild(mediaElement);
+        this.editor.appendChild(block);
+    }
+
+    insertIframe() {
+        const url = prompt('Enter webpage URL:');
+        if (!url) return;
+
+        const block = document.createElement('div');
+        block.className = 'block iframe-block';
+        
+        const iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.width = '100%';
+        iframe.height = '400px';
+        iframe.setAttribute('frameborder', '0');
+        iframe.setAttribute('allowfullscreen', 'true');
+        
+        block.appendChild(iframe);
+        this.editor.appendChild(block);
     }
 }
 
