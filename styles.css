@@ -127,10 +127,40 @@ body {
     margin: 10px 0;
     padding: 5px;
     border-radius: 4px;
+    transition: background-color 0.2s;
 }
 
 .block:hover {
     background-color: #f8f9fa;
+}
+
+/* Different block type colors */
+.block h1 {
+    background-color: #fff0f0;  /* Very light red */
+}
+
+.block h2 {
+    background-color: #f0fff0;  /* Very light green */
+}
+
+.block h3 {
+    background-color: #f0f0ff;  /* Very light blue */
+}
+
+.block ul, .block ol {
+    background-color: #fff5e6;  /* Very light orange */
+}
+
+.media-block {
+    background-color: #f5f0ff;  /* Very light purple */
+}
+
+.iframe-block {
+    background-color: #e6fff7;  /* Very light mint */
+}
+
+.block p {
+    background-color: #fafafa;  /* Very light gray */
 }
 
 .media-block {
