@@ -89,7 +89,8 @@ class NotionEditor {
     }
 
     setupEventListeners() {
-        // Add login/register buttons event listeners
+        // New page button
+        document.getElementById('newPageBtn').addEventListener('click', () => this.createNewNote());
         
         // Media insert buttons
         document.getElementById('insertImage').addEventListener('click', () => this.insertMedia('image'));
@@ -329,6 +330,29 @@ class NotionEditor {
             this.currentNoteId = noteId;
         } else {
             console.error('Failed to load note:', note.error);
+        }
+    }
+
+    async createNewNote() {
+        const title = prompt('Enter note title:');
+        if (!title) return;
+
+        const result = await this.apiRequest('POST', '/notes', {
+            title,
+            content: '<p>Start writing here...</p>',
+            folder_id: null
+        });
+
+        if (result.success) {
+            await this.loadNotes(); // Refresh the notes list
+            // Find and load the newly created note
+            const notes = await this.apiRequest('GET', '/notes');
+            const newNote = notes.find(note => note.title === title);
+            if (newNote) {
+                await this.loadNote(newNote.note_id);
+            }
+        } else {
+            alert('Failed to create note: ' + (result.error || 'Unknown error'));
         }
     }
 
