@@ -9,6 +9,9 @@ class NotionEditor {
         this.editor = document.getElementById('editor');
         this.sourceView = document.getElementById('sourceView');
         this.toolbar = document.querySelector('.toolbar');
+        this.currentNoteTitle = '';
+        this.lastSavedContent = '';
+        this.setupAutoSave();
         this.setupEventListeners();
         this.currentBlock = null;
         this.content = ''; // Store markdown content
