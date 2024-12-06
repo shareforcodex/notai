@@ -412,7 +412,8 @@ class NotionEditor {
 
 }
 
-// Initialize the editor
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize the editor and load folders
+document.addEventListener('DOMContentLoaded', async () => {
     window.editor = new NotionEditor();
+    await window.editor.loadFolders();
 });
