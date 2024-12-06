@@ -11,7 +11,6 @@ class NotionEditor {
         this.toolbar = document.querySelector('.toolbar');
         this.currentNoteTitle = '';
         this.lastSavedContent = '';
-        this.setupAutoSave();
         this.setupEventListeners();
         this.currentBlock = null;
         this.content = ''; // Store markdown content
@@ -359,7 +358,7 @@ class NotionEditor {
                 folderElement.style.paddingLeft = `${level * 20}px`; // Indent based on level
                 folderElement.innerHTML = `
                     <i class="fas fa-folder"></i>
-                    <span>${folder.name}</span>
+                    <span>${folder.folder_name}</span>
                 `;
                 foldersList.appendChild(folderElement);
 
