@@ -123,10 +123,10 @@
             const passwordHash = btoa(password);
             const result = await apiRequest('GET', '/notes');
 
-            if (!result.error) {
-                localStorage.setItem('userId', userId);
-                localStorage.setItem('passwordHash', passwordHash);
-                window.location.href = 'index.html';
+            const credentials = btoa(`${userId}:${password}`);
+            localStorage.setItem('userId', userId);
+            localStorage.setItem('credentials', credentials);
+            window.location.href = 'index.html';
             } else {
                 errorElement.textContent = 'Login failed. Please check your credentials.';
                 errorElement.style.display = 'block';

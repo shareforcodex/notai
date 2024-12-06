@@ -1,7 +1,7 @@
 const API_BASE_URL = 'https://notai.suisuy.workers.dev';
 let currentUser = {
     userId: localStorage.getItem('userId'),
-    passwordHash: localStorage.getItem('passwordHash')
+    credentials: localStorage.getItem('credentials')
 };
 
 class NotionEditor {
@@ -28,9 +28,8 @@ class NotionEditor {
             'Content-Type': 'application/json'
         };
 
-        if (currentUser.userId && currentUser.passwordHash) {
-            const credentials = currentUser.userId + ':' + currentUser.passwordHash;
-            headers['Authorization'] = `Basic ${credentials}`;
+        if (currentUser.userId && currentUser.credentials) {
+            headers['Authorization'] = `Basic ${currentUser.credentials}`;
         }
 
         try {
@@ -283,15 +282,15 @@ class NotionEditor {
     }
 
     logout() {
-        currentUser = { userId: null, passwordHash: null };
+        currentUser = { userId: null, credentials: null };
         localStorage.removeItem('userId');
-        localStorage.removeItem('passwordHash');
+        localStorage.removeItem('credentials');
         this.updateAuthUI();
         this.clearNotes();
     }
 
     updateAuthUI() {
-        const isLoggedIn = currentUser.userId && currentUser.passwordHash;
+        const isLoggedIn = currentUser.userId && currentUser.credentials;
         if (!isLoggedIn) {
             window.location.href = 'auth.html';
         }
