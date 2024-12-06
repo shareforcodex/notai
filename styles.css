@@ -26,6 +26,31 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.sidebar-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.folder-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    margin: 4px 0;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.folder-item:hover {
+    background-color: #f0f0f0;
+}
+
+.folder-item i {
+    color: #ffd700;
 }
 
 .auth-buttons {

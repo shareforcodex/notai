@@ -17,6 +17,7 @@ class NotionEditor {
         // Initialize content and check auth
         this.updateContent();
         this.checkAuthAndLoadNotes();
+        this.loadFolders();
     }
 
     async apiRequest(method, endpoint, body = null) {
@@ -91,6 +92,9 @@ class NotionEditor {
     setupEventListeners() {
         // New page button
         document.getElementById('newPageBtn').addEventListener('click', () => this.createNewNote());
+        
+        // New folder button
+        document.getElementById('newFolderBtn').addEventListener('click', () => this.createFolder());
         
         // Media insert buttons
         document.getElementById('insertImage').addEventListener('click', () => this.insertMedia('image'));
@@ -303,6 +307,38 @@ class NotionEditor {
             }
         } else {
             this.logout();
+        }
+    }
+
+    async createFolder() {
+        const folderName = prompt('Enter folder name:');
+        if (!folderName) return;
+
+        const result = await this.apiRequest('POST', '/folders', {
+            name: folderName
+        });
+
+        if (result.success) {
+            await this.loadFolders();
+        } else {
+            alert('Failed to create folder: ' + (result.error || 'Unknown error'));
+        }
+    }
+
+    async loadFolders() {
+        const folders = await this.apiRequest('GET', '/folders');
+        if (Array.isArray(folders)) {
+            const foldersList = document.getElementById('folders');
+            foldersList.innerHTML = '';
+            folders.forEach(folder => {
+                const folderElement = document.createElement('div');
+                folderElement.className = 'folder-item';
+                folderElement.innerHTML = `
+                    <i class="fas fa-folder"></i>
+                    <span>${folder.name}</span>
+                `;
+                foldersList.appendChild(folderElement);
+            });
         }
     }
 
