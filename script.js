@@ -357,9 +357,22 @@ class NotionEditor {
                 folderElement.className = 'folder-item';
                 folderElement.style.paddingLeft = `${level * 20}px`; // Indent based on level
                 folderElement.innerHTML = `
-                    <i class="fas fa-folder"></i>
-                    <span>${folder.folder_name}</span>
+                    <div class="folder-content">
+                        <i class="fas fa-folder"></i>
+                        <span>${folder.folder_name}</span>
+                    </div>
+                    <button class="add-note-btn" title="Add note to folder">
+                        <i class="fas fa-plus"></i>
+                    </button>
                 `;
+                
+                // Add click handler for the add note button
+                const addNoteBtn = folderElement.querySelector('.add-note-btn');
+                addNoteBtn.onclick = (e) => {
+                    e.stopPropagation(); // Prevent folder click event
+                    this.createNewNote(folder.folder_id);
+                };
+                
                 foldersList.appendChild(folderElement);
 
                 // Recursively render children
@@ -402,7 +415,7 @@ class NotionEditor {
         }
     }
 
-    async createNewNote() {
+    async createNewNote(folderId = null) {
         const title = prompt('Enter note title:');
         if (!title) return;
 
@@ -410,7 +423,7 @@ class NotionEditor {
             note_id: Date.now() + title + Math.random(),
             title,
             content: '<p>Start writing here...</p>',
-            folder_id: null
+            folder_id: folderId
         });
 
         if (result.success) {

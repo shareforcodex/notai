@@ -45,6 +45,32 @@ body {
     transition: background-color 0.2s;
 }
 
+.folder-item .folder-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.folder-item .add-note-btn {
+    visibility: hidden;
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.folder-item:hover .add-note-btn {
+    visibility: visible;
+}
+
+.folder-item .add-note-btn:hover {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
 .folder-item:hover {
     background-color: #f0f0f0;
 }
