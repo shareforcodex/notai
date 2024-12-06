@@ -334,14 +334,44 @@ class NotionEditor {
         if (Array.isArray(folders)) {
             const foldersList = document.getElementById('folders');
             foldersList.innerHTML = '';
+            
+            // Create a map of parent-child relationships
+            const folderMap = new Map();
+            const rootFolders = [];
+            
             folders.forEach(folder => {
+                folder.children = [];
+                folderMap.set(folder.folder_id, folder);
+                if (folder.parent_folder_id) {
+                    const parent = folderMap.get(folder.parent_folder_id);
+                    if (parent) {
+                        parent.children.push(folder);
+                    }
+                } else {
+                    rootFolders.push(folder);
+                }
+            });
+
+            // Recursive function to render folder hierarchy
+            const renderFolder = (folder, level = 0) => {
                 const folderElement = document.createElement('div');
                 folderElement.className = 'folder-item';
+                folderElement.style.paddingLeft = `${level * 20}px`; // Indent based on level
                 folderElement.innerHTML = `
                     <i class="fas fa-folder"></i>
                     <span>${folder.name}</span>
                 `;
                 foldersList.appendChild(folderElement);
+
+                // Recursively render children
+                folder.children.forEach(child => {
+                    renderFolder(child, level + 1);
+                });
+            };
+
+            // Render root folders
+            rootFolders.forEach(folder => {
+                renderFolder(folder);
             });
         }
     }
