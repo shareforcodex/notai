@@ -121,17 +121,16 @@
                 return;
             }
 
-            const passwordHash = btoa(password);
             // Test the credentials
             try {
+                const credentials = btoa(`${userId}:${password}`);
                 const headers = {
-                    'Authorization': `Basic ${btoa(`${userId}:${password}`)}`
+                    'Authorization': `Basic ${credentials}`
                 };
                 const response = await fetch(`${API_BASE_URL}/notes`, { headers });
                 const result = await response.json();
 
                 if (!result.error) {
-                    const credentials = btoa(`${userId}:${password}`);
                     localStorage.setItem('userId', userId);
                     localStorage.setItem('credentials', credentials);
                     window.location.href = 'index.html';
@@ -143,8 +142,6 @@
                 errorElement.textContent = 'Network error occurred. Please try again.';
                 errorElement.style.display = 'block';
             }
-                errorElement.textContent = 'Login failed. Please check your credentials.';
-                errorElement.style.display = 'block';
             }
         }
 
