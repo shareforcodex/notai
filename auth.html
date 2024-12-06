@@ -79,6 +79,7 @@
     <script>
         const API_BASE_URL = 'https://notai.suisuy.workers.dev';
 
+        // Function to toggle between login and register forms
         function toggleForms() {
             const loginForm = document.getElementById('loginForm');
             const registerForm = document.getElementById('registerForm');
@@ -121,13 +122,27 @@
             }
 
             const passwordHash = btoa(password);
-            const result = await apiRequest('GET', '/notes');
+            // Test the credentials
+            try {
+                const headers = {
+                    'Authorization': `Basic ${btoa(`${userId}:${password}`)}`
+                };
+                const response = await fetch(`${API_BASE_URL}/notes`, { headers });
+                const result = await response.json();
 
-            const credentials = btoa(`${userId}:${password}`);
-            localStorage.setItem('userId', userId);
-            localStorage.setItem('credentials', credentials);
-            window.location.href = 'index.html';
-            } else {
+                if (!result.error) {
+                    const credentials = btoa(`${userId}:${password}`);
+                    localStorage.setItem('userId', userId);
+                    localStorage.setItem('credentials', credentials);
+                    window.location.href = 'index.html';
+                } else {
+                    errorElement.textContent = 'Login failed. Please check your credentials.';
+                    errorElement.style.display = 'block';
+                }
+            } catch (error) {
+                errorElement.textContent = 'Network error occurred. Please try again.';
+                errorElement.style.display = 'block';
+            }
                 errorElement.textContent = 'Login failed. Please check your credentials.';
                 errorElement.style.display = 'block';
             }
