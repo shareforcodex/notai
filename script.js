@@ -328,8 +328,9 @@ class NotionEditor {
         }
     }
 
-    async loadFolders() {
-        const folders = await this.apiRequest('GET', '/folders');
+    async loadFolders(parentFolderId = null) {
+        const endpoint = parentFolderId ? `/folders/${parentFolderId}/contents` : '/folders';
+        const folders = await this.apiRequest('GET', endpoint);
         if (Array.isArray(folders)) {
             const foldersList = document.getElementById('folders');
             foldersList.innerHTML = '';
@@ -355,21 +356,29 @@ class NotionEditor {
             const renderFolder = (folder, level = 0) => {
                 const folderElement = document.createElement('div');
                 folderElement.className = 'folder-item';
-                folderElement.style.paddingLeft = `${level * 20}px`; // Indent based on level
+                folderElement.style.paddingLeft = `${level * 20}px`;
                 folderElement.innerHTML = `
                     <div class="folder-content">
                         <i class="fas fa-folder"></i>
                         <span>${folder.folder_name}</span>
+                        <div class="folder-count">${folder.children ? folder.children.length : 0}</div>
                     </div>
                     <button class="add-note-btn" title="Add note to folder">
                         <i class="fas fa-plus"></i>
                     </button>
                 `;
                 
+                // Add click handler for the folder itself
+                folderElement.querySelector('.folder-content').onclick = async (e) => {
+                    e.stopPropagation();
+                    // Load and display folder contents
+                    await this.loadFolderContents(folder.folder_id, folderElement);
+                };
+
                 // Add click handler for the add note button
                 const addNoteBtn = folderElement.querySelector('.add-note-btn');
                 addNoteBtn.onclick = (e) => {
-                    e.stopPropagation(); // Prevent folder click event
+                    e.stopPropagation();
                     this.createNewNote(folder.folder_id);
                 };
                 
@@ -388,8 +397,9 @@ class NotionEditor {
         }
     }
 
-    async loadNotes() {
-        const notes = await this.apiRequest('GET', '/notes');
+    async loadNotes(folderId = null) {
+        const endpoint = folderId ? `/folders/${folderId}/notes` : '/notes';
+        const notes = await this.apiRequest('GET', endpoint);
         if (Array.isArray(notes)) {
             const pagesList = document.getElementById('pagesList');
             pagesList.innerHTML = '';
@@ -449,6 +459,53 @@ class NotionEditor {
     clearNotes() {
         document.getElementById('pagesList').innerHTML = '';
         this.editor.innerHTML = '<p>Start writing here...</p>';
+    }
+
+    async loadFolderContents(folderId, folderElement) {
+        // Toggle folder open/closed state
+        folderElement.classList.toggle('open');
+        
+        // Remove existing content container if it exists
+        const existingContent = folderElement.nextElementSibling;
+        if (existingContent && existingContent.classList.contains('folder-contents')) {
+            existingContent.remove();
+            return;
+        }
+
+        // Create container for folder contents
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'folder-contents';
+        
+        // Load sub-folders
+        const folders = await this.loadFolders(folderId);
+        if (Array.isArray(folders)) {
+            folders.forEach(folder => {
+                const subFolderElement = document.createElement('div');
+                subFolderElement.className = 'folder-item sub-folder';
+                subFolderElement.innerHTML = `
+                    <div class="folder-content">
+                        <i class="fas fa-folder"></i>
+                        <span>${folder.folder_name}</span>
+                    </div>
+                `;
+                contentContainer.appendChild(subFolderElement);
+            });
+        }
+
+        // Load notes in this folder
+        const notes = await this.loadNotes(folderId);
+        if (Array.isArray(notes)) {
+            notes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'page-item folder-note';
+                noteElement.textContent = note.title || 'Untitled Note';
+                noteElement.onclick = () => this.loadNote(note.note_id);
+                contentContainer.appendChild(noteElement);
+            });
+        }
+
+        // Insert content container after the folder element
+        folderElement.after(contentContainer);
     }
 
 }

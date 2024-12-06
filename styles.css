@@ -43,6 +43,40 @@ body {
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.2s;
+    position: relative;
+}
+
+.folder-contents {
+    margin-left: 20px;
+    border-left: 1px solid #e0e0e0;
+}
+
+.folder-count {
+    font-size: 0.8em;
+    color: #888;
+    margin-left: auto;
+}
+
+.folder-item.open > .folder-content > i.fa-folder:before {
+    content: "\f07c"; /* Font Awesome open folder icon */
+}
+
+.sub-folder {
+    margin-left: 20px;
+}
+
+.folder-note {
+    margin-left: 20px;
+    padding-left: 24px;
+    position: relative;
+}
+
+.folder-note:before {
+    content: "\f15b"; /* Font Awesome file icon */
+    font-family: "Font Awesome 6 Free";
+    position: absolute;
+    left: 0;
+    color: #888;
 }
 
 .folder-item .folder-content {
