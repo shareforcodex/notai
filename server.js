@@ -530,6 +530,54 @@ async function handleRequest(request, env) {
     }
   }
 
+  // GET /folders/:id/contents - Get folder contents
+  const folderContentsMatch = pathname.match(/^\/folders\/(\d+)\/contents$/);
+  if (method === "GET" && folderContentsMatch) {
+    const user_id = await authenticate(request);
+    if (!user_id) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
+
+    const folder_id = parseInt(folderContentsMatch[1]);
+    try {
+      const subFolders = await env.DB.prepare(`
+        SELECT folder_id, parent_folder_id, folder_name, created_at, updated_at
+        FROM folders 
+        WHERE user_id = ? AND parent_folder_id = ?
+        ORDER BY folder_name ASC
+      `).bind(user_id, folder_id).all();
+
+      return jsonResponse(subFolders.results || []);
+    } catch (e) {
+      console.error("Get Folder Contents Error:", e);
+      return jsonResponse({ error: "Internal Server Error" }, 500);
+    }
+  }
+
+  // GET /folders/:id/notes - Get notes in folder
+  const folderNotesMatch = pathname.match(/^\/folders\/(\d+)\/notes$/);
+  if (method === "GET" && folderNotesMatch) {
+    const user_id = await authenticate(request);
+    if (!user_id) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
+
+    const folder_id = parseInt(folderNotesMatch[1]);
+    try {
+      const notes = await env.DB.prepare(`
+        SELECT note_id, title, folder_id, last_updated
+        FROM notes 
+        WHERE user_id = ? AND folder_id = ?
+        ORDER BY last_updated DESC
+      `).bind(user_id, folder_id).all();
+
+      return jsonResponse(notes.results || []);
+    } catch (e) {
+      console.error("Get Folder Notes Error:", e);
+      return jsonResponse({ error: "Internal Server Error" }, 500);
+    }
+  }
+
   // GET /notes - Get all notes
   if (method === "GET" && pathname === "/notes") {
     const user_id = await authenticate(request);
