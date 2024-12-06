@@ -14,13 +14,9 @@ class NotionEditor {
         this.content = ''; // Store markdown content
         this.isSourceView = false;
         
-        // Initialize content
+        // Initialize content and check auth
         this.updateContent();
-        
-        // Load notes if user is logged in
-        if (currentUser.userId && currentUser.passwordHash) {
-            this.loadNotes();
-        }
+        this.checkAuthAndLoadNotes();
     }
 
     async apiRequest(method, endpoint, body = null) {
@@ -296,6 +292,19 @@ class NotionEditor {
         }
     }
 
+    async checkAuthAndLoadNotes() {
+        if (currentUser.userId && currentUser.credentials) {
+            const notes = await this.apiRequest('GET', '/notes');
+            if (!notes.error) {
+                await this.loadNotes();
+            } else {
+                this.logout();
+            }
+        } else {
+            this.logout();
+        }
+    }
+
     async loadNotes() {
         const notes = await this.apiRequest('GET', '/notes');
         if (Array.isArray(notes)) {
@@ -304,7 +313,7 @@ class NotionEditor {
             notes.forEach(note => {
                 const noteElement = document.createElement('div');
                 noteElement.className = 'page-item';
-                noteElement.textContent = note.title;
+                noteElement.textContent = note.title || 'Untitled Note';
                 noteElement.onclick = () => this.loadNote(note.note_id);
                 pagesList.appendChild(noteElement);
             });
@@ -314,8 +323,12 @@ class NotionEditor {
     async loadNote(noteId) {
         const note = await this.apiRequest('GET', `/notes/${noteId}`);
         if (note && !note.error) {
-            this.editor.innerHTML = note.content;
+            this.editor.innerHTML = note.content || '';
             this.updateContent();
+            // Update the current note ID
+            this.currentNoteId = noteId;
+        } else {
+            console.error('Failed to load note:', note.error);
         }
     }
 
