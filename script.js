@@ -420,7 +420,6 @@ class NotionEditor {
         if (!title) return;
 
         const result = await this.apiRequest('POST', '/notes', {
-            note_id: Date.now() + title + Math.random(),
             title,
             content: '<p>Start writing here...</p>',
             folder_id: folderId
