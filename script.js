@@ -1,3 +1,9 @@
+const API_BASE_URL = 'https://notai.suisuy.workers.dev';
+let currentUser = {
+    userId: localStorage.getItem('userId'),
+    passwordHash: localStorage.getItem('passwordHash')
+};
+
 class NotionEditor {
     constructor() {
         this.editor = document.getElementById('editor');
@@ -10,6 +16,34 @@ class NotionEditor {
         
         // Initialize content
         this.updateContent();
+        
+        // Load notes if user is logged in
+        if (currentUser.userId && currentUser.passwordHash) {
+            this.loadNotes();
+        }
+    }
+
+    async apiRequest(method, endpoint, body = null) {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        if (currentUser.userId && currentUser.passwordHash) {
+            const credentials = currentUser.userId + ':' + currentUser.passwordHash;
+            headers['Authorization'] = `Basic ${credentials}`;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method,
+                headers,
+                body: body ? JSON.stringify(body) : null
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('API Error:', error);
+            return { error: 'Network error' };
+        }
     }
 
     // Convert HTML to Markdown
@@ -60,6 +94,10 @@ class NotionEditor {
     }
 
     setupEventListeners() {
+        // Add login/register buttons event listeners
+        document.getElementById('loginBtn')?.addEventListener('click', () => this.showLoginModal());
+        document.getElementById('registerBtn')?.addEventListener('click', () => this.showRegisterModal());
+        
         // Media insert buttons
         document.getElementById('insertImage').addEventListener('click', () => this.insertMedia('image'));
         document.getElementById('insertAudio').addEventListener('click', () => this.insertMedia('audio'));
@@ -210,6 +248,112 @@ class NotionEditor {
         
         block.appendChild(iframe);
         this.editor.appendChild(block);
+    }
+
+    async register(userId, password, email) {
+        const passwordHash = btoa(password); // Simple base64 encoding for demo
+        const result = await this.apiRequest('POST', '/users', {
+            user_id: userId,
+            password_hash: passwordHash,
+            email
+        });
+
+        if (result.success) {
+            currentUser = { userId, passwordHash };
+            localStorage.setItem('userId', userId);
+            localStorage.setItem('passwordHash', passwordHash);
+            this.updateAuthUI();
+            await this.loadNotes();
+            return true;
+        }
+        return false;
+    }
+
+    async login(userId, password) {
+        const passwordHash = btoa(password);
+        const result = await this.apiRequest('GET', '/notes'); // Test auth with notes endpoint
+        
+        if (!result.error) {
+            currentUser = { userId, passwordHash };
+            localStorage.setItem('userId', userId);
+            localStorage.setItem('passwordHash', passwordHash);
+            this.updateAuthUI();
+            await this.loadNotes();
+            return true;
+        }
+        return false;
+    }
+
+    logout() {
+        currentUser = { userId: null, passwordHash: null };
+        localStorage.removeItem('userId');
+        localStorage.removeItem('passwordHash');
+        this.updateAuthUI();
+        this.clearNotes();
+    }
+
+    updateAuthUI() {
+        const isLoggedIn = currentUser.userId && currentUser.passwordHash;
+        document.getElementById('loginBtn').style.display = isLoggedIn ? 'none' : 'inline-block';
+        document.getElementById('registerBtn').style.display = isLoggedIn ? 'none' : 'inline-block';
+        document.getElementById('logoutBtn').style.display = isLoggedIn ? 'inline-block' : 'none';
+    }
+
+    async loadNotes() {
+        const notes = await this.apiRequest('GET', '/notes');
+        if (Array.isArray(notes)) {
+            const pagesList = document.getElementById('pagesList');
+            pagesList.innerHTML = '';
+            notes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'page-item';
+                noteElement.textContent = note.title;
+                noteElement.onclick = () => this.loadNote(note.note_id);
+                pagesList.appendChild(noteElement);
+            });
+        }
+    }
+
+    async loadNote(noteId) {
+        const note = await this.apiRequest('GET', `/notes/${noteId}`);
+        if (note && !note.error) {
+            this.editor.innerHTML = note.content;
+            this.updateContent();
+        }
+    }
+
+    async saveNote(title, content) {
+        return await this.apiRequest('POST', '/notes', {
+            title,
+            content,
+            folder_id: null // Optional: implement folder support later
+        });
+    }
+
+    clearNotes() {
+        document.getElementById('pagesList').innerHTML = '';
+        this.editor.innerHTML = '<p>Start writing here...</p>';
+    }
+
+    showLoginModal() {
+        const userId = prompt('Enter user ID:');
+        const password = prompt('Enter password:');
+        if (userId && password) {
+            this.login(userId, password).then(success => {
+                if (!success) alert('Login failed');
+            });
+        }
+    }
+
+    showRegisterModal() {
+        const userId = prompt('Choose a user ID:');
+        const password = prompt('Choose a password:');
+        const email = prompt('Enter your email (optional):');
+        if (userId && password) {
+            this.register(userId, password, email).then(success => {
+                if (!success) alert('Registration failed');
+            });
+        }
     }
 }
 
