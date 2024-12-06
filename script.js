@@ -95,8 +95,6 @@ class NotionEditor {
 
     setupEventListeners() {
         // Add login/register buttons event listeners
-        document.getElementById('loginBtn')?.addEventListener('click', () => this.showLoginModal());
-        document.getElementById('registerBtn')?.addEventListener('click', () => this.showRegisterModal());
         
         // Media insert buttons
         document.getElementById('insertImage').addEventListener('click', () => this.insertMedia('image'));
@@ -294,9 +292,9 @@ class NotionEditor {
 
     updateAuthUI() {
         const isLoggedIn = currentUser.userId && currentUser.passwordHash;
-        document.getElementById('loginBtn').style.display = isLoggedIn ? 'none' : 'inline-block';
-        document.getElementById('registerBtn').style.display = isLoggedIn ? 'none' : 'inline-block';
-        document.getElementById('logoutBtn').style.display = isLoggedIn ? 'inline-block' : 'none';
+        if (!isLoggedIn) {
+            window.location.href = 'auth.html';
+        }
     }
 
     async loadNotes() {
@@ -335,26 +333,6 @@ class NotionEditor {
         this.editor.innerHTML = '<p>Start writing here...</p>';
     }
 
-    showLoginModal() {
-        const userId = prompt('Enter user ID:');
-        const password = prompt('Enter password:');
-        if (userId && password) {
-            this.login(userId, password).then(success => {
-                if (!success) alert('Login failed');
-            });
-        }
-    }
-
-    showRegisterModal() {
-        const userId = prompt('Choose a user ID:');
-        const password = prompt('Choose a password:');
-        const email = prompt('Enter your email (optional):');
-        if (userId && password) {
-            this.register(userId, password, email).then(success => {
-                if (!success) alert('Registration failed');
-            });
-        }
-    }
 }
 
 // Initialize the editor
