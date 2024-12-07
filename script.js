@@ -23,6 +23,7 @@ class NotionEditor {
     this.setupEventListeners();
     this.setupAIToolbar();
     this.setupAISettings();
+    this.updateAIToolbar(); // Load custom AI buttons
 
     // Add title auto-save
     const titleElement = document.getElementById("noteTitle");
