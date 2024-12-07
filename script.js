@@ -307,8 +307,7 @@ class NotionEditor {
       const config = await this.apiRequest("GET", "/users/config");
       if (config && !config.error) {
         // Parse the config if it's a string
-        const parsedConfig = typeof config === 'string' ? JSON.parse(config) : config;
-        
+        const parsedConfig =  JSON.parse(config.config);
         // Update aiSettings with config values or defaults
         this.aiSettings = {
           prompts: parsedConfig.prompts || {
@@ -318,7 +317,10 @@ class NotionEditor {
           },
           customTools: parsedConfig.customTools || []
         };
+      console.log("load config, pasedconfig",parsedConfig,"this.aisettings ",this,this.aiSettings);
+
       }
+
       this.updateAIToolbar();
     } catch (error) {
       console.error("Error loading user config:", error);
@@ -341,7 +343,7 @@ class NotionEditor {
     };
     
     try {
-      await this.apiRequest("POST", "/users/config", config);
+      await this.apiRequest("POST", "/users/config", {config: JSON.stringify(config)});
       // Update local settings after successful save
       this.aiSettings = config;
     } catch (error) {
