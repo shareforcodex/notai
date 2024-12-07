@@ -845,10 +845,7 @@ class NotionEditor {
         });
       });
 
-    // Heading select
-    document.getElementById("headingSelect").addEventListener("change", (e) => {
-      this.formatBlock(e.target.value);
-    });
+    
 
     // Text color
     document.getElementById("textColor").addEventListener("input", (e) => {
@@ -1507,6 +1504,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (error) {
     console.error('Error initializing editor:', error);
     // Redirect to auth page if initialization fails
-    window.location.href = 'auth.html';
+    //window.location.href = 'auth.html';
   }
 });
