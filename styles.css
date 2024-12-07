@@ -49,8 +49,8 @@ body {
 .folder-contents {
     margin-left: 20px;
     border-left: 1px solid #e0e0e0;
-    display: block;
     padding-left: 15px;
+    display: block;
 }
 
 .folder-item.open + .folder-contents {
