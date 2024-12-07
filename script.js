@@ -280,6 +280,10 @@ class NotionEditor {
     this.aiToolbar.classList.remove("visible");
     this.aiToolbar.style.display = 'none';
   }
+  catch(e){
+    console.log(e);
+  }
+}
 
   setupAISettings() {
     const modal = document.getElementById('aiSettingsModal');
