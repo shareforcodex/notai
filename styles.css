@@ -712,6 +712,14 @@ body {
     color: #666;
     min-height: 20px;
     padding: 10px;
+    white-space: pre-wrap;
+}
+
+/* Style for individual model responses */
+[data-comment*="---"] {
+    padding: 15px;
+    border-radius: 6px;
+    background-color: #fff9e6;
 }
 
 .comment-actions {
