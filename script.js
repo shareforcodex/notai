@@ -355,7 +355,25 @@ class NotionEditor {
     if (currentUser.userId && currentUser.credentials) {
       const notes = await this.apiRequest("GET", "/notes");
       if (!notes.error) {
-        await this.loadNotes();
+        // Check for default note
+        const defaultNote = notes.find(note => note.title === 'default_note');
+        if (!defaultNote) {
+          // Create default note if it doesn't exist
+          const result = await this.apiRequest("POST", "/notes", {
+            note_id: "default_note_" + currentUser.userId,
+            title: "default_note",
+            content: "<p>Welcome to your default note!</p>",
+            folder_id: "1733485657799jj0.5911120915160637"
+          });
+          if (result.success) {
+            await this.loadNotes();
+            await this.loadNote("default_note_" + currentUser.userId);
+          }
+        } else {
+          // Load notes and then load the default note
+          await this.loadNotes();
+          await this.loadNote(defaultNote.note_id);
+        }
       } else {
         this.logout();
       }
