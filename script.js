@@ -888,26 +888,49 @@ class NotionEditor {
   addNewBlock() {
     const block = document.createElement("div");
     block.className = "block";
-    
     block.innerHTML = "<p>New block</p>";
 
     // Get current selection and find closest block
     const selection = window.getSelection();
     const range = selection.getRangeAt(0);
-    const currentBlock =
-      range.startContainer.closest(".block") ||
-      range.startContainer.parentElement.closest(".block");
+    
+    // Try to find current block from selection
+    let currentBlock = range.startContainer.nodeType === Node.TEXT_NODE 
+      ? range.startContainer.parentElement.closest(".block")
+      : range.startContainer.closest(".block");
+
+    // If no block found from selection, try to find last block before cursor
+    if (!currentBlock) {
+      const blocks = Array.from(this.editor.querySelectorAll('.block'));
+      for (let i = blocks.length - 1; i >= 0; i--) {
+        const rect = blocks[i].getBoundingClientRect();
+        if (rect.top < range.getBoundingClientRect().top) {
+          currentBlock = blocks[i];
+          break;
+        }
+      }
+    }
 
     if (currentBlock) {
       // Insert after current block
       currentBlock.after(block);
     } else {
-      // If no current block found, append to editor
-      this.editor.appendChild(block);
+      // If still no block found, insert at cursor position or append to editor
+      if (selection.rangeCount > 0) {
+        range.deleteContents();
+        range.insertNode(block);
+      } else {
+        this.editor.appendChild(block);
+      }
     }
 
-    // Focus the new block
-    block.focus();
+    // Focus the new block and move cursor inside
+    const textNode = block.querySelector('p');
+    textNode.focus();
+    range.selectNodeContents(textNode);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
   }
 
   handleEnterKey(e) {
