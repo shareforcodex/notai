@@ -449,20 +449,27 @@ body {
     border: 1px solid #e0e0e0;
     border-radius: 4px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    padding: 4px;
+    padding: 8px;
     display: none;
     z-index: 1000;
 }
 
+.ai-toolbar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .ai-toolbar button {
-    padding: 4px 8px;
-    margin: 0 2px;
+    padding: 6px 12px;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
     background: white;
     cursor: pointer;
     font-size: 12px;
     color: #333;
+    width: 100%;
+    text-align: left;
 }
 
 .ai-toolbar button:hover {
@@ -471,17 +478,18 @@ body {
 
 .ai-model-selects {
     display: flex;
+    flex-direction: row;
     gap: 4px;
-    margin-right: 4px;
 }
 
 .ai-model-select {
-    padding: 4px 8px;
+    padding: 6px 8px;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
     background: white;
     font-size: 12px;
     color: #333;
+    flex: 1;
 }
 
 .ai-model-select:hover {
@@ -502,12 +510,11 @@ body {
 }
 
 .ai-toolbar.visible {
-    display: flex;
-    gap: 4px;
+    display: block;
 }
 
 .ai-actions {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
