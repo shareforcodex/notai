@@ -286,6 +286,20 @@ body {
     margin-right: 4px;
 }
 
+.note-title {
+    padding: 20px 20px 0 20px;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: #fff;
+    min-height: 40px;
+}
+
+.note-title[placeholder]:empty:before {
+    content: attr(placeholder);
+    color: #888;
+    font-style: italic;
+}
+
 .editor {
     flex: 1;
     padding: 20px;

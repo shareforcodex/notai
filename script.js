@@ -12,6 +12,10 @@ class NotionEditor {
     this.currentNoteTitle = "";
     this.lastSavedContent = "";
     this.setupEventListeners();
+    
+    // Add title auto-save
+    const titleElement = document.getElementById('noteTitle');
+    titleElement.addEventListener('input', () => this.scheduleAutoSave());
     this.currentBlock = null;
     this.content = ""; // Store markdown content
     this.isSourceView = false;
@@ -511,6 +515,7 @@ class NotionEditor {
     const note = await this.apiRequest("GET", `/notes/${note_id}`);
     if (note && !note.error) {
       this.editor.innerHTML = note.content || "";
+      document.getElementById('noteTitle').textContent = note.title || "";
       this.updateContent();
       // Update the current note ID
       this.currentNoteId = note_id;
@@ -587,10 +592,14 @@ class NotionEditor {
       spinnerIcon.style.display = "inline-block";
       spanText.textContent = "Saving...";
 
+      // Get current title from the title element
+      const currentTitle = document.getElementById('noteTitle').textContent.trim() || "Untitled Note";
+      this.currentNoteTitle = currentTitle;
+
       const result = await this.apiRequest("POST", `/notes`, {
         note_id: this.currentNoteId,
         content: this.editor.innerHTML,
-        title: this.currentNoteTitle
+        title: currentTitle
       });
 
       if (result.success) {
