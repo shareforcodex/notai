@@ -821,7 +821,12 @@ class NotionEditor {
       .forEach((button) => {
         button.addEventListener("click", () => {
           const command = button.dataset.command;
-          this.executeCommand(command);
+          if (command.startsWith('h')) {
+            // Handle heading commands
+            this.formatBlock(command);
+          } else {
+            this.executeCommand(command);
+          }
         });
       });
 
