@@ -230,7 +230,7 @@ class NotionEditor {
           ],
           model: modelName,
           temperature: 0.7,
-          max_tokens: 8000,
+          max_tokens: 3999,
           top_p: 1,
         },
         true
