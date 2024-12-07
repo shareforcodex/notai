@@ -152,7 +152,7 @@ class NotionEditor {
     }
 
     // Make parallel requests to selected models
-    const requests = selectedModels.map(model => 
+    const requests = selectedModels.map(modelName => 
       this.apiRequest(
         "POST",
         "",
@@ -167,7 +167,7 @@ class NotionEditor {
               content: prompt,
             },
           ],
-          model: model,
+          model: modelName,
           temperature: 0.7,
           max_tokens: 8000,
           top_p: 1,
