@@ -358,6 +358,7 @@ class NotionEditor {
             const renderFolder = (folder, level = 0) => {
                 const folderElement = document.createElement('div');
                 folderElement.className = 'folder-item';
+                folderElement.setAttribute('data-folder-id', folder.folder_id);
                 folderElement.style.paddingLeft = `${level * 20}px`;
                 folderElement.innerHTML = `
                     <div class="folder-content">
@@ -439,9 +440,18 @@ class NotionEditor {
         });
 
         if (result.success) {
-            await this.loadNotes(); // Refresh the notes list
+            if (folderId) {
+                // If created in a folder, refresh just that folder's contents
+                const folderElement = document.querySelector(`.folder-item[data-folder-id="${folderId}"]`);
+                if (folderElement) {
+                    await this.loadFolderContents(folderId, folderElement);
+                }
+            } else {
+                // If not in a folder, refresh the main notes list
+                await this.loadNotes();
+            }
             // Find and load the newly created note
-            const notes = await this.apiRequest('GET', '/notes');
+            const notes = await this.apiRequest('GET', folderId ? `/folders/${folderId}/notes` : '/notes');
             const newNote = notes.find(note => note.title === title);
             if (newNote) {
                 await this.loadNote(newNote.note_id);
