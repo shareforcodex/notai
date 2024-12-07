@@ -252,8 +252,9 @@ class NotionEditor {
       }
     });
 
-    // Hide the toolbar
+    // Hide the toolbars immediately when an action is clicked
     this.aiToolbar.classList.remove("visible");
+    this.aiToolbar.style.display = 'none';
   }
 
   setupAISettings() {
