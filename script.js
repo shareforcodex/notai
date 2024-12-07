@@ -173,6 +173,8 @@ class NotionEditor {
         this.aiToolbar.style.left = `${leftPosition}px`;
         this.aiToolbar.classList.add("visible");
       } else {
+        // Hide toolbar completely when no selection
+        this.aiToolbar.style.display = 'none';
         this.aiToolbar.classList.remove("visible");
       }
     };
