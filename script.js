@@ -284,6 +284,7 @@ class NotionEditor {
               // Insert after the current block
               if (currentBlock) {
                 currentBlock.after(block);
+                
               } else {
                 this.editor.appendChild(block);
               }
