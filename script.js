@@ -405,10 +405,21 @@ class NotionEditor {
       }
     });
 
-    // Hide tooltip when mouse leaves
+    // Hide tooltip when mouse leaves both comment and tooltip
     this.editor.addEventListener('mouseout', (e) => {
-      if (!e.relatedTarget || !e.relatedTarget.closest('.comment-tooltip')) {
-        if (!isEditing) {
+      const isOverTooltip = e.relatedTarget && (
+        e.relatedTarget.closest('.comment-tooltip') || 
+        e.relatedTarget.classList.contains('commented-text')
+      );
+      
+      if (!isOverTooltip && !isEditing) {
+        const tooltipBounds = tooltip.getBoundingClientRect();
+        const mouseEvent = e;
+        // Check if mouse is actually over tooltip
+        if (!(mouseEvent.clientX >= tooltipBounds.left && 
+              mouseEvent.clientX <= tooltipBounds.right && 
+              mouseEvent.clientY >= tooltipBounds.top && 
+              mouseEvent.clientY <= tooltipBounds.bottom)) {
           tooltip.style.display = 'none';
           currentCommentElement = null;
         }
@@ -421,7 +432,12 @@ class NotionEditor {
     });
 
     tooltip.addEventListener('mouseout', (e) => {
-      if (!isEditing && (!e.relatedTarget || !e.relatedTarget.classList.contains('commented-text'))) {
+      const isOverComment = e.relatedTarget && (
+        e.relatedTarget.classList.contains('commented-text') ||
+        e.relatedTarget.closest('.comment-tooltip')
+      );
+      
+      if (!isEditing && !isOverComment) {
         tooltip.style.display = 'none';
         currentCommentElement = null;
       }
