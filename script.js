@@ -276,15 +276,22 @@ class NotionEditor {
                 this.showCommentTooltip(commentedSpan, updatedComment);
               }
             } else {
-              // Create a new block immediately
+              // Create a new block immediately after the existing one
               const block = document.createElement("div");
               block.className = "block";
               block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong></p>${marked.parse(aiResponse)}`;
 
-              // Insert after the current block
-              if (currentBlock) {
-                currentBlock.after(block);
-                
+              // Find the last related AI response block
+              let lastRelatedBlock = currentBlock;
+              let nextBlock = currentBlock ? currentBlock.nextElementSibling : null;
+              while (nextBlock && nextBlock.innerHTML.includes(`<strong>AI ${action}`)) {
+                lastRelatedBlock = nextBlock;
+                nextBlock = nextBlock.nextElementSibling;
+              }
+
+              // Insert after the last related block
+              if (lastRelatedBlock) {
+                lastRelatedBlock.after(block);
               } else {
                 this.editor.appendChild(block);
               }
