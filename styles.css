@@ -193,6 +193,49 @@ body {
     background-color: #f0f0f0;
 }
 
+.sidebar-section {
+    margin-top: 20px;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 20px;
+}
+
+.sidebar-btn {
+    width: 100%;
+    padding: 8px;
+    background: none;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.sidebar-btn:hover {
+    background-color: #f0f0f0;
+}
+
+#tocList {
+    padding-left: 10px;
+}
+
+.toc-item {
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 2px 0;
+    font-size: 14px;
+}
+
+.toc-item:hover {
+    background-color: #f0f0f0;
+}
+
+.toc-h1 { padding-left: 0px; }
+.toc-h2 { padding-left: 15px; }
+.toc-h3 { padding-left: 30px; }
+
 .main-content {
     flex: 1;
     display: flex;

@@ -24,6 +24,7 @@ class NotionEditor {
     this.setupEventListeners();
     this.setupAIToolbar();
     this.setupAISettings();
+    this.setupTableOfContents();
     this.setupCommentSystem();
     this.updateAIToolbar(); // Load custom AI buttons
 
@@ -857,6 +858,7 @@ class NotionEditor {
     // Auto-save on content changes
     this.editor.addEventListener("input", () => {
       this.scheduleAutoSave();
+      this.updateTableOfContents();
     });
 
     this.editor.addEventListener("paste", () => {
@@ -1211,6 +1213,8 @@ class NotionEditor {
       // Update the current note ID
       this.currentNoteId = note_id;
       this.currentNoteTitle = note.title; // Store the title for later use
+      // Update table of contents after loading note
+      this.updateTableOfContents();
     } else {
       console.error("Failed to load note:", note.error);
     }
@@ -1410,6 +1414,45 @@ class NotionEditor {
 
     // Insert content container after the folder element
     folderElement.after(contentContainer);
+  }
+
+  setupTableOfContents() {
+    const tocBtn = document.getElementById('toggleTocBtn');
+    const tocList = document.getElementById('tocList');
+    
+    tocBtn.addEventListener('click', () => {
+      const isHidden = tocList.style.display === 'none';
+      tocList.style.display = isHidden ? 'block' : 'none';
+      this.updateTableOfContents();
+    });
+  }
+
+  updateTableOfContents() {
+    const tocList = document.getElementById('tocList');
+    if (tocList.style.display === 'none') return;
+
+    // Clear existing TOC
+    tocList.innerHTML = '';
+
+    // Get all headings from the editor
+    const headings = this.editor.querySelectorAll('h1, h2, h3');
+    
+    headings.forEach((heading, index) => {
+      const level = heading.tagName.toLowerCase();
+      const text = heading.textContent;
+      
+      // Create TOC item
+      const tocItem = document.createElement('div');
+      tocItem.className = `toc-item toc-${level}`;
+      tocItem.textContent = text;
+      
+      // Add click handler to scroll to heading
+      tocItem.addEventListener('click', () => {
+        heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      
+      tocList.appendChild(tocItem);
+    });
   }
 }
 
