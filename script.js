@@ -622,8 +622,13 @@ class NotionEditor {
   getBlockContext() {
     const selection = window.getSelection();
     const range = selection.getRangeAt(0);
-    let currentBlock = range.startContainer.closest('.block') || 
-                      range.startContainer.parentElement.closest('.block');
+    
+    // Handle text nodes by getting their parent element
+    const startElement = range.startContainer.nodeType === Node.TEXT_NODE ? 
+                        range.startContainer.parentElement : 
+                        range.startContainer;
+    
+    let currentBlock = startElement.closest('.block');
     
     if (!currentBlock) {
       // If no block is selected, get the last block
