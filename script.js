@@ -4,6 +4,8 @@ let currentUser = {
     credentials: localStorage.getItem('credentials')
 };
 
+
+
 class NotionEditor {
     constructor() {
         this.editor = document.getElementById('editor');
