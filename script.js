@@ -12,8 +12,17 @@ class NotionEditor {
     this.aiToolbar = document.getElementById("aiToolbar");
     this.currentNoteTitle = "";
     this.lastSavedContent = "";
+    this.aiSettings = JSON.parse(localStorage.getItem('aiSettings') || JSON.stringify({
+      prompts: {
+        ask: "Answer this question: {text}",
+        correct: "Correct any grammar or spelling errors in this text: {text}",
+        translate: "Translate this text to English: {text}"
+      },
+      customTools: []
+    }));
     this.setupEventListeners();
     this.setupAIToolbar();
+    this.setupAISettings();
 
     // Add title auto-save
     const titleElement = document.getElementById("noteTitle");
@@ -146,16 +155,14 @@ class NotionEditor {
 
   async handleAIAction(action, text) {
     let prompt = "";
-    switch (action) {
-      case "ask":
-        prompt = `Answer this question: ${text}`;
-        break;
-      case "correct":
-        prompt = `Correct any grammar or spelling errors in this text: ${text}`;
-        break;
-      case "translate":
-        prompt = `Translate this text to English: ${text}`;
-        break;
+    if (this.aiSettings.prompts[action]) {
+      prompt = this.aiSettings.prompts[action].replace('{text}', text);
+    } else {
+      // Handle custom tools
+      const customTool = this.aiSettings.customTools.find(tool => tool.id === action);
+      if (customTool) {
+        prompt = customTool.prompt.replace('{text}', text);
+      }
     }
 
     const model1 = document.getElementById("aiModelSelect1").value;
@@ -226,6 +233,116 @@ class NotionEditor {
 
     // Hide the toolbar
     this.aiToolbar.classList.remove("visible");
+  }
+
+  setupAISettings() {
+    const modal = document.getElementById('aiSettingsModal');
+    const aiSettingsBtn = document.getElementById('aiSettingsBtn');
+    const closeBtn = modal.querySelector('.close');
+    const saveBtn = document.getElementById('saveSettings');
+    const addCustomToolBtn = document.getElementById('addCustomTool');
+    
+    // Load current settings
+    document.getElementById('askPrompt').value = this.aiSettings.prompts.ask;
+    document.getElementById('correctPrompt').value = this.aiSettings.prompts.correct;
+    document.getElementById('translatePrompt').value = this.aiSettings.prompts.translate;
+    
+    this.renderCustomTools();
+
+    // Event listeners
+    aiSettingsBtn.onclick = () => modal.style.display = "block";
+    closeBtn.onclick = () => modal.style.display = "none";
+    window.onclick = (e) => {
+      if (e.target === modal) modal.style.display = "none";
+    };
+
+    addCustomToolBtn.onclick = () => this.addCustomTool();
+    
+    saveBtn.onclick = () => {
+      this.saveAISettings();
+      modal.style.display = "none";
+      this.updateAIToolbar();
+    };
+  }
+
+  renderCustomTools() {
+    const container = document.getElementById('customTools');
+    container.innerHTML = '';
+    
+    this.aiSettings.customTools.forEach((tool, index) => {
+      const toolDiv = document.createElement('div');
+      toolDiv.className = 'custom-tool';
+      toolDiv.innerHTML = `
+        <input type="text" class="tool-name" placeholder="Tool Name" value="${tool.name}">
+        <input type="text" class="tool-prompt" placeholder="Prompt Template" value="${tool.prompt}">
+        <button class="remove-tool" data-index="${index}"><i class="fas fa-trash"></i></button>
+      `;
+      
+      toolDiv.querySelector('.remove-tool').onclick = () => {
+        this.aiSettings.customTools.splice(index, 1);
+        this.renderCustomTools();
+      };
+      
+      container.appendChild(toolDiv);
+    });
+  }
+
+  addCustomTool() {
+    this.aiSettings.customTools.push({
+      id: 'custom_' + Date.now(),
+      name: '',
+      prompt: ''
+    });
+    this.renderCustomTools();
+  }
+
+  saveAISettings() {
+    // Save prompt settings
+    this.aiSettings.prompts = {
+      ask: document.getElementById('askPrompt').value,
+      correct: document.getElementById('correctPrompt').value,
+      translate: document.getElementById('translatePrompt').value
+    };
+
+    // Save custom tools
+    const customTools = Array.from(document.querySelectorAll('.custom-tool')).map((toolDiv, index) => ({
+      id: this.aiSettings.customTools[index]?.id || 'custom_' + Date.now(),
+      name: toolDiv.querySelector('.tool-name').value,
+      prompt: toolDiv.querySelector('.tool-prompt').value
+    }));
+    
+    this.aiSettings.customTools = customTools;
+    
+    // Save to localStorage
+    localStorage.setItem('aiSettings', JSON.stringify(this.aiSettings));
+  }
+
+  updateAIToolbar() {
+    const actionsContainer = this.aiToolbar.querySelector('.ai-actions');
+    actionsContainer.innerHTML = `
+      <button data-ai-action="ask"><i class="fas fa-question-circle"></i> Ask</button>
+      <button data-ai-action="correct"><i class="fas fa-check-circle"></i> Correct</button>
+      <button data-ai-action="translate"><i class="fas fa-language"></i> Translate</button>
+    `;
+    
+    // Add custom tool buttons
+    this.aiSettings.customTools.forEach(tool => {
+      if (tool.name) {
+        const button = document.createElement('button');
+        button.setAttribute('data-ai-action', tool.id);
+        button.innerHTML = `<i class="fas fa-magic"></i> ${tool.name}`;
+        actionsContainer.appendChild(button);
+      }
+    });
+
+    // Rebind click events
+    actionsContainer.querySelectorAll('button').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.aiAction;
+        const selectedText = window.getSelection().toString().trim();
+        await this.handleAIAction(action, selectedText);
+      });
+    });
   }
 
   setupEventListeners() {

@@ -41,8 +41,47 @@
                         <button class="dropbtn"><i class="fas fa-user-cog"></i></button>
                         <div class="dropdown-content">
                             <button id="userProfileBtn"><i class="fas fa-user"></i> Profile</button>
-                            <button id="userSettingsBtn"><i class="fas fa-cog"></i> Settings</button>
+                            <button id="aiSettingsBtn"><i class="fas fa-cog"></i> AI Settings</button>
                             <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                        </div>
+                    </div>
+
+                    <!-- AI Settings Modal -->
+                    <div id="aiSettingsModal" class="modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2>AI Tools Settings</h2>
+                                <span class="close">&times;</span>
+                            </div>
+                            <div class="modal-body">
+                                <div class="settings-section">
+                                    <h3>Default Prompts</h3>
+                                    <div class="prompt-settings">
+                                        <div class="prompt-item">
+                                            <label>Ask Button:</label>
+                                            <input type="text" id="askPrompt" placeholder="Enter prompt template">
+                                        </div>
+                                        <div class="prompt-item">
+                                            <label>Correct Button:</label>
+                                            <input type="text" id="correctPrompt" placeholder="Enter prompt template">
+                                        </div>
+                                        <div class="prompt-item">
+                                            <label>Translate Button:</label>
+                                            <input type="text" id="translatePrompt" placeholder="Enter prompt template">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="settings-section">
+                                    <h3>Custom AI Tools</h3>
+                                    <div id="customTools"></div>
+                                    <button id="addCustomTool" class="add-tool-btn">
+                                        <i class="fas fa-plus"></i> Add Custom Tool
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="saveSettings" class="save-settings-btn">Save Settings</button>
+                            </div>
                         </div>
                     </div>
 
