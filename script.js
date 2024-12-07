@@ -221,7 +221,7 @@ class NotionEditor {
         // Create a new block with the AI response
         const block = document.createElement("div");
         block.className = "block";
-        block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong> ${aiResponse}</p>`;
+        block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong></p>${marked.parse(aiResponse)}`;
 
         // Insert after the current block
         if (currentBlock) {
