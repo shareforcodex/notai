@@ -457,7 +457,7 @@ class NotionEditor {
     const currentComment = element.getAttribute('data-comment');
     
     tooltip.innerHTML = `
-      <input type="text" class="comment-edit-input" value="${currentComment}">
+      <textarea class="comment-edit-input" rows="3">${currentComment}</textarea>
       <div class="comment-actions">
         <button class="save-comment">Save</button>
         <button class="cancel-comment">Cancel</button>
@@ -503,10 +503,13 @@ class NotionEditor {
   }
 
   deleteComment(element) {
-    const text = element.textContent;
-    const textNode = document.createTextNode(text);
-    element.parentNode.replaceChild(textNode, element);
-    this.scheduleAutoSave();
+    const confirmDelete = prompt('Type "yes" to confirm deleting this comment:');
+    if (confirmDelete && confirmDelete.toLowerCase() === 'yes') {
+      const text = element.textContent;
+      const textNode = document.createTextNode(text);
+      element.parentNode.replaceChild(textNode, element);
+      this.scheduleAutoSave();
+    }
   }
 
   addComment() {
