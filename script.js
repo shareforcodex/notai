@@ -141,7 +141,6 @@ class NotionEditor {
         const selectedText = window.getSelection().toString().trim();
         
         // Always hide toolbar immediately
-        this.aiToolbar.classList.remove("visible");
         this.aiToolbar.style.display = 'none';
 
         // Only process action if there's selected text
@@ -171,7 +170,6 @@ class NotionEditor {
         this.aiToolbar.style.display = 'block';
         this.aiToolbar.style.top = `${rect.bottom + window.scrollY + 10}px`;
         this.aiToolbar.style.left = `${leftPosition}px`;
-        this.aiToolbar.classList.add("visible");
       } else {
         // Hide toolbar completely when no selection
         this.aiToolbar.style.display = 'none';
@@ -284,8 +282,6 @@ class NotionEditor {
     });
 
     // Hide the toolbars immediately when an action is clicked
-    this.aiToolbar.classList.remove("visible");
-    this.aiToolbar.style.display = 'none';
   }
   catch(e){
     console.log(e);
@@ -433,6 +429,8 @@ class NotionEditor {
       button.addEventListener('click', async () => {
         const action = button.dataset.aiAction;
         const selectedText = window.getSelection().toString().trim();
+        this.aiToolbar.style.display = 'none';
+
         await this.handleAIAction(action, selectedText);
       });
     });
