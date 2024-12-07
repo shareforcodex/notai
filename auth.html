@@ -123,7 +123,7 @@
 
             // Test the credentials
             try {
-                const credentials = btoa(`${userId}:${password}`);
+                const credentials = (`${userId}:${btoa(password)}`);
                 const headers = {
                     'Authorization': `Basic ${credentials}`
                 };
@@ -142,7 +142,7 @@
                 errorElement.textContent = 'Network error occurred. Please try again.';
                 errorElement.style.display = 'block';
             }
-            }
+            
         }
 
         async function handleRegister() {
