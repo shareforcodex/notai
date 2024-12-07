@@ -297,7 +297,22 @@ class NotionEditor {
     block.className = "block";
     block.contentEditable = true;
     block.innerHTML = "<p>New block</p>";
-    this.editor.appendChild(block);
+
+    // Get current selection and find closest block
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+    const currentBlock = range.startContainer.closest('.block') || 
+                        range.startContainer.parentElement.closest('.block');
+
+    if (currentBlock) {
+      // Insert after current block
+      currentBlock.after(block);
+    } else {
+      // If no current block found, append to editor
+      this.editor.appendChild(block);
+    }
+    
+    // Focus the new block
     block.focus();
   }
 
