@@ -6,10 +6,23 @@ let currentUser = {
 
 class NotionEditor {
   constructor() {
-    this.editor = document.getElementById("editor");
-    this.sourceView = document.getElementById("sourceView");
-    this.toolbar = document.querySelector(".toolbar");
-    this.aiToolbar = document.getElementById("aiToolbar");
+    // Initialize core editor elements with error checking
+    const editor = document.getElementById("editor");
+    const sourceView = document.getElementById("sourceView");
+    const toolbar = document.querySelector(".toolbar");
+    const aiToolbar = document.getElementById("aiToolbar");
+    
+    // Verify required elements exist
+    if (!editor || !sourceView || !toolbar || !aiToolbar) {
+      console.error("Required editor elements not found");
+      return;
+    }
+
+    // Assign verified elements
+    this.editor = editor;
+    this.sourceView = sourceView; 
+    this.toolbar = toolbar;
+    this.aiToolbar = aiToolbar;
     this.currentNoteTitle = "";
     this.lastSavedContent = "";
     this.aiSettings = {
