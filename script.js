@@ -1501,6 +1501,12 @@ class NotionEditor {
 
 // Initialize the editor and load folders
 document.addEventListener("DOMContentLoaded", async () => {
-  window.editor = new NotionEditor();
-  await window.editor.loadFolders();
+  try {
+    window.editor = new NotionEditor();
+    await window.editor.loadFolders();
+  } catch (error) {
+    console.error('Error initializing editor:', error);
+    // Redirect to auth page if initialization fails
+    window.location.href = 'auth.html';
+  }
 });
