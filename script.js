@@ -94,6 +94,9 @@ class NotionEditor {
     }
 
     setupEventListeners() {
+        // Sidebar toggle
+        document.getElementById('toggleSidebar').addEventListener('click', () => this.toggleSidebar());
+        
         // New page button
         document.getElementById('newPageBtn').addEventListener('click', () => this.createNewNote());
         
@@ -472,6 +475,13 @@ class NotionEditor {
     clearNotes() {
         document.getElementById('pagesList').innerHTML = '';
         this.editor.innerHTML = '<p>Start writing here...</p>';
+    }
+
+    toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        sidebar.classList.toggle('hidden');
+        mainContent.classList.toggle('expanded');
     }
 
     async loadFolderContents(folderId, folderElement) {
