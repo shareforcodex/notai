@@ -306,7 +306,18 @@ class NotionEditor {
     try {
       const config = await this.apiRequest("GET", "/users/config");
       if (config && !config.error) {
-        this.aiSettings = config;
+        // Parse the config if it's a string
+        const parsedConfig = typeof config === 'string' ? JSON.parse(config) : config;
+        
+        // Update aiSettings with config values or defaults
+        this.aiSettings = {
+          prompts: parsedConfig.prompts || {
+            ask: "Answer this question: {text}",
+            correct: "Correct any grammar or spelling errors in this text: {text}",
+            translate: "Translate this text to English: {text}"
+          },
+          customTools: parsedConfig.customTools || []
+        };
       }
       this.updateAIToolbar();
     } catch (error) {
@@ -315,24 +326,24 @@ class NotionEditor {
   }
 
   async saveAISettings() {
-    // Save prompt settings
-    this.aiSettings.prompts = {
-      ask: document.getElementById('askPrompt').value,
-      correct: document.getElementById('correctPrompt').value,
-      translate: document.getElementById('translatePrompt').value
+    // Prepare the config object
+    const config = {
+      prompts: {
+        ask: document.getElementById('askPrompt').value,
+        correct: document.getElementById('correctPrompt').value,
+        translate: document.getElementById('translatePrompt').value
+      },
+      customTools: Array.from(document.querySelectorAll('.custom-tool')).map((toolDiv, index) => ({
+        id: this.aiSettings.customTools[index]?.id || 'custom_' + Date.now(),
+        name: toolDiv.querySelector('.tool-name').value,
+        prompt: toolDiv.querySelector('.tool-prompt').value
+      }))
     };
-
-    // Save custom tools
-    const customTools = Array.from(document.querySelectorAll('.custom-tool')).map((toolDiv, index) => ({
-      id: this.aiSettings.customTools[index]?.id || 'custom_' + Date.now(),
-      name: toolDiv.querySelector('.tool-name').value,
-      prompt: toolDiv.querySelector('.tool-prompt').value
-    }));
-    
-    this.aiSettings.customTools = customTools;
     
     try {
-      await this.apiRequest("POST", "/users/config", this.aiSettings);
+      await this.apiRequest("POST", "/users/config", config);
+      // Update local settings after successful save
+      this.aiSettings = config;
     } catch (error) {
       console.error("Error saving user config:", error);
       alert("Failed to save settings to server");
