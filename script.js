@@ -743,7 +743,7 @@ class NotionEditor {
   addNewBlock() {
     const block = document.createElement("div");
     block.className = "block";
-    block.contentEditable = true;
+    
     block.innerHTML = "<p>New block</p>";
 
     // Get current selection and find closest block

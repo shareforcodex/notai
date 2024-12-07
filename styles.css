@@ -664,6 +664,8 @@ body {
 }
 
 .comment-tooltip {
+    max-height: 50vh;
+    overflow: scroll;
     position: fixed;
     bottom: 20px;
     left: 50%;
@@ -717,7 +719,7 @@ body {
 
 /* Style for individual model responses */
 [data-comment*="---"] {
-    padding: 15px;
+    padding: 0px;
     border-radius: 6px;
     background-color: #fff9e6;
 }
@@ -742,7 +744,8 @@ body {
 }
 
 .comment-edit-input {
-    width: 100%;
+    width: 70vw;
+    height: 30vh;
     padding: 6px;
     border: 1px solid #ddd;
     border-radius: 4px;
