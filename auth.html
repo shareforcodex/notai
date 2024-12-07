@@ -125,7 +125,7 @@
             // Test the credentials
             try {
                 const passwordHash = CryptoJS.SHA256(password).toString();
-                const credentials = btoa(`${userId}:${passwordHash}`);
+                const credentials = (`${userId}:${passwordHash}`);
                 const headers = {
                     'Authorization': `Basic ${credentials}`
                 };
