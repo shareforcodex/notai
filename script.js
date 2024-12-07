@@ -12,20 +12,18 @@ class NotionEditor {
     this.aiToolbar = document.getElementById("aiToolbar");
     this.currentNoteTitle = "";
     this.lastSavedContent = "";
-    this.aiSettings = {
+    this.aiSettings = JSON.parse(localStorage.getItem('aiSettings') || JSON.stringify({
       prompts: {
         ask: "Answer this question: {text}",
         correct: "Correct any grammar or spelling errors in this text: {text}",
         translate: "Translate this text to English: {text}"
       },
       customTools: []
-    };
+    }));
     this.setupEventListeners();
-    this.loadUserConfig().then(() => {
-      this.setupAIToolbar();
-      this.setupAISettings();
-      this.updateAIToolbar(); // Load custom AI buttons
-    });
+    this.setupAIToolbar();
+    this.setupAISettings();
+    this.updateAIToolbar(); // Load custom AI buttons
 
     // Add title auto-save
     const titleElement = document.getElementById("noteTitle");
@@ -303,7 +301,7 @@ class NotionEditor {
     this.renderCustomTools();
   }
 
-  async saveAISettings() {
+  saveAISettings() {
     // Save prompt settings
     this.aiSettings.prompts = {
       ask: document.getElementById('askPrompt').value,
@@ -320,20 +318,8 @@ class NotionEditor {
     
     this.aiSettings.customTools = customTools;
     
-    // Save to server
-    try {
-      const response = await this.apiRequest('POST', '/users/config', {
-        config: JSON.stringify(this.aiSettings)
-      });
-      
-      if (response.success) {
-        console.log('AI settings saved to server successfully');
-      } else {
-        console.error('Failed to save AI settings to server:', response.error);
-      }
-    } catch (error) {
-      console.error('Error saving AI settings:', error);
-    }
+    // Save to localStorage
+    localStorage.setItem('aiSettings', JSON.stringify(this.aiSettings));
   }
 
   updateAIToolbar() {
@@ -1011,20 +997,3 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.editor = new NotionEditor();
   await window.editor.loadFolders();
 });
-  async loadUserConfig() {
-    try {
-      const response = await this.apiRequest('GET', '/users/config');
-      if (response.success && response.config) {
-        try {
-          this.aiSettings = JSON.parse(response.config);
-          console.log('AI settings loaded from server successfully');
-        } catch (e) {
-          console.error('Error parsing server config:', e);
-        }
-      } else {
-        console.log('No existing config found on server, using defaults');
-      }
-    } catch (error) {
-      console.error('Error loading user config:', error);
-    }
-  }
