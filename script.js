@@ -256,7 +256,14 @@ class NotionEditor {
     this.renderCustomTools();
 
     // Event listeners
-    aiSettingsBtn.onclick = () => modal.style.display = "block";
+    aiSettingsBtn.onclick = () => {
+      // Update values from current settings when opening modal
+      document.getElementById('askPrompt').value = this.aiSettings.prompts.ask;
+      document.getElementById('correctPrompt').value = this.aiSettings.prompts.correct;
+      document.getElementById('translatePrompt').value = this.aiSettings.prompts.translate;
+      this.renderCustomTools();
+      modal.style.display = "block";
+    };
     closeBtn.onclick = () => modal.style.display = "none";
     window.onclick = (e) => {
       if (e.target === modal) modal.style.display = "none";
