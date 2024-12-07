@@ -161,6 +161,10 @@ class NotionEditor {
   }
 
   async handleAIAction(action, text) {
+    // Check if text has less than 3 words
+    const wordCount = text.trim().split(/\s+/).length;
+    const useComment = wordCount < 3;
+
     let prompt = "";
     if (this.aiSettings.prompts[action]) {
       prompt = this.aiSettings.prompts[action].replace('{text}', text);
@@ -218,22 +222,32 @@ class NotionEditor {
     const selection = window.getSelection();
     const currentBlock = selection.anchorNode.parentElement.closest(".block");
     
-    // Create blocks for responses in reverse order to maintain correct ordering
+    // Create blocks or comments for responses in reverse order
     responses.reverse().forEach((response, index) => {
       if (response.choices && response.choices[0]) {
         const modelName = selectedModels[selectedModels.length - 1 - index];
         const aiResponse = response.choices[0].message.content;
 
-        // Create a new block with the AI response
-        const block = document.createElement("div");
-        block.className = "block";
-        block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong></p>${marked.parse(aiResponse)}`;
-
-        // Insert after the current block
-        if (currentBlock) {
-          currentBlock.after(block);
+        if (useComment) {
+          // Create a comment for short text selections
+          const selection = window.getSelection();
+          const range = selection.getRangeAt(0);
+          const span = document.createElement("span");
+          span.className = "commented-text";
+          span.setAttribute("data-comment", `AI ${action} (${modelName}): ${aiResponse}`);
+          range.surroundContents(span);
         } else {
-          this.editor.appendChild(block);
+          // Create a new block for longer text selections
+          const block = document.createElement("div");
+          block.className = "block";
+          block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong></p>${marked.parse(aiResponse)}`;
+
+          // Insert after the current block
+          if (currentBlock) {
+            currentBlock.after(block);
+          } else {
+            this.editor.appendChild(block);
+          }
         }
       }
     });
