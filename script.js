@@ -15,6 +15,7 @@ class NotionEditor {
     this.currentBlock = null;
     this.content = ""; // Store markdown content
     this.isSourceView = false;
+    this.autoSaveTimeout = null;
 
     // Initialize content and check auth
     this.updateContent();
@@ -172,6 +173,15 @@ class NotionEditor {
     // Save button
     document.getElementById("saveNoteBtn").addEventListener("click", () => {
       this.saveNote();
+    });
+
+    // Auto-save on content changes
+    this.editor.addEventListener("input", () => {
+      this.scheduleAutoSave();
+    });
+
+    this.editor.addEventListener("paste", () => {
+      this.scheduleAutoSave();
     });
 
     // Handle keyboard shortcuts
@@ -531,7 +541,19 @@ class NotionEditor {
     }
   }
 
-  async saveNote() {
+  scheduleAutoSave() {
+    // Clear any existing timeout
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout);
+    }
+
+    // Schedule a new auto-save
+    this.autoSaveTimeout = setTimeout(() => {
+      this.saveNote(true);
+    }, 10000); // 10 seconds delay
+  }
+
+  async saveNote(isAutoSave = false) {
     if (!this.currentNoteId) {
       alert("No note is currently open");
       return;
@@ -544,7 +566,7 @@ class NotionEditor {
         title: this.currentNoteTitle
       });
 
-      if (result.success) {
+      if (result.success && !isAutoSave) {
         alert("Note saved successfully!");
       } else {
         alert("Failed to save note: " + (result.error || "Unknown error"));
