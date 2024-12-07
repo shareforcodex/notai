@@ -475,13 +475,16 @@ class NotionEditor {
     }
 
     async loadFolderContents(folderId, folderElement) {
-        folderElement.classList.add('open');
-        
         // Check if content already exists
         let contentContainer = folderElement.nextElementSibling;
         if (contentContainer && contentContainer.classList.contains('folder-contents')) {
-            return; // Content already loaded, keep it visible
+            // Toggle visibility by removing the container
+            contentContainer.remove();
+            folderElement.classList.remove('open');
+            return;
         }
+        
+        folderElement.classList.add('open');
 
         // Create container for folder contents
         contentContainer = document.createElement('div');
