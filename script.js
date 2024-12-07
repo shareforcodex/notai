@@ -178,10 +178,14 @@ class NotionEditor {
 
     const responses = await Promise.all(requests);
 
-    // Create blocks for both responses
-    responses.forEach((response, index) => {
+    // Get the current block where selection is
+    const selection = window.getSelection();
+    const currentBlock = selection.anchorNode.parentElement.closest(".block");
+    
+    // Create blocks for responses in reverse order to maintain correct ordering
+    responses.reverse().forEach((response, index) => {
       if (response.choices && response.choices[0]) {
-        const modelName = index === 0 ? selectedModel : "gpt-4o-mini";
+        const modelName = selectedModels[selectedModels.length - 1 - index];
         const aiResponse = response.choices[0].message.content;
 
         // Create a new block with the AI response
@@ -190,19 +194,16 @@ class NotionEditor {
         block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong> ${aiResponse}</p>`;
 
         // Insert after the current block
-        const currentBlock = window
-          .getSelection()
-          .anchorNode.parentElement.closest(".block");
         if (currentBlock) {
           currentBlock.after(block);
         } else {
           this.editor.appendChild(block);
         }
-
-        // Hide the toolbar
-        this.aiToolbar.classList.remove("visible");
       }
     });
+
+    // Hide the toolbar
+    this.aiToolbar.classList.remove("visible");
   }
 
   setupEventListeners() {
