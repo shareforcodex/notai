@@ -538,7 +538,7 @@ class NotionEditor {
     }
 
     try {
-      const result = await this.apiRequest("PUT", `/notes/${this.currentNoteId}`, {
+      const result = await this.apiRequest("POST", `/notes`, {
         note_id: this.currentNoteId,
         content: this.editor.innerHTML,
         title: this.currentNoteTitle
