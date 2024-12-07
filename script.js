@@ -14,10 +14,10 @@ class NotionEditor {
     this.lastSavedContent = "";
     this.setupEventListeners();
     this.setupAIToolbar();
-    
+
     // Add title auto-save
-    const titleElement = document.getElementById('noteTitle');
-    titleElement.addEventListener('input', () => this.scheduleAutoSave());
+    const titleElement = document.getElementById("noteTitle");
+    titleElement.addEventListener("input", () => this.scheduleAutoSave());
     this.currentBlock = null;
     this.content = ""; // Store markdown content
     this.isSourceView = false;
@@ -39,10 +39,10 @@ class NotionEditor {
     }
 
     try {
-      const url = isAIRequest ? 
-        'https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions' :
-        `${API_BASE_URL}${endpoint}`;
-      
+      const url = isAIRequest
+        ? "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions"
+        : `${API_BASE_URL}${endpoint}`;
+
       const response = await fetch(url, {
         method,
         headers,
@@ -103,24 +103,24 @@ class NotionEditor {
   }
 
   setupAIToolbar() {
-    document.addEventListener('selectionchange', () => {
+    document.addEventListener("selectionchange", () => {
       const selection = window.getSelection();
       if (!selection.isCollapsed && selection.toString().trim()) {
         const range = selection.getRangeAt(0);
         const rect = range.getBoundingClientRect();
-        
+
         // Position the toolbar below the selection
         this.aiToolbar.style.top = `${rect.bottom + window.scrollY + 10}px`;
         this.aiToolbar.style.left = `${rect.left + window.scrollX}px`;
-        this.aiToolbar.classList.add('visible');
+        this.aiToolbar.classList.add("visible");
       } else {
-        this.aiToolbar.classList.remove('visible');
+        this.aiToolbar.classList.remove("visible");
       }
     });
 
     // Handle AI action buttons
-    this.aiToolbar.querySelectorAll('button').forEach(button => {
-      button.addEventListener('click', async () => {
+    this.aiToolbar.querySelectorAll("button").forEach((button) => {
+      button.addEventListener("click", async () => {
         const action = button.dataset.aiAction;
         const selectedText = window.getSelection().toString().trim();
         await this.handleAIAction(action, selectedText);
@@ -129,81 +129,94 @@ class NotionEditor {
   }
 
   async handleAIAction(action, text) {
-    let prompt = '';
-    switch(action) {
-      case 'ask':
+    let prompt = "";
+    switch (action) {
+      case "ask":
         prompt = `Answer this question: ${text}`;
         break;
-      case 'correct':
+      case "correct":
         prompt = `Correct any grammar or spelling errors in this text: ${text}`;
         break;
-      case 'translate':
+      case "translate":
         prompt = `Translate this text to English: ${text}`;
         break;
     }
 
-    const selectedModel = document.getElementById('aiModelSelect').value;
-    
+    const selectedModel = document.getElementById("aiModelSelect").value;
+
     // Make parallel requests to both models
     const requests = [
-      this.apiRequest('POST', '', {
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a helpful assistant.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        model: selectedModel,
-        temperature: 0.7,
-        max_tokens: 8000,
-        top_p: 1
-      }, true),
-      this.apiRequest('POST', '', {
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a helpful assistant.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        model: 'gpt-4o-mini', // Always include mini model for comparison
-        temperature: 0.7,
-        max_tokens: 8000,
-        top_p: 1
-      }, true)
+      this.apiRequest(
+        "POST",
+        "",
+        {
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful assistant.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          model: selectedModel,
+          temperature: 0.7,
+          max_tokens: 8000,
+          top_p: 1,
+        },
+        true
+      ),
+      this.apiRequest(
+        "POST",
+        "",
+        {
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful assistant.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          model: "gpt-4o-mini", // Always include mini model for comparison
+          temperature: 0.7,
+          max_tokens: 8000,
+          top_p: 1,
+        },
+        true
+      ),
     ];
 
     const responses = await Promise.all(requests);
-    
+
     // Create blocks for both responses
     responses.forEach((response, index) => {
       if (response.choices && response.choices[0]) {
-        const modelName = index === 0 ? selectedModel : 'gpt-4o-mini';
+        const modelName = index === 0 ? selectedModel : "gpt-4o-mini";
         const aiResponse = response.choices[0].message.content;
-      
-      // Create a new block with the AI response
-        const block = document.createElement('div');
-        block.className = 'block';
-        block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong> ${aiResponse}</p>`;
-      
-      // Insert after the current block
-      const currentBlock = window.getSelection().anchorNode.parentElement.closest('.block');
-      if (currentBlock) {
-        currentBlock.after(block);
-      } else {
-        this.editor.appendChild(block);
-      }
 
-      // Hide the toolbar
-      this.aiToolbar.classList.remove('visible');
-    }
+        // Create a new block with the AI response
+        const block = document.createElement("div");
+        block.className = "block";
+        block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong> ${aiResponse}</p>`;
+
+        // Insert after the current block
+        const currentBlock = window
+          .getSelection()
+          .anchorNode.parentElement.closest(".block");
+        if (currentBlock) {
+          currentBlock.after(block);
+        } else {
+          this.editor.appendChild(block);
+        }
+
+        // Hide the toolbar
+        this.aiToolbar.classList.remove("visible");
+      }
+    });
   }
 
   setupEventListeners() {
@@ -221,15 +234,15 @@ class NotionEditor {
     document
       .getElementById("newFolderBtn")
       .addEventListener("click", () => this.showNewFolderInput());
-    
+
     document
       .getElementById("createFolderBtn")
       .addEventListener("click", () => this.createFolder());
-    
+
     document
       .getElementById("cancelFolderBtn")
       .addEventListener("click", () => this.hideNewFolderInput());
-    
+
     document
       .getElementById("newFolderInput")
       .addEventListener("keypress", (e) => {
@@ -327,8 +340,9 @@ class NotionEditor {
     // Get current selection and find closest block
     const selection = window.getSelection();
     const range = selection.getRangeAt(0);
-    const currentBlock = range.startContainer.closest('.block') || 
-                        range.startContainer.parentElement.closest('.block');
+    const currentBlock =
+      range.startContainer.closest(".block") ||
+      range.startContainer.parentElement.closest(".block");
 
     if (currentBlock) {
       // Insert after current block
@@ -337,7 +351,7 @@ class NotionEditor {
       // If no current block found, append to editor
       this.editor.appendChild(block);
     }
-    
+
     // Focus the new block
     block.focus();
   }
@@ -485,14 +499,14 @@ class NotionEditor {
       const notes = await this.apiRequest("GET", "/notes");
       if (!notes.error) {
         // Check for default note
-        const defaultNote = notes.find(note => note.title === 'default_note');
+        const defaultNote = notes.find((note) => note.title === "default_note");
         if (!defaultNote) {
           // Create default note if it doesn't exist
           const result = await this.apiRequest("POST", "/notes", {
             note_id: "default_note_" + currentUser.userId,
             title: "default_note",
             content: "<p>Welcome to your default note!</p>",
-            folder_id: "1733485657799jj0.5911120915160637"
+            folder_id: "1733485657799jj0.5911120915160637",
           });
           if (result.success) {
             await this.loadNotes();
@@ -512,22 +526,22 @@ class NotionEditor {
   }
 
   showNewFolderInput() {
-    const inputContainer = document.querySelector('.folder-input-container');
-    const input = document.getElementById('newFolderInput');
-    inputContainer.style.display = 'flex';
-    input.value = '';
+    const inputContainer = document.querySelector(".folder-input-container");
+    const input = document.getElementById("newFolderInput");
+    inputContainer.style.display = "flex";
+    input.value = "";
     input.focus();
   }
 
   hideNewFolderInput() {
-    const inputContainer = document.querySelector('.folder-input-container');
-    inputContainer.style.display = 'none';
+    const inputContainer = document.querySelector(".folder-input-container");
+    inputContainer.style.display = "none";
   }
 
   async createFolder() {
-    const input = document.getElementById('newFolderInput');
+    const input = document.getElementById("newFolderInput");
     const folderName = input.value.trim();
-    
+
     if (!folderName) {
       alert("Please enter a folder name");
       return;
@@ -640,7 +654,7 @@ class NotionEditor {
     const note = await this.apiRequest("GET", `/notes/${note_id}`);
     if (note && !note.error) {
       this.editor.innerHTML = note.content || "";
-      document.getElementById('noteTitle').textContent = note.title || "";
+      document.getElementById("noteTitle").textContent = note.title || "";
       this.updateContent();
       // Update the current note ID
       this.currentNoteId = note_id;
@@ -659,7 +673,7 @@ class NotionEditor {
       note_id: noteId,
       title: title,
       content: "<p>Start writing here...</p>",
-      folder_id: folderId || "1733485657799jj0.5911120915160637" // Use default folder if none provided
+      folder_id: folderId || "1733485657799jj0.5911120915160637", // Use default folder if none provided
     });
 
     if (result.success) {
@@ -718,13 +732,15 @@ class NotionEditor {
       spanText.textContent = "Saving...";
 
       // Get current title from the title element
-      const currentTitle = document.getElementById('noteTitle').textContent.trim() || "Untitled Note";
+      const currentTitle =
+        document.getElementById("noteTitle").textContent.trim() ||
+        "Untitled Note";
       this.currentNoteTitle = currentTitle;
 
       const result = await this.apiRequest("POST", `/notes`, {
         note_id: this.currentNoteId,
         content: this.editor.innerHTML,
-        title: currentTitle
+        title: currentTitle,
       });
 
       if (result.success) {
@@ -732,7 +748,7 @@ class NotionEditor {
         spinnerIcon.style.display = "none";
         saveIcon.style.display = "inline-block";
         spanText.textContent = "Saved";
-        
+
         // Reset button text after 2 seconds
         setTimeout(() => {
           spanText.textContent = "Save";
