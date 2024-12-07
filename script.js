@@ -238,64 +238,61 @@ class NotionEditor {
     );
 
     try {
-      const responses = await Promise.all(requests);
-
-      // Hide AI toolbar after getting response
+      // Hide AI toolbar immediately
       this.aiToolbar.style.display = 'none';
       this.aiToolbar.classList.remove("visible");
 
       // Get the current block where selection is  
       const selection = window.getSelection();
       const currentBlock = selection.anchorNode.parentElement.closest(".block");
-    
-    // Create blocks or comments for responses in reverse order
-    responses.reverse().forEach((response, index) => {
-      if (response.choices && response.choices[0]) {
-        const modelName = selectedModels[selectedModels.length - 1 - index];
-        const aiResponse = response.choices[0].message.content;
+      const range = selection.getRangeAt(0);
+      let commentedSpan = null;
 
-        if (useComment) {
-          // Create a comment for short text selections
-          const selection = window.getSelection();
-          const range = selection.getRangeAt(0);
+      // Process each request as it completes
+      requests.forEach((request, index) => {
+        const modelName = selectedModels[index];
+        
+        request.then(response => {
+          if (response.choices && response.choices[0]) {
+            const aiResponse = response.choices[0].message.content;
 
-          // Get the text being commented on
-          const commentedText = range.toString();
-        
-          // Create a span for all responses
-          const span = document.createElement("span");
-          span.className = "commented-text";
-        
-          // Build combined comment text with each model's response
-          let combinedComment = "";
-          const modelResponses = responses.map((resp, i) => {
-            const mName = selectedModels[selectedModels.length - 1 - i];
-            const mResponse = resp.choices[0].message.content;
-            return `[${mName}]:\n${mResponse}\n\n`;
-          });
-          combinedComment = modelResponses.join('---\n');
-        
-          // Set the comment and wrap the selection
-          span.setAttribute("data-comment", combinedComment);
-          range.surroundContents(span);
-        
-          // Show comment tooltip immediately  
-          this.showCommentTooltip(span, combinedComment);
-        } else {
-          // Create a new block for longer text selections
-          const block = document.createElement("div");
-          block.className = "block";
-          block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong></p>${marked.parse(aiResponse)}`;
+            if (useComment) {
+              if (!commentedSpan) {
+                // Create span for first response
+                commentedSpan = document.createElement("span");
+                commentedSpan.className = "commented-text";
+                range.surroundContents(commentedSpan);
+              }
 
-          // Insert after the current block
-          if (currentBlock) {
-            currentBlock.after(block);
-          } else {
-            this.editor.appendChild(block);
+              // Add this response to the comment
+              const currentComment = commentedSpan.getAttribute("data-comment") || "";
+              const newResponse = `[${modelName}]:\n${aiResponse}\n\n`;
+              const updatedComment = currentComment ? currentComment + '---\n' + newResponse : newResponse;
+              commentedSpan.setAttribute("data-comment", updatedComment);
+
+              // Update tooltip if it's visible
+              const tooltip = document.getElementById('commentTooltip');
+              if (tooltip.style.display === 'block') {
+                this.showCommentTooltip(commentedSpan, updatedComment);
+              }
+            } else {
+              // Create a new block immediately
+              const block = document.createElement("div");
+              block.className = "block";
+              block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong></p>${marked.parse(aiResponse)}`;
+
+              // Insert after the current block
+              if (currentBlock) {
+                currentBlock.after(block);
+              } else {
+                this.editor.appendChild(block);
+              }
+            }
           }
-        }
-      }
-    });
+        }).catch(error => {
+          console.error(`Error with ${modelName} request:`, error);
+        });
+      });
 
     // Hide the toolbars immediately when an action is clicked
   }
