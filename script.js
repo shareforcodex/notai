@@ -555,25 +555,54 @@ class NotionEditor {
 
   async saveNote(isAutoSave = false) {
     if (!this.currentNoteId) {
-      alert("No note is currently open");
       return;
     }
 
+    const saveBtn = document.getElementById("saveNoteBtn");
+    const saveIcon = saveBtn.querySelector(".fa-save");
+    const spinnerIcon = saveBtn.querySelector(".fa-spinner");
+    const spanText = saveBtn.querySelector("span");
+
     try {
+      // Show spinner, hide save icon
+      saveIcon.style.display = "none";
+      spinnerIcon.style.display = "inline-block";
+      spanText.textContent = "Saving...";
+
       const result = await this.apiRequest("POST", `/notes`, {
         note_id: this.currentNoteId,
         content: this.editor.innerHTML,
         title: this.currentNoteTitle
       });
 
-      if (result.success && !isAutoSave) {
-        alert("Note saved successfully!");
+      if (result.success) {
+        // Show saved state
+        spinnerIcon.style.display = "none";
+        saveIcon.style.display = "inline-block";
+        spanText.textContent = "Saved";
+        
+        // Reset button text after 2 seconds
+        setTimeout(() => {
+          spanText.textContent = "Save";
+        }, 2000);
       } else {
-        alert("Failed to save note: " + (result.error || "Unknown error"));
+        // Show error state
+        spinnerIcon.style.display = "none";
+        saveIcon.style.display = "inline-block";
+        spanText.textContent = "Error saving";
+        setTimeout(() => {
+          spanText.textContent = "Save";
+        }, 2000);
       }
     } catch (error) {
       console.error("Save error:", error);
-      alert("Error saving note");
+      // Show error state
+      spinnerIcon.style.display = "none";
+      saveIcon.style.display = "inline-block";
+      spanText.textContent = "Error saving";
+      setTimeout(() => {
+        spanText.textContent = "Save";
+      }, 2000);
     }
   }
 
