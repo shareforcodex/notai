@@ -614,7 +614,7 @@ class NotionEditor {
   }
 
   async register(userId, password, email) {
-    const passwordHash = btoa(password); // Simple base64 encoding for demo
+    const passwordHash = CryptoJS.SHA256(password).toString();
     const result = await this.apiRequest("POST", "/users", {
       user_id: userId,
       password_hash: passwordHash,

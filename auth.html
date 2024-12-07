@@ -6,6 +6,7 @@
     <title>Login/Register - Notion-like Editor</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
     <style>
         .auth-container {
             max-width: 400px;
@@ -123,7 +124,8 @@
 
             // Test the credentials
             try {
-                const credentials = (`${userId}:${btoa(password)}`);
+                const passwordHash = CryptoJS.SHA256(password).toString();
+                const credentials = btoa(`${userId}:${passwordHash}`);
                 const headers = {
                     'Authorization': `Basic ${credentials}`
                 };
@@ -157,7 +159,7 @@
                 return;
             }
 
-            const passwordHash = btoa(password);
+            const passwordHash = CryptoJS.SHA256(password).toString();
             const result = await apiRequest('POST', '/users', {
                 user_id: userId,
                 password_hash: passwordHash,
