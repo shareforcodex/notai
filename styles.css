@@ -515,6 +515,20 @@ body {
 
 .ai-actions {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 6px;
+    justify-content: flex-start;
+}
+
+.ai-actions button {
+    flex: 1;
+    min-width: 80px;
+    white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+    .ai-actions {
+        flex-direction: column;
+    }
 }

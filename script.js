@@ -103,6 +103,22 @@ class NotionEditor {
   }
 
   setupAIToolbar() {
+    // Load saved model preferences
+    const savedModels = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
+    
+    document.getElementById('aiModelSelect1').value = savedModels.model1 || 'gpt-4o';
+    document.getElementById('aiModelSelect2').value = savedModels.model2 || 'none';
+    document.getElementById('aiModelSelect3').value = savedModels.model3 || 'none';
+
+    // Save model selections when changed
+    ['aiModelSelect1', 'aiModelSelect2', 'aiModelSelect3'].forEach(selectId => {
+      document.getElementById(selectId).addEventListener('change', (e) => {
+        const preferences = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
+        preferences[selectId.replace('aiModelSelect', 'model')] = e.target.value;
+        localStorage.setItem('aiModelPreferences', JSON.stringify(preferences));
+      });
+    });
+
     document.addEventListener("selectionchange", () => {
       const selection = window.getSelection();
       if (!selection.isCollapsed && selection.toString().trim()) {
