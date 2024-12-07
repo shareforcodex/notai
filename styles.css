@@ -687,7 +687,7 @@ body {
 
 .save-settings-btn {
     padding: 10px 20px;
-    background-color: #2ecc71;
+    background-color: #2ecc71 !important;
     color: white;
     border: none;
     border-radius: 4px;
