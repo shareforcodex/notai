@@ -655,3 +655,26 @@ body {
 .save-settings-btn:hover {
     background-color: #27ae60;
 }
+
+/* Comment styles */
+.commented-text {
+    background-color: #fff3cd;
+    border-bottom: 2px dotted #ffc107;
+    cursor: help;
+}
+
+.comment-tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    max-width: 300px;
+    z-index: 1000;
+}
+
+.comment-content {
+    font-size: 14px;
+    color: #666;
+}

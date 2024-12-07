@@ -24,6 +24,7 @@ class NotionEditor {
     this.setupEventListeners();
     this.setupAIToolbar();
     this.setupAISettings();
+    this.setupCommentSystem();
     this.updateAIToolbar(); // Load custom AI buttons
 
     // Add title auto-save
@@ -387,6 +388,62 @@ class NotionEditor {
     });
   }
 
+  setupCommentSystem() {
+    const tooltip = document.getElementById('commentTooltip');
+    
+    // Handle hovering over commented text
+    this.editor.addEventListener('mouseover', (e) => {
+      const target = e.target;
+      if (target.classList.contains('commented-text')) {
+        const comment = target.getAttribute('data-comment');
+        if (comment) {
+          tooltip.style.display = 'block';
+          tooltip.querySelector('.comment-content').textContent = comment;
+          
+          // Position the tooltip
+          const rect = target.getBoundingClientRect();
+          tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+          tooltip.style.left = `${rect.left + window.scrollX}px`;
+        }
+      }
+    });
+
+    // Hide tooltip when mouse leaves
+    this.editor.addEventListener('mouseout', (e) => {
+      if (!e.relatedTarget || !e.relatedTarget.closest('.comment-tooltip')) {
+        tooltip.style.display = 'none';
+      }
+    });
+
+    // Keep tooltip visible when hovering over it
+    tooltip.addEventListener('mouseover', () => {
+      tooltip.style.display = 'block';
+    });
+
+    tooltip.addEventListener('mouseout', () => {
+      tooltip.style.display = 'none';
+    });
+  }
+
+  addComment() {
+    const selection = window.getSelection();
+    if (!selection.isCollapsed) {
+      const range = selection.getRangeAt(0);
+      const comment = prompt('Enter your comment:');
+      
+      if (comment) {
+        const span = document.createElement('span');
+        span.className = 'commented-text';
+        span.setAttribute('data-comment', comment);
+        
+        range.surroundContents(span);
+        this.scheduleAutoSave();
+      }
+    } else {
+      alert('Please select some text to comment on');
+    }
+  }
+
   setupEventListeners() {
     // Sidebar toggle
     document
@@ -434,6 +491,11 @@ class NotionEditor {
     document
       .getElementById("insertIframe")
       .addEventListener("click", () => this.insertIframe());
+
+    // Add comment button handler
+    document
+      .getElementById("addComment")
+      .addEventListener("click", () => this.addComment());
 
     // Format buttons
     document
