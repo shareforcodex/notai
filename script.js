@@ -131,7 +131,28 @@ class NotionEditor {
       });
     });
 
-    document.addEventListener("selectionchange", () => {
+    // Handle selection changes
+    this.setupSelectionHandler();
+
+    // Handle AI action buttons
+    this.aiToolbar.querySelectorAll("button").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const action = button.dataset.aiAction;
+        const selectedText = window.getSelection().toString().trim();
+        // Hide toolbar immediately
+        this.aiToolbar.classList.remove("visible");
+        this.aiToolbar.style.display = 'none';
+        await this.handleAIAction(action, selectedText);
+      });
+    });
+  }
+
+  setupSelectionHandler() {
+    // Remove any existing listener
+    document.removeEventListener("selectionchange", this.selectionChangeHandler);
+    
+    // Create the handler
+    this.selectionChangeHandler = () => {
       const selection = window.getSelection();
       if (!selection.isCollapsed && selection.toString().trim()) {
         const range = selection.getRangeAt(0);
@@ -140,24 +161,19 @@ class NotionEditor {
         // Position the toolbar below the selection
         const toolbarWidth = this.aiToolbar.offsetWidth;
         const windowWidth = window.innerWidth;
-        const leftPosition = Math.min(60, windowWidth - toolbarWidth - 20); // Ensure 20px margin from right edge
+        const leftPosition = Math.min(60, windowWidth - toolbarWidth - 20);
         
+        this.aiToolbar.style.display = 'block';
         this.aiToolbar.style.top = `${rect.bottom + window.scrollY + 10}px`;
         this.aiToolbar.style.left = `${leftPosition}px`;
         this.aiToolbar.classList.add("visible");
       } else {
         this.aiToolbar.classList.remove("visible");
       }
-    });
+    };
 
-    // Handle AI action buttons
-    this.aiToolbar.querySelectorAll("button").forEach((button) => {
-      button.addEventListener("click", async () => {
-        const action = button.dataset.aiAction;
-        const selectedText = window.getSelection().toString().trim();
-        await this.handleAIAction(action, selectedText);
-      });
-    });
+    // Add the listener
+    document.addEventListener("selectionchange", this.selectionChangeHandler);
   }
 
   async handleAIAction(action, text) {
