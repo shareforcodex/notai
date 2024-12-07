@@ -9,9 +9,11 @@ class NotionEditor {
     this.editor = document.getElementById("editor");
     this.sourceView = document.getElementById("sourceView");
     this.toolbar = document.querySelector(".toolbar");
+    this.aiToolbar = document.getElementById("aiToolbar");
     this.currentNoteTitle = "";
     this.lastSavedContent = "";
     this.setupEventListeners();
+    this.setupAIToolbar();
     
     // Add title auto-save
     const titleElement = document.getElementById('noteTitle');
@@ -27,7 +29,7 @@ class NotionEditor {
     this.loadFolders();
   }
 
-  async apiRequest(method, endpoint, body = null) {
+  async apiRequest(method, endpoint, body = null, isAIRequest = false) {
     const headers = {
       "Content-Type": "application/json",
     };
@@ -37,7 +39,11 @@ class NotionEditor {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const url = isAIRequest ? 
+        'https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions' :
+        `${API_BASE_URL}${endpoint}`;
+      
+      const response = await fetch(url, {
         method,
         headers,
         body: body ? JSON.stringify(body) : null,
@@ -93,6 +99,84 @@ class NotionEditor {
     } else {
       this.editor.style.display = "block";
       this.sourceView.style.display = "none";
+    }
+  }
+
+  setupAIToolbar() {
+    document.addEventListener('selectionchange', () => {
+      const selection = window.getSelection();
+      if (!selection.isCollapsed && selection.toString().trim()) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        
+        // Position the toolbar below the selection
+        this.aiToolbar.style.top = `${rect.bottom + window.scrollY + 10}px`;
+        this.aiToolbar.style.left = `${rect.left + window.scrollX}px`;
+        this.aiToolbar.classList.add('visible');
+      } else {
+        this.aiToolbar.classList.remove('visible');
+      }
+    });
+
+    // Handle AI action buttons
+    this.aiToolbar.querySelectorAll('button').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.aiAction;
+        const selectedText = window.getSelection().toString().trim();
+        await this.handleAIAction(action, selectedText);
+      });
+    });
+  }
+
+  async handleAIAction(action, text) {
+    let prompt = '';
+    switch(action) {
+      case 'ask':
+        prompt = `Answer this question: ${text}`;
+        break;
+      case 'correct':
+        prompt = `Correct any grammar or spelling errors in this text: ${text}`;
+        break;
+      case 'translate':
+        prompt = `Translate this text to English: ${text}`;
+        break;
+    }
+
+    const response = await this.apiRequest('POST', '', {
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a helpful assistant.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      model: 'gpt-4o-mini',
+      temperature: 0.7,
+      max_tokens: 8000,
+      top_p: 1
+    }, true);
+
+    if (response.choices && response.choices[0]) {
+      const aiResponse = response.choices[0].message.content;
+      
+      // Create a new block with the AI response
+      const block = document.createElement('div');
+      block.className = 'block';
+      block.innerHTML = `<p><strong>AI ${action}:</strong> ${aiResponse}</p>`;
+      
+      // Insert after the current block
+      const currentBlock = window.getSelection().anchorNode.parentElement.closest('.block');
+      if (currentBlock) {
+        currentBlock.after(block);
+      } else {
+        this.editor.appendChild(block);
+      }
+
+      // Hide the toolbar
+      this.aiToolbar.classList.remove('visible');
     }
   }
 
