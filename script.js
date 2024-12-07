@@ -759,9 +759,12 @@ class NotionEditor {
 
   setupEventListeners() {
     // Quick Ask button
-    document.getElementById('quickAskBtn').addEventListener('click', () => {
-      this.handleQuickAsk();
-    });
+    const quickAskBtn = document.getElementById('quickAskBtn');
+    if (quickAskBtn) {
+      quickAskBtn.addEventListener('click', () => {
+        this.handleQuickAsk();
+      });
+    }
 
     // Sidebar toggle
     document
