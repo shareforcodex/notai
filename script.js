@@ -135,9 +135,9 @@ class NotionEditor {
         const range = selection.getRangeAt(0);
         const rect = range.getBoundingClientRect();
 
-        // Position the toolbar below the selection
+        // Position the toolbar below the selection at a fixed x position
         this.aiToolbar.style.top = `${rect.bottom + window.scrollY + 10}px`;
-        this.aiToolbar.style.left = `${rect.left + window.scrollX}px`;
+        this.aiToolbar.style.left = '60px';
         this.aiToolbar.classList.add("visible");
       } else {
         this.aiToolbar.classList.remove("visible");
