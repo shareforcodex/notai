@@ -390,6 +390,8 @@ class NotionEditor {
 
   setupCommentSystem() {
     const tooltip = document.getElementById('commentTooltip');
+    let currentCommentElement = null;
+    let isEditing = false;
     
     // Handle hovering over commented text
     this.editor.addEventListener('mouseover', (e) => {
@@ -397,13 +399,8 @@ class NotionEditor {
       if (target.classList.contains('commented-text')) {
         const comment = target.getAttribute('data-comment');
         if (comment) {
-          tooltip.style.display = 'block';
-          tooltip.querySelector('.comment-content').textContent = comment;
-          
-          // Position the tooltip
-          const rect = target.getBoundingClientRect();
-          tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
-          tooltip.style.left = `${rect.left + window.scrollX}px`;
+          currentCommentElement = target;
+          this.showCommentTooltip(target, comment);
         }
       }
     });
@@ -411,7 +408,10 @@ class NotionEditor {
     // Hide tooltip when mouse leaves
     this.editor.addEventListener('mouseout', (e) => {
       if (!e.relatedTarget || !e.relatedTarget.closest('.comment-tooltip')) {
-        tooltip.style.display = 'none';
+        if (!isEditing) {
+          tooltip.style.display = 'none';
+          currentCommentElement = null;
+        }
       }
     });
 
@@ -420,9 +420,97 @@ class NotionEditor {
       tooltip.style.display = 'block';
     });
 
-    tooltip.addEventListener('mouseout', () => {
-      tooltip.style.display = 'none';
+    tooltip.addEventListener('mouseout', (e) => {
+      if (!isEditing && (!e.relatedTarget || !e.relatedTarget.classList.contains('commented-text'))) {
+        tooltip.style.display = 'none';
+        currentCommentElement = null;
+      }
     });
+
+    // Handle comment editing
+    tooltip.addEventListener('click', (e) => {
+      if (e.target.classList.contains('edit-comment')) {
+        isEditing = true;
+        this.editComment(currentCommentElement);
+      } else if (e.target.classList.contains('delete-comment')) {
+        this.deleteComment(currentCommentElement);
+        tooltip.style.display = 'none';
+      }
+    });
+  }
+
+  showCommentTooltip(element, comment) {
+    const tooltip = document.getElementById('commentTooltip');
+    tooltip.innerHTML = `
+      <div class="comment-content">${comment}</div>
+      <div class="comment-actions">
+        <button class="edit-comment">Edit</button>
+        <button class="delete-comment">Delete</button>
+      </div>
+    `;
+    
+    // Position the tooltip
+    const rect = element.getBoundingClientRect();
+    tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+    tooltip.style.left = `${rect.left + window.scrollX}px`;
+    tooltip.style.display = 'block';
+  }
+
+  editComment(element) {
+    const tooltip = document.getElementById('commentTooltip');
+    const currentComment = element.getAttribute('data-comment');
+    
+    tooltip.innerHTML = `
+      <input type="text" class="comment-edit-input" value="${currentComment}">
+      <div class="comment-actions">
+        <button class="save-comment">Save</button>
+        <button class="cancel-comment">Cancel</button>
+      </div>
+    `;
+
+    const input = tooltip.querySelector('.comment-edit-input');
+    input.focus();
+    input.select();
+
+    const saveBtn = tooltip.querySelector('.save-comment');
+    const cancelBtn = tooltip.querySelector('.cancel-comment');
+
+    const handleSave = () => {
+      const newComment = input.value.trim();
+      if (newComment) {
+        element.setAttribute('data-comment', newComment);
+        this.showCommentTooltip(element, newComment);
+        this.scheduleAutoSave();
+      }
+    };
+
+    const handleCancel = () => {
+      this.showCommentTooltip(element, currentComment);
+    };
+
+    saveBtn.addEventListener('click', handleSave);
+    cancelBtn.addEventListener('click', handleCancel);
+
+    // Handle Enter key to save
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        handleSave();
+      }
+    });
+
+    // Handle Escape key to cancel
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        handleCancel();
+      }
+    });
+  }
+
+  deleteComment(element) {
+    const text = element.textContent;
+    const textNode = document.createTextNode(text);
+    element.parentNode.replaceChild(textNode, element);
+    this.scheduleAutoSave();
   }
 
   addComment() {
