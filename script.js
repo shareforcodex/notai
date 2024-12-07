@@ -432,7 +432,8 @@ class NotionEditor {
         const result = await this.apiRequest('POST', '/notes', {
             title,
             content: '<p>Start writing here...</p>',
-            folder_id: folderId
+            folder_id: folderId,
+            note_id:title+currentUser.userId+Date.now()
         });
 
         if (result.success) {
