@@ -38,6 +38,7 @@ body {
 
 .main-content.expanded {
     margin-left: 0;
+    padding-left: 50px;  /* Add padding when sidebar is hidden */
 }
 
 .sidebar {
@@ -208,6 +209,7 @@ body {
     display: flex;
     gap: 5px;
     align-items: center;
+    margin-left: 40px;  /* Add margin to prevent overlap with toggle button */
 }
 
 .dropdown {
