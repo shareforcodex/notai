@@ -34,19 +34,17 @@
         <div class="main-content">
             <div class="toolbar">
                 <div class="formatting-tools">
-                    <div class="dropdown">
-                        <button class="dropbtn"><i class="fas fa-font"></i> Text Style</button>
+                    <div class="dropdown user-settings">
+                        <button class="dropbtn"><i class="fas fa-user-cog"></i></button>
                         <div class="dropdown-content">
-                            <button data-command="bold"><i class="fas fa-bold"></i> Bold</button>
-                            <button data-command="italic"><i class="fas fa-italic"></i> Italic</button>
-                            <button data-command="underline"><i class="fas fa-underline"></i> Underline</button>
-                            <button data-command="strikeThrough"><i class="fas fa-strikethrough"></i> Strike</button>
-                            <input type="color" id="textColor">
+                            <button id="userProfileBtn"><i class="fas fa-user"></i> Profile</button>
+                            <button id="userSettingsBtn"><i class="fas fa-cog"></i> Settings</button>
+                            <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
                         </div>
                     </div>
 
                     <div class="dropdown">
-                        <button class="dropbtn"><i class="fas fa-heading"></i> Format</button>
+                        <button class="dropbtn"><i class="fas fa-font"></i> Format</button>
                         <div class="dropdown-content">
                             <select id="headingSelect">
                                 <option value="p">Normal</option>
@@ -54,8 +52,16 @@
                                 <option value="h2">Heading 2</option>
                                 <option value="h3">Heading 3</option>
                             </select>
+                            <button data-command="bold"><i class="fas fa-bold"></i> Bold</button>
+                            <button data-command="italic"><i class="fas fa-italic"></i> Italic</button>
+                            <button data-command="underline"><i class="fas fa-underline"></i> Underline</button>
+                            <button data-command="strikeThrough"><i class="fas fa-strikethrough"></i> Strike</button>
                             <button data-command="insertUnorderedList"><i class="fas fa-list-ul"></i> Bullet List</button>
                             <button data-command="insertOrderedList"><i class="fas fa-list-ol"></i> Numbered List</button>
+                            <div class="color-picker">
+                                <i class="fas fa-paint-brush"></i> Text Color
+                                <input type="color" id="textColor">
+                            </div>
                         </div>
                     </div>
 

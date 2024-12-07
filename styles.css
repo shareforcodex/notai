@@ -215,6 +215,31 @@ body {
     display: inline-block;
 }
 
+.user-settings {
+    margin-right: 15px;
+}
+
+.user-settings .dropbtn {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.user-settings .dropbtn:hover {
+    background: #e0e0e0;
+}
+
+.color-picker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.color-picker:hover {
+    background-color: #f0f0f0;
+}
+
 .dropbtn {
     padding: 5px 10px;
     background: none;
