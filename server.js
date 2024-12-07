@@ -672,13 +672,14 @@ async function handleRequest(request, env) {
 
         return jsonResponse({ success: true, message: "Note updated successfully." });
       } else {
-        // Insert new note
-        const insertNote = await env.DB.prepare(`
-          INSERT INTO notes (user_id, folder_id, title,content, last_updated, created_at) 
-          VALUES (?, ?, ?, ?,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        `).bind(user_id, folder_id || "1733485657799jj0.5911120915160637", title,content).run();
-
-        const note_id = insertNote.lastRowId;
+        // Generate note_id using note name + user + current time
+        const note_id = `${Date.now()}_${title}_${user_id}`.replace(/[^a-zA-Z0-9_]/g, '');
+        
+        // Insert new note with generated note_id
+        await env.DB.prepare(`
+          INSERT INTO notes (note_id, user_id, folder_id, title, content, last_updated, created_at) 
+          VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(note_id, user_id, folder_id || "1733485657799jj0.5911120915160637", title, content).run();
 
         return jsonResponse({ success: true, message: "Note created successfully." });
       }
