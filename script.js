@@ -667,9 +667,23 @@ class NotionEditor {
     }
 
     const model1 = document.getElementById("aiModelSelect1").value;
+    const model2 = document.getElementById("aiModelSelect2").value;
+    const model3 = document.getElementById("aiModelSelect3").value;
     
-    try {
-      const response = await this.apiRequest(
+    // Build array of selected models (excluding "none")
+    const selectedModels = [];
+    if (model1 !== "none") selectedModels.push(model1);
+    if (model2 !== "none") selectedModels.push(model2);
+    if (model3 !== "none") selectedModels.push(model3);
+    
+    if (selectedModels.length === 0) {
+      alert("Please select at least one AI model");
+      return;
+    }
+
+    // Make parallel requests to selected models
+    const requests = selectedModels.map(modelName => 
+      this.apiRequest(
         "POST",
         "",
         {
@@ -683,41 +697,62 @@ class NotionEditor {
               content: `Context:\n${context.contextText}\n\nQuestion/Text:\n${context.currentText}`,
             },
           ],
-          model: model1,
+          model: modelName,
           temperature: 0.7,
           max_tokens: 3999,
           top_p: 1,
         },
         true
-      );
+      )
+    );
 
-      if (response.choices && response.choices[0]) {
-        const aiResponse = response.choices[0].message.content;
-        
-        // Create new block for response
-        const block = document.createElement("div");
-        block.className = "block";
-        block.innerHTML = `<p><strong>AI Response:</strong></p>${marked.parse(aiResponse)}`;
-        
-        // Insert after current block
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
-        let currentBlock;
-        if (range.startContainer.nodeType === Node.TEXT_NODE) {
-          currentBlock = range.startContainer.parentElement.closest('.block');
-        } else {
-          currentBlock = range.startContainer.closest('.block');
-        }
-        
-        if (currentBlock) {
-          currentBlock.after(block);
-        } else {
-          this.editor.appendChild(block);
-        }
+    try {
+      // Get the current block where selection is
+      const selection = window.getSelection();
+      const range = selection.getRangeAt(0);
+      let currentBlock;
+      if (range.startContainer.nodeType === Node.TEXT_NODE) {
+        currentBlock = range.startContainer.parentElement.closest('.block');
+      } else {
+        currentBlock = range.startContainer.closest('.block');
       }
+
+      // Process each request
+      requests.forEach((request, index) => {
+        const modelName = selectedModels[index];
+        
+        request.then(response => {
+          if (response.choices && response.choices[0]) {
+            const aiResponse = response.choices[0].message.content;
+            
+            // Create new block for this model's response
+            const block = document.createElement("div");
+            block.className = "block";
+            block.innerHTML = `<p><strong>AI Response (${modelName}):</strong></p>${marked.parse(aiResponse)}`;
+            
+            // Find the last AI response block for this quick ask
+            let lastResponseBlock = currentBlock;
+            let nextBlock = currentBlock.nextElementSibling;
+            while (nextBlock && nextBlock.innerHTML.includes('AI Response')) {
+              lastResponseBlock = nextBlock;
+              nextBlock = nextBlock.nextElementSibling;
+            }
+            
+            // Insert after the last response block
+            if (lastResponseBlock) {
+              lastResponseBlock.after(block);
+            } else {
+              this.editor.appendChild(block);
+            }
+          }
+        }).catch(error => {
+          console.error(`Error with ${modelName} request:`, error);
+          alert(`Error getting response from ${modelName}`);
+        });
+      });
     } catch (error) {
       console.error('Quick Ask error:', error);
-      alert('Error getting AI response');
+      alert('Error getting AI responses');
     }
   }
 
