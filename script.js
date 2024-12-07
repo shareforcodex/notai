@@ -33,6 +33,7 @@ class NotionEditor {
     this.currentBlock = null;
     this.content = ""; // Store markdown content
     this.isSourceView = false;
+    this.isEditable = true;
     this.autoSaveTimeout = null;
 
     // Initialize content and check auth
@@ -99,6 +100,23 @@ class NotionEditor {
     this.content = this.htmlToMarkdown(this.editor.innerHTML);
     if (this.sourceView) {
       this.sourceView.textContent = this.content;
+    }
+  }
+
+  toggleEditable() {
+    this.isEditable = !this.isEditable;
+    this.editor.contentEditable = this.isEditable;
+    document.getElementById("noteTitle").contentEditable = this.isEditable;
+    
+    // Update button icon
+    const button = document.getElementById("toggleEditableBtn");
+    const icon = button.querySelector("i");
+    if (this.isEditable) {
+      icon.className = "fas fa-lock-open";
+      button.title = "Lock Editor";
+    } else {
+      icon.className = "fas fa-lock";
+      button.title = "Unlock Editor";
     }
   }
 
@@ -681,6 +699,11 @@ class NotionEditor {
     // View source button
     document.getElementById("viewSourceBtn").addEventListener("click", () => {
       this.toggleSourceView();
+    });
+
+    // Toggle editable button
+    document.getElementById("toggleEditableBtn").addEventListener("click", () => {
+      this.toggleEditable();
     });
 
     // Save button
