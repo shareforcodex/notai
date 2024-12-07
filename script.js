@@ -463,18 +463,18 @@ class NotionEditor {
     }
 
     async loadFolderContents(folderId, folderElement) {
-        // Toggle folder open/closed state
+        // Toggle folder open/closed state without removing content
         folderElement.classList.toggle('open');
         
-        // Remove existing content container if it exists
-        const existingContent = folderElement.nextElementSibling;
-        if (existingContent && existingContent.classList.contains('folder-contents')) {
-            existingContent.remove();
+        // Check if content already exists
+        let contentContainer = folderElement.nextElementSibling;
+        if (contentContainer && contentContainer.classList.contains('folder-contents')) {
+            contentContainer.style.display = contentContainer.style.display === 'none' ? 'block' : 'none';
             return;
         }
 
         // Create container for folder contents
-        const contentContainer = document.createElement('div');
+        contentContainer = document.createElement('div');
         contentContainer.className = 'folder-contents';
         
         // Load sub-folders
