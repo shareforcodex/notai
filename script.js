@@ -232,11 +232,16 @@ class NotionEditor {
       )
     );
 
-    const responses = await Promise.all(requests);
+    try {
+      const responses = await Promise.all(requests);
 
-    // Get the current block where selection is
-    const selection = window.getSelection();
-    const currentBlock = selection.anchorNode.parentElement.closest(".block");
+      // Hide AI toolbar after getting response
+      this.aiToolbar.style.display = 'none';
+      this.aiToolbar.classList.remove("visible");
+
+      // Get the current block where selection is  
+      const selection = window.getSelection();
+      const currentBlock = selection.anchorNode.parentElement.closest(".block");
     
     // Create blocks or comments for responses in reverse order
     responses.reverse().forEach((response, index) => {
@@ -252,6 +257,9 @@ class NotionEditor {
           span.className = "commented-text";
           span.setAttribute("data-comment", `AI ${action} (${modelName}): ${aiResponse}`);
           range.surroundContents(span);
+          
+          // Show comment tooltip immediately
+          this.showCommentTooltip(span, `AI ${action} (${modelName}): ${aiResponse}`);
         } else {
           // Create a new block for longer text selections
           const block = document.createElement("div");
