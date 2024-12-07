@@ -142,30 +142,56 @@ class NotionEditor {
         break;
     }
 
-    const response = await this.apiRequest('POST', '', {
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a helpful assistant.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      model: 'gpt-4o-mini',
-      temperature: 0.7,
-      max_tokens: 8000,
-      top_p: 1
-    }, true);
+    const selectedModel = document.getElementById('aiModelSelect').value;
+    
+    // Make parallel requests to both models
+    const requests = [
+      this.apiRequest('POST', '', {
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        model: selectedModel,
+        temperature: 0.7,
+        max_tokens: 8000,
+        top_p: 1
+      }, true),
+      this.apiRequest('POST', '', {
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        model: 'gpt-4o-mini', // Always include mini model for comparison
+        temperature: 0.7,
+        max_tokens: 8000,
+        top_p: 1
+      }, true)
+    ];
 
-    if (response.choices && response.choices[0]) {
-      const aiResponse = response.choices[0].message.content;
+    const responses = await Promise.all(requests);
+    
+    // Create blocks for both responses
+    responses.forEach((response, index) => {
+      if (response.choices && response.choices[0]) {
+        const modelName = index === 0 ? selectedModel : 'gpt-4o-mini';
+        const aiResponse = response.choices[0].message.content;
       
       // Create a new block with the AI response
-      const block = document.createElement('div');
-      block.className = 'block';
-      block.innerHTML = `<p><strong>AI ${action}:</strong> ${aiResponse}</p>`;
+        const block = document.createElement('div');
+        block.className = 'block';
+        block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong> ${aiResponse}</p>`;
       
       // Insert after the current block
       const currentBlock = window.getSelection().anchorNode.parentElement.closest('.block');

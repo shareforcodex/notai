@@ -469,6 +469,20 @@ body {
     background: #f0f0f0;
 }
 
+.ai-model-select {
+    padding: 4px 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: white;
+    font-size: 12px;
+    color: #333;
+    margin-right: 4px;
+}
+
+.ai-model-select:hover {
+    background: #f0f0f0;
+}
+
 .ai-toolbar.visible {
     display: flex;
     gap: 4px;
