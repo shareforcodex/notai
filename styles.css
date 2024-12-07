@@ -505,3 +505,9 @@ body {
     display: flex;
     gap: 4px;
 }
+
+.ai-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
