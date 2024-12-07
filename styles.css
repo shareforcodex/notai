@@ -755,3 +755,32 @@ body {
     min-height: 60px;
     font-family: inherit;
 }
+
+.quick-ask-btn {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    background: #2ecc71;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.quick-ask-btn:hover {
+    background: #27ae60;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.quick-ask-btn i {
+    font-size: 16px;
+}

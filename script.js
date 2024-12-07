@@ -618,7 +618,106 @@ class NotionEditor {
     }
   }
 
+  // Get text from current block and context above it
+  getBlockContext() {
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+    let currentBlock = range.startContainer.closest('.block') || 
+                      range.startContainer.parentElement.closest('.block');
+    
+    if (!currentBlock) {
+      // If no block is selected, get the last block
+      const blocks = this.editor.querySelectorAll('.block');
+      currentBlock = blocks[blocks.length - 1];
+    }
+
+    if (!currentBlock) {
+      return null;
+    }
+
+    // Get preceding blocks for context
+    let context = [];
+    let currentElement = currentBlock;
+    let blockCount = 0;
+    
+    while (currentElement && blockCount < 3) { // Get up to 3 blocks of context
+      if (currentElement.classList && currentElement.classList.contains('block')) {
+        context.unshift(currentElement.textContent);
+        blockCount++;
+      }
+      currentElement = currentElement.previousElementSibling;
+    }
+
+    return {
+      currentText: currentBlock.textContent,
+      contextText: context.join('\n\n')
+    };
+  }
+
+  async handleQuickAsk() {
+    const context = this.getBlockContext();
+    if (!context) {
+      alert('Please select or create a block first');
+      return;
+    }
+
+    const model1 = document.getElementById("aiModelSelect1").value;
+    
+    try {
+      const response = await this.apiRequest(
+        "POST",
+        "",
+        {
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful assistant. Use the context provided to give relevant answers.",
+            },
+            {
+              role: "user",
+              content: `Context:\n${context.contextText}\n\nQuestion/Text:\n${context.currentText}`,
+            },
+          ],
+          model: model1,
+          temperature: 0.7,
+          max_tokens: 3999,
+          top_p: 1,
+        },
+        true
+      );
+
+      if (response.choices && response.choices[0]) {
+        const aiResponse = response.choices[0].message.content;
+        
+        // Create new block for response
+        const block = document.createElement("div");
+        block.className = "block";
+        block.innerHTML = `<p><strong>AI Response:</strong></p>${marked.parse(aiResponse)}`;
+        
+        // Insert after current block
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        const currentBlock = range.startContainer.closest('.block') || 
+                           range.startContainer.parentElement.closest('.block');
+        
+        if (currentBlock) {
+          currentBlock.after(block);
+        } else {
+          this.editor.appendChild(block);
+        }
+      }
+    } catch (error) {
+      console.error('Quick Ask error:', error);
+      alert('Error getting AI response');
+    }
+  }
+
   setupEventListeners() {
+    // Quick Ask button
+    document.getElementById('quickAskBtn').addEventListener('click', () => {
+      this.handleQuickAsk();
+    });
+
     // Sidebar toggle
     document
       .getElementById("toggleSidebar")
