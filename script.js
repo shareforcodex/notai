@@ -393,8 +393,8 @@ class NotionEditor {
     let currentCommentElement = null;
     let isEditing = false;
     
-    // Handle hovering over commented text
-    this.editor.addEventListener('mouseover', (e) => {
+    // Handle clicking on commented text
+    this.editor.addEventListener('click', (e) => {
       const target = e.target;
       if (target.classList.contains('commented-text')) {
         const comment = target.getAttribute('data-comment');
@@ -402,6 +402,11 @@ class NotionEditor {
           currentCommentElement = target;
           this.showCommentTooltip(target, comment);
         }
+      } else {
+        // Hide tooltip when clicking anywhere else
+        const tooltip = document.getElementById('commentTooltip');
+        tooltip.style.display = 'none';
+        currentCommentElement = null;
       }
     });
 
@@ -444,9 +449,6 @@ class NotionEditor {
     });
     
     // Position the tooltip
-    const rect = element.getBoundingClientRect();
-    tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
-    tooltip.style.left = `${rect.left + window.scrollX}px`;
     tooltip.style.display = 'block';
   }
 

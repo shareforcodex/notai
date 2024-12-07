@@ -664,7 +664,10 @@ body {
 }
 
 .comment-tooltip {
-    position: absolute;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     background: white;
     border: 1px solid #ddd;
     border-radius: 4px;
