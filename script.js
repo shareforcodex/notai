@@ -139,10 +139,15 @@ class NotionEditor {
       button.addEventListener("click", async () => {
         const action = button.dataset.aiAction;
         const selectedText = window.getSelection().toString().trim();
-        // Hide toolbar immediately
+        
+        // Always hide toolbar immediately
         this.aiToolbar.classList.remove("visible");
         this.aiToolbar.style.display = 'none';
-        await this.handleAIAction(action, selectedText);
+
+        // Only process action if there's selected text
+        if (selectedText) {
+          await this.handleAIAction(action, selectedText);
+        }
       });
     });
   }
