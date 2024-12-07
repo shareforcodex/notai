@@ -702,8 +702,12 @@ class NotionEditor {
         // Insert after current block
         const selection = window.getSelection();
         const range = selection.getRangeAt(0);
-        const currentBlock = range.startContainer.closest('.block') || 
-                           range.startContainer.parentElement.closest('.block');
+        let currentBlock;
+        if (range.startContainer.nodeType === Node.TEXT_NODE) {
+          currentBlock = range.startContainer.parentElement.closest('.block');
+        } else {
+          currentBlock = range.startContainer.closest('.block');
+        }
         
         if (currentBlock) {
           currentBlock.after(block);
