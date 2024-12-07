@@ -668,7 +668,7 @@ body {
     background: white;
     border: 1px solid #ddd;
     border-radius: 4px;
-    padding: 10px;
+    padding: 0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     max-width: 300px;
     z-index: 1000;
@@ -677,10 +677,38 @@ body {
     gap: 8px;
 }
 
+.tooltip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border-bottom: 1px solid #ddd;
+    background: #f5f5f5;
+    border-radius: 4px 4px 0 0;
+}
+
+.tooltip-header span {
+    font-weight: bold;
+    color: #555;
+}
+
+.tooltip-header .close-tooltip {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    padding: 2px 6px;
+}
+
+.tooltip-header .close-tooltip:hover {
+    color: #333;
+}
+
 .comment-content {
     font-size: 14px;
     color: #666;
     min-height: 20px;
+    padding: 10px;
 }
 
 .comment-actions {
