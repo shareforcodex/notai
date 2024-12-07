@@ -267,7 +267,7 @@ class NotionEditor {
               // Add this response to the comment
               const currentComment = commentedSpan.getAttribute("data-comment") || "";
               const newResponse = `[${modelName}]:\n${aiResponse}\n\n`;
-              const updatedComment = currentComment ? currentComment + '---\n' + newResponse : newResponse;
+              const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
               commentedSpan.setAttribute("data-comment", updatedComment);
 
               // Update tooltip if it's visible
