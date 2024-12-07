@@ -142,10 +142,17 @@ class NotionEditor {
         break;
     }
 
-    const selectedModel = document.getElementById("aiModelSelect").value;
+    const model1 = document.getElementById("aiModelSelect1").value;
+    const model2 = document.getElementById("aiModelSelect2").value;
+    
+    // Build array of selected models (excluding "none")
+    const selectedModels = [model1];
+    if (model2 !== "none") {
+      selectedModels.push(model2);
+    }
 
-    // Make parallel requests to both models
-    const requests = [
+    // Make parallel requests to selected models
+    const requests = selectedModels.map(model => 
       this.apiRequest(
         "POST",
         "",
@@ -160,35 +167,14 @@ class NotionEditor {
               content: prompt,
             },
           ],
-          model: selectedModel,
+          model: model,
           temperature: 0.7,
           max_tokens: 8000,
           top_p: 1,
         },
         true
-      ),
-      this.apiRequest(
-        "POST",
-        "",
-        {
-          messages: [
-            {
-              role: "system",
-              content: "You are a helpful assistant.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          model: "gpt-4o-mini", // Always include mini model for comparison
-          temperature: 0.7,
-          max_tokens: 8000,
-          top_p: 1,
-        },
-        true
-      ),
-    ];
+      )
+    );
 
     const responses = await Promise.all(requests);
 
