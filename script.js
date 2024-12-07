@@ -758,13 +758,12 @@ class NotionEditor {
   }
 
   setupEventListeners() {
-    // Quick Ask button
-    const quickAskBtn = document.getElementById('quickAskBtn');
-    if (quickAskBtn) {
-      quickAskBtn.addEventListener('click', () => {
+    // Quick Ask button 
+    document.querySelectorAll('#quickAskBtn').forEach(btn => {
+      btn.addEventListener('click', () => {
         this.handleQuickAsk();
-      });
-    }
+      }); 
+    });
 
     // Sidebar toggle
     document
