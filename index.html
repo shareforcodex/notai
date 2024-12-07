@@ -96,37 +96,33 @@
             </div>
             <div id="sourceView" class="editor source-view" style="display: none;" contenteditable="false"></div>
             <div id="aiToolbar" class="ai-toolbar">
-                <div class="ai-model-selects">
-                    <select id="aiModelSelect1" class="ai-model-select">
-                        <option value="gpt-4o">GPT-4O</option>
-                        <option value="gpt-4o-mini">GPT-4O Mini</option>
-                        <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B</option>
-                        <option value="Llama-3.2-90B-Vision-Instruct">Llama 3.2 90B</option>
-                        <option value="Mistral-large">Mistral Large</option>
-                    </select>
-                    <select id="aiModelSelect2" class="ai-model-select">
-                        <option value="none">No Second Model</option>
-                        <option value="gpt-4o">GPT-4O</option>
-                        <option value="gpt-4o-mini">GPT-4O Mini</option>
-                        <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B</option>
-                        <option value="Mistral-large">Mistral Large</option>
-                    </select>
-                    <select id="aiModelSelect3" class="ai-model-select">
-                        <option value="none">No Third Model</option>
-                        <option value="gpt-4o">GPT-4O</option>
-                        <option value="gpt-4o-mini">GPT-4O Mini</option>
-                        <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B</option>
-                        <option value="Mistral-large">Mistral Large</option>
-                    </select>
-                </div>
-                <div class="ai-actions">
-                    <div>
+                <div class="ai-toolbar-content">
+                    <div class="ai-model-selects">
+                        <select id="aiModelSelect1" class="ai-model-select">
+                            <option value="gpt-4o">GPT-4O</option>
+                            <option value="gpt-4o-mini">GPT-4O Mini</option>
+                            <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B</option>
+                            <option value="Llama-3.2-90B-Vision-Instruct">Llama 3.2 90B</option>
+                            <option value="Mistral-large">Mistral Large</option>
+                        </select>
+                        <select id="aiModelSelect2" class="ai-model-select">
+                            <option value="none">No Second Model</option>
+                            <option value="gpt-4o">GPT-4O</option>
+                            <option value="gpt-4o-mini">GPT-4O Mini</option>
+                            <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B</option>
+                            <option value="Mistral-large">Mistral Large</option>
+                        </select>
+                        <select id="aiModelSelect3" class="ai-model-select">
+                            <option value="none">No Third Model</option>
+                            <option value="gpt-4o">GPT-4O</option>
+                            <option value="gpt-4o-mini">GPT-4O Mini</option>
+                            <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B</option>
+                            <option value="Mistral-large">Mistral Large</option>
+                        </select>
+                    </div>
+                    <div class="ai-actions">
                         <button data-ai-action="ask"><i class="fas fa-question-circle"></i> Ask</button>
-                    </div>
-                    <div>
                         <button data-ai-action="correct"><i class="fas fa-check-circle"></i> Correct</button>
-                    </div>
-                    <div>
                         <button data-ai-action="translate"><i class="fas fa-language"></i> Translate</button>
                     </div>
                 </div>
