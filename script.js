@@ -258,13 +258,29 @@ class NotionEditor {
           // Create a comment for short text selections
           const selection = window.getSelection();
           const range = selection.getRangeAt(0);
+
+          // Get the text being commented on
+          const commentedText = range.toString();
+        
+          // Create a span for all responses
           const span = document.createElement("span");
           span.className = "commented-text";
-          span.setAttribute("data-comment", `AI ${action} (${modelName}): ${aiResponse}`);
+        
+          // Build combined comment text with each model's response
+          let combinedComment = "";
+          const modelResponses = responses.map((resp, i) => {
+            const mName = selectedModels[selectedModels.length - 1 - i];
+            const mResponse = resp.choices[0].message.content;
+            return `[${mName}]:\n${mResponse}\n\n`;
+          });
+          combinedComment = modelResponses.join('---\n');
+        
+          // Set the comment and wrap the selection
+          span.setAttribute("data-comment", combinedComment);
           range.surroundContents(span);
-          
-          // Show comment tooltip immediately
-          this.showCommentTooltip(span, `AI ${action} (${modelName}): ${aiResponse}`);
+        
+          // Show comment tooltip immediately  
+          this.showCommentTooltip(span, combinedComment);
         } else {
           // Create a new block for longer text selections
           const block = document.createElement("div");
