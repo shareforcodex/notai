@@ -102,10 +102,28 @@ class NotionEditor {
       .getElementById("newPageBtn")
       .addEventListener("click", () => this.createNewNote());
 
-    // New folder button
+    // New folder button and related events
     document
       .getElementById("newFolderBtn")
+      .addEventListener("click", () => this.showNewFolderInput());
+    
+    document
+      .getElementById("createFolderBtn")
       .addEventListener("click", () => this.createFolder());
+    
+    document
+      .getElementById("cancelFolderBtn")
+      .addEventListener("click", () => this.hideNewFolderInput());
+    
+    document
+      .getElementById("newFolderInput")
+      .addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          this.createFolder();
+        } else if (e.key === "Escape") {
+          this.hideNewFolderInput();
+        }
+      });
 
     // Media insert buttons
     document
@@ -336,9 +354,27 @@ class NotionEditor {
     }
   }
 
+  showNewFolderInput() {
+    const inputContainer = document.querySelector('.folder-input-container');
+    const input = document.getElementById('newFolderInput');
+    inputContainer.style.display = 'flex';
+    input.value = '';
+    input.focus();
+  }
+
+  hideNewFolderInput() {
+    const inputContainer = document.querySelector('.folder-input-container');
+    inputContainer.style.display = 'none';
+  }
+
   async createFolder() {
-    const folderName = prompt("Enter folder name:");
-    if (!folderName) return;
+    const input = document.getElementById('newFolderInput');
+    const folderName = input.value.trim();
+    
+    if (!folderName) {
+      alert("Please enter a folder name");
+      return;
+    }
 
     const result = await this.apiRequest("POST", "/folders", {
       folder_id: Date.now() + folderName + Math.random(),
@@ -346,6 +382,7 @@ class NotionEditor {
     });
 
     if (result.success) {
+      this.hideNewFolderInput();
       await this.loadFolders();
     } else {
       alert("Failed to create folder: " + (result.error || "Unknown error"));
@@ -442,13 +479,14 @@ class NotionEditor {
     }
   }
 
-  async loadNote(noteId) {
-    const note = await this.apiRequest("GET", `/notes/${noteId}`);
+  async loadNote(note_id) {
+    const note = await this.apiRequest("GET", `/notes/${note_id}`);
     if (note && !note.error) {
       this.editor.innerHTML = note.content || "";
       this.updateContent();
       // Update the current note ID
-      this.currentNoteId = noteId;
+      this.currentNoteId = note_id;
+      this.currentNoteTitle = note.title; // Store the title for later use
     } else {
       console.error("Failed to load note:", note.error);
     }
@@ -458,11 +496,12 @@ class NotionEditor {
     const title = prompt("Enter note title:");
     if (!title) return;
 
+    const noteId = title + "_" + currentUser.userId + "_" + Date.now();
     const result = await this.apiRequest("POST", "/notes", {
-      title,
+      note_id: noteId,
+      title: title,
       content: "<p>Start writing here...</p>",
-      folder_id: folderId,
-      note_id: title + currentUser.userId + Date.now(),
+      folder_id: folderId || "1733485657799jj0.5911120915160637" // Use default folder if none provided
     });
 
     if (result.success) {
@@ -500,7 +539,9 @@ class NotionEditor {
 
     try {
       const result = await this.apiRequest("PUT", `/notes/${this.currentNoteId}`, {
-        content: this.editor.innerHTML
+        note_id: this.currentNoteId,
+        content: this.editor.innerHTML,
+        title: this.currentNoteTitle
       });
 
       if (result.success) {

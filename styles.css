@@ -58,6 +58,36 @@ body {
 .sidebar-actions {
     display: flex;
     gap: 5px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.folder-input-container {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+.folder-input-container input {
+    flex: 1;
+    padding: 4px 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.folder-input-container button {
+    padding: 4px 8px;
+    background: none;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.folder-input-container button:hover {
+    background-color: #f0f0f0;
 }
 
 .folder-item {
