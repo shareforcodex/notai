@@ -151,6 +151,11 @@ class NotionEditor {
       this.toggleSourceView();
     });
 
+    // Save button
+    document.getElementById("saveNoteBtn").addEventListener("click", () => {
+      this.saveNote();
+    });
+
     // Handle keyboard shortcuts
     this.editor.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -487,12 +492,26 @@ class NotionEditor {
     }
   }
 
-  async saveNote(title, content) {
-    return await this.apiRequest("POST", "/notes", {
-      title,
-      content,
-      folder_id: null, // Optional: implement folder support later
-    });
+  async saveNote() {
+    if (!this.currentNoteId) {
+      alert("No note is currently open");
+      return;
+    }
+
+    try {
+      const result = await this.apiRequest("PUT", `/notes/${this.currentNoteId}`, {
+        content: this.editor.innerHTML
+      });
+
+      if (result.success) {
+        alert("Note saved successfully!");
+      } else {
+        alert("Failed to save note: " + (result.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+      alert("Error saving note");
+    }
   }
 
   clearNotes() {
