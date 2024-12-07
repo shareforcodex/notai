@@ -144,11 +144,17 @@ class NotionEditor {
 
     const model1 = document.getElementById("aiModelSelect1").value;
     const model2 = document.getElementById("aiModelSelect2").value;
+    const model3 = document.getElementById("aiModelSelect3").value;
     
     // Build array of selected models (excluding "none")
-    const selectedModels = [model1];
-    if (model2 !== "none") {
-      selectedModels.push(model2);
+    const selectedModels = [];
+    if (model1 !== "none") selectedModels.push(model1);
+    if (model2 !== "none") selectedModels.push(model2);
+    if (model3 !== "none") selectedModels.push(model3);
+    
+    if (selectedModels.length === 0) {
+      alert("Please select at least one AI model");
+      return;
     }
 
     // Make parallel requests to selected models

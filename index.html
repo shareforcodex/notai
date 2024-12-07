@@ -111,11 +111,24 @@
                         <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B</option>
                         <option value="Mistral-large">Mistral Large</option>
                     </select>
+                    <select id="aiModelSelect3" class="ai-model-select">
+                        <option value="none">No Third Model</option>
+                        <option value="gpt-4o">GPT-4O</option>
+                        <option value="gpt-4o-mini">GPT-4O Mini</option>
+                        <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B</option>
+                        <option value="Mistral-large">Mistral Large</option>
+                    </select>
                 </div>
                 <div class="ai-actions">
-                    <button data-ai-action="ask"><i class="fas fa-question-circle"></i> Ask</button>
-                    <button data-ai-action="correct"><i class="fas fa-check-circle"></i> Correct</button>
-                    <button data-ai-action="translate"><i class="fas fa-language"></i> Translate</button>
+                    <div>
+                        <button data-ai-action="ask"><i class="fas fa-question-circle"></i> Ask</button>
+                    </div>
+                    <div>
+                        <button data-ai-action="correct"><i class="fas fa-check-circle"></i> Correct</button>
+                    </div>
+                    <div>
+                        <button data-ai-action="translate"><i class="fas fa-language"></i> Translate</button>
+                    </div>
                 </div>
             </div>
         </div>
