@@ -339,6 +339,10 @@ class NotionEditor {
             )
         );
 
+        // Keep track of completed responses
+        let completedResponses = 0;
+        const totalResponses = selectedModels.length;
+
         // Process each request as it completes
         requests.forEach((request, index) => {
             const modelName = selectedModels[index];
@@ -363,12 +367,12 @@ class NotionEditor {
                         // Create a new block for longer responses
                         const block = document.createElement("div");
                         block.className = "block";
-                        block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong></p>${marked.parse(aiResponse)}`;
+                        block.innerHTML = `<h2>AI ${action} (${modelName})</h2>\n\n${marked.parse(aiResponse)}\n\n`;
 
                         // Find the last related AI response block
                         let lastRelatedBlock = currentBlock;
                         let nextBlock = currentBlock ? currentBlock.nextElementSibling : null;
-                        while (nextBlock && nextBlock.innerHTML.includes(`<strong>AI ${action}`)) {
+                        while (nextBlock && nextBlock.querySelector('h2')?.textContent.includes(`AI ${action}`)) {
                             lastRelatedBlock = nextBlock;
                             nextBlock = nextBlock.nextElementSibling;
                         }
@@ -380,9 +384,22 @@ class NotionEditor {
                             this.editor.appendChild(block);
                         }
                     }
+
+                    // Increment completed responses counter
+                    completedResponses++;
+
+                    // If all responses are complete, save the note
+                    if (completedResponses === totalResponses) {
+                        this.saveNote(true);
+                    }
                 }
             }).catch(error => {
                 console.error(`Error with ${modelName} request:`, error);
+                // Still increment counter even if there's an error
+                completedResponses++;
+                if (completedResponses === totalResponses) {
+                    this.saveNote(true);
+                }
             });
         });
     } catch(e) {
@@ -681,7 +698,7 @@ class NotionEditor {
     }
   }
 
-  // Get text from current block and context above it
+  // Get text from current block and all context above it
   getBlockContext() {
     const selection = window.getSelection();
     const range = selection.getRangeAt(0);
@@ -694,31 +711,33 @@ class NotionEditor {
     let currentBlock = startElement.closest('.block');
     
     if (!currentBlock) {
-      // If no block is selected, get the last block
-      const blocks = this.editor.querySelectorAll('.block');
-      currentBlock = blocks[blocks.length - 1];
+        // If no block is selected, get the last block
+        const blocks = this.editor.querySelectorAll('.block');
+        currentBlock = blocks[blocks.length - 1];
     }
 
     if (!currentBlock) {
-      return null;
+        return null;
     }
 
-    // Get preceding blocks for context
+    // Get all preceding text for context
     let context = [];
-    let currentElement = currentBlock;
-    let blockCount = 0;
+    let allBlocks = Array.from(this.editor.querySelectorAll('.block'));
+    let currentBlockIndex = allBlocks.indexOf(currentBlock);
     
-    while (currentElement && blockCount < 3) { // Get up to 3 blocks of context
-      if (currentElement.classList && currentElement.classList.contains('block')) {
-        context.unshift(currentElement.textContent);
-        blockCount++;
-      }
-      currentElement = currentElement.previousElementSibling;
+    // Get all blocks up to the current one
+    for (let i = 0; i <= currentBlockIndex; i++) {
+        const block = allBlocks[i];
+        // Skip empty blocks and only include text content
+        const blockText = block.textContent.trim();
+        if (blockText) {
+            context.push(blockText);
+        }
     }
 
     return {
-      currentText: currentBlock.textContent,
-      contextText: context.join('\n\n')
+        currentText: currentBlock.textContent.trim(),
+        contextText: context.join('\n\n')
     };
   }
 
@@ -789,17 +808,17 @@ class NotionEditor {
           if (response.choices && response.choices[0]) {
             const aiResponse = response.choices[0].message.content;
             
-            // Create new block for this model's response
+            // Create new block for this model's response with h2 header
             const block = document.createElement("div");
             block.className = "block";
-            block.innerHTML = `<p><strong>AI Response (${modelName}):</strong></p>${marked.parse(aiResponse)}`;
+            block.innerHTML = `<h2>AI Response (${modelName})</h2>\n\n${marked.parse(aiResponse)}\n\n`;
             
             // Find the last AI response block for this quick ask
             let lastResponseBlock = currentBlock;
             let nextBlock = currentBlock.nextElementSibling;
-            while (nextBlock && nextBlock.innerHTML.includes('AI Response')) {
-              lastResponseBlock = nextBlock;
-              nextBlock = nextBlock.nextElementSibling;
+            while (nextBlock && nextBlock.querySelector('h2')?.textContent.includes('AI Response')) {
+                lastResponseBlock = nextBlock;
+                nextBlock = nextBlock.nextElementSibling;
             }
             
             // Insert after the last response block
@@ -1145,32 +1164,32 @@ class NotionEditor {
 
   async checkAuthAndLoadNotes() {
     if (currentUser.userId && currentUser.credentials) {
-      const notes = await this.apiRequest("GET", "/notes");
-      if (!notes.error) {
-        // Check for default note
-        const defaultNote = notes.find((note) => note.title === "default_note");
-        if (!defaultNote) {
-          // Create default note if it doesn't exist
-          const result = await this.apiRequest("POST", "/notes", {
-            note_id: "default_note_" + currentUser.userId,
-            title: "default_note",
-            content: "<p>Welcome to your default note!</p>",
-            folder_id: "1733485657799jj0.5911120915160637",
-          });
-          if (result.success) {
-            await this.loadNotes();
-            await this.loadNote("default_note_" + currentUser.userId);
-          }
+        const notes = await this.apiRequest("GET", `/folders/1733485657799jj0.5911120915160637/notes`);
+        if (!notes.error) {
+            // Check for default note
+            const defaultNote = notes.find((note) => note.title === "default_note");
+            if (!defaultNote) {
+                // Create default note if it doesn't exist
+                const result = await this.apiRequest("POST", "/notes", {
+                    note_id: "default_note_" + currentUser.userId,
+                    title: "default_note",
+                    content: "<p>Welcome to your default note!</p>",
+                    folder_id: "1733485657799jj0.5911120915160637",
+                });
+                if (result.success) {
+                    await this.loadNotes();  // Will load notes from default folder
+                    await this.loadNote("default_note_" + currentUser.userId);
+                }
+            } else {
+                // Load notes from default folder and then load the default note
+                await this.loadNotes();
+                await this.loadNote(defaultNote.note_id);
+            }
         } else {
-          // Load notes and then load the default note
-          await this.loadNotes();
-          await this.loadNote(defaultNote.note_id);
+            this.logout();
         }
-      } else {
-        this.logout();
-      }
     } else {
-      this.logout();
+        this.logout();
     }
   }
 
@@ -1283,19 +1302,23 @@ class NotionEditor {
     }
   }
 
-  async loadNotes(folderId = null) {
-    const endpoint = folderId ? `/folders/${folderId}/notes` : "/notes";
+  async loadNotes(folderId = "1733485657799jj0.5911120915160637") {  // Set default folder ID
+    const endpoint = `/folders/${folderId}/notes`;  // Always use folder-specific endpoint
     const notes = await this.apiRequest("GET", endpoint);
+    
     if (Array.isArray(notes)) {
-      const pagesList = document.getElementById("pagesList");
-      pagesList.innerHTML = "";
-      notes.forEach((note) => {
-        const noteElement = document.createElement("div");
-        noteElement.className = "page-item";
-        noteElement.textContent = note.title || "Untitled Note";
-        noteElement.onclick = () => this.loadNote(note.note_id);
-        pagesList.appendChild(noteElement);
-      });
+        const pagesList = document.getElementById("pagesList");
+        pagesList.innerHTML = "";
+        notes.forEach((note) => {
+            // Only show notes that belong to this folder
+            if (note.folder_id === folderId) {
+                const noteElement = document.createElement("div");
+                noteElement.className = "page-item";
+                noteElement.textContent = note.title || "Untitled Note";
+                noteElement.onclick = () => this.loadNote(note.note_id);
+                pagesList.appendChild(noteElement);
+            }
+        });
     }
   }
 

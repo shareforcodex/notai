@@ -379,7 +379,7 @@ body {
 
 .editor {
     flex: 1;
-    padding: 20px;
+    padding: 40px;
     overflow-y: auto;
     background-color: #fff;
 }
@@ -889,4 +889,16 @@ body {
 
 .model-options button:hover {
     background: #f0f0f0;
+}
+
+.editor:focus {
+    outline: none;
+}
+
+.editor:focus-visible {
+    outline: none;
+}
+
+[contenteditable]:focus {
+    outline: none;
 }
