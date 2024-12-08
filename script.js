@@ -240,24 +240,41 @@ class NotionEditor {
     
     // Create the handler
     this.selectionChangeHandler = () => {
-      const selection = window.getSelection();
-      if (!selection.isCollapsed && selection.toString().trim()) {
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-
-        // Position the toolbar below the selection
-        const toolbarWidth = this.aiToolbar.offsetWidth;
-        const windowWidth = window.innerWidth;
-        const leftPosition = Math.min(60, windowWidth - toolbarWidth - 20);
-        
-        this.aiToolbar.style.display = 'block';
-        this.aiToolbar.style.top = `${rect.bottom + window.scrollY + 10}px`;
-        this.aiToolbar.style.left = `${leftPosition}px`;
-      } else {
-        // Hide toolbar completely when no selection
-        this.aiToolbar.style.display = 'none';
-        this.aiToolbar.classList.remove("visible");
-      }
+        const selection = window.getSelection();
+        if (!selection.isCollapsed && selection.toString().trim()) {
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            
+            // Get toolbar dimensions
+            const toolbarWidth = this.aiToolbar.offsetWidth || 300; // Fallback width if not yet rendered
+            const toolbarHeight = this.aiToolbar.offsetHeight || 150; // Fallback height
+            
+            // Calculate initial position - center the toolbar on the selection
+            let leftPosition = rect.left + (rect.width / 2) - (toolbarWidth / 2);
+            let topPosition = rect.bottom + window.scrollY + 30;  // 30px below pointer
+            
+            // Ensure left position stays within window bounds
+            const maxLeft = window.innerWidth - toolbarWidth - 20; // 20px padding from right
+            const minLeft = 20; // 20px padding from left
+            
+            // Clamp the position between min and max bounds
+            leftPosition = Math.min(Math.max(leftPosition, minLeft), maxLeft);
+            
+            // Check bottom boundary
+            if (topPosition + toolbarHeight > window.innerHeight + window.scrollY) {
+                // Place above the selection if it would overflow bottom
+                topPosition = rect.top + window.scrollY - toolbarHeight - 10;
+            }
+            
+            // Apply the position
+            this.aiToolbar.style.display = 'block';
+            this.aiToolbar.style.top = `${topPosition}px`;
+            this.aiToolbar.style.left = `${leftPosition}px`;
+        } else {
+            // Hide toolbar completely when no selection
+            this.aiToolbar.style.display = 'none';
+            this.aiToolbar.classList.remove("visible");
+        }
     };
 
     // Add the listener
@@ -348,6 +365,19 @@ class NotionEditor {
             const modelName = selectedModels[index];
             
             request.then(response => {
+                if (response.error) {
+                    // Handle rate limit or other API errors
+                    const errorMessage = response.error.code === "RateLimitReached" 
+                        ? `Rate limit reached for ${modelName}. Please try again later.`
+                        : `Error with ${modelName}: ${response.error.message || 'Unknown error'}`;
+                    this.showToast(errorMessage);
+                    completedResponses++;
+                    if (completedResponses === totalResponses) {
+                        this.saveNote(true);
+                    }
+                    return;
+                }
+
                 if (response.choices && response.choices[0]) {
                     const aiResponse = response.choices[0].message.content;
 
@@ -395,7 +425,7 @@ class NotionEditor {
                 }
             }).catch(error => {
                 console.error(`Error with ${modelName} request:`, error);
-                // Still increment counter even if there's an error
+                this.showToast(`Error with ${modelName}: ${error.message || 'Network error'}`);
                 completedResponses++;
                 if (completedResponses === totalResponses) {
                     this.saveNote(true);
@@ -805,6 +835,15 @@ class NotionEditor {
         const modelName = selectedModels[index];
         
         request.then(response => {
+          if (response.error) {
+            // Handle rate limit or other API errors
+            const errorMessage = response.error.code === "RateLimitReached" 
+                ? `Rate limit reached for ${modelName}. Please try again later.`
+                : `Error with ${modelName}: ${response.error.message || 'Unknown error'}`;
+            this.showToast(errorMessage);
+            return;
+          }
+
           if (response.choices && response.choices[0]) {
             const aiResponse = response.choices[0].message.content;
             
@@ -830,12 +869,12 @@ class NotionEditor {
           }
         }).catch(error => {
           console.error(`Error with ${modelName} request:`, error);
-          alert(`Error getting response from ${modelName}`);
+          this.showToast(`Error with ${modelName}: ${error.message || 'Network error'}`);
         });
       });
     } catch (error) {
       console.error('Quick Ask error:', error);
-      alert('Error getting AI responses');
+      this.showToast('Error getting AI responses');
     }
   }
 
@@ -958,6 +997,11 @@ class NotionEditor {
       }
       if (e.key === "/" && !e.shiftKey) {
         this.showBlockMenu(e);
+      }
+      // Add Ctrl+Enter handler for quick ask
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();  // Prevent default behavior
+        this.handleQuickAsk();
       }
     });
 
@@ -1590,6 +1634,34 @@ class NotionEditor {
 
     // Clear the selection
     selection.removeAllRanges();
+  }
+
+  showToast(message, type = 'error') {
+    const toastContainer = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    toast.innerHTML = `
+        <div class="toast-message">${message}</div>
+        <button class="toast-close"><i class="fas fa-times"></i></button>
+    `;
+    
+    // Add to container
+    toastContainer.appendChild(toast);
+    
+    // Handle close button
+    const closeBtn = toast.querySelector('.toast-close');
+    const closeToast = () => {
+        toast.style.animation = 'slideOut 0.3s ease-out forwards';
+        setTimeout(() => {
+            toastContainer.removeChild(toast);
+        }, 300);
+    };
+    
+    closeBtn.addEventListener('click', closeToast);
+    
+    // Auto close after 10 seconds
+    setTimeout(closeToast, 10000);
   }
 }
 
