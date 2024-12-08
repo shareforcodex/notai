@@ -47,7 +47,7 @@ class NotionEditor {
     this.currentBlock = null;
     this.content = ""; // Store markdown content
     this.isSourceView = false;
-    this.isEditable = true;
+    this.isEditable = false;
     this.autoSaveTimeout = null;
 
     // Initialize content and check auth
@@ -150,29 +150,67 @@ class NotionEditor {
     // Load saved model preferences
     const savedModels = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
     
-    document.getElementById('aiModelSelect1').value = savedModels.model1 || 'gpt-4o';
-    document.getElementById('aiModelSelect2').value = savedModels.model2 || 'none';
-    document.getElementById('aiModelSelect3').value = savedModels.model3 || 'none';
+    // Set initial button texts and values
+    ['modelBtn1', 'modelBtn2', 'modelBtn3'].forEach((btnId, index) => {
+      const btn = document.getElementById(btnId);
+      const modelValue = savedModels[`model${index + 1}`] || (index === 0 ? 'gpt-4o' : 'none');
+      btn.textContent = this.getModelDisplayName(modelValue);
+      btn.setAttribute('data-selected-value', modelValue);
+    });
 
-    // Save model selections when changed
-    ['aiModelSelect1', 'aiModelSelect2', 'aiModelSelect3'].forEach(selectId => {
-      document.getElementById(selectId).addEventListener('change', (e) => {
-        const preferences = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
-        preferences[selectId.replace('aiModelSelect', 'model')] = e.target.value;
-        localStorage.setItem('aiModelPreferences', JSON.stringify(preferences));
+    // Handle custom dropdowns
+    document.querySelectorAll('.custom-dropdown').forEach((dropdown, index) => {
+      const btn = dropdown.querySelector('.model-select-btn');
+      const options = dropdown.querySelector('.model-options');
+      
+      // Toggle dropdown
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Close all other dropdowns
+        document.querySelectorAll('.model-options').forEach(opt => {
+          if (opt !== options) opt.classList.remove('show');
+        });
+        options.classList.toggle('show');
       });
+
+      // Handle option selection
+      options.querySelectorAll('button').forEach(option => {
+        option.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const value = option.dataset.value;
+          const displayName = option.textContent;
+          btn.textContent = displayName;
+          btn.setAttribute('data-selected-value', value);
+          options.classList.remove('show');
+
+          // Save preference
+          const preferences = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
+          preferences[`model${index + 1}`] = value;
+          localStorage.setItem('aiModelPreferences', JSON.stringify(preferences));
+        });
+      });
+    });
+
+    // Close dropdowns when clicking outside, but not the AI toolbar itself
+    document.addEventListener('click', (e) => {
+      // Don't close if clicking inside the AI toolbar
+      if (!this.aiToolbar.contains(e.target)) {
+        document.querySelectorAll('.model-options').forEach(opt => {
+          opt.classList.remove('show');
+        });
+      }
     });
 
     // Handle selection changes
     this.setupSelectionHandler();
 
     // Handle AI action buttons
-    this.aiToolbar.querySelectorAll("button").forEach((button) => {
+    this.aiToolbar.querySelectorAll("button[data-ai-action]").forEach((button) => {
       button.addEventListener("click", async () => {
         const action = button.dataset.aiAction;
         const selectedText = window.getSelection().toString().trim();
         
-        // Always hide toolbar immediately
+        // Hide toolbar only when clicking action buttons
         this.aiToolbar.style.display = 'none';
 
         // Only process action if there's selected text
@@ -181,6 +219,19 @@ class NotionEditor {
         }
       });
     });
+  }
+
+  // Helper function to get display name for model
+  getModelDisplayName(value) {
+    const modelNames = {
+        'gpt-4o': 'GPT-4O',
+        'gpt-4o-mini': 'GPT-4O Mini',
+        'Meta-Llama-3.1-405B-Instruct': 'Llama 3.1 405B',
+        'Llama-3.2-90B-Vision-Instruct': 'Llama 3.2 90B',
+        'Mistral-large': 'Mistral Large',
+        'none': 'No Model'
+    };
+    return modelNames[value] || value;
   }
 
   setupSelectionHandler() {
@@ -220,18 +271,19 @@ class NotionEditor {
 
     let prompt = "";
     if (this.aiSettings.prompts[action]) {
-      prompt = this.aiSettings.prompts[action].replace('{text}', text);
+        prompt = this.aiSettings.prompts[action].replace('{text}', text);
     } else {
-      // Handle custom tools
-      const customTool = this.aiSettings.customTools.find(tool => tool.id === action);
-      if (customTool) {
-        prompt = customTool.prompt.replace('{text}', text);
-      }
+        // Handle custom tools
+        const customTool = this.aiSettings.customTools.find(tool => tool.id === action);
+        if (customTool) {
+            prompt = customTool.prompt.replace('{text}', text);
+        }
     }
 
-    const model1 = document.getElementById("aiModelSelect1").value;
-    const model2 = document.getElementById("aiModelSelect2").value;
-    const model3 = document.getElementById("aiModelSelect3").value;
+    // Get selected models from buttons
+    const model1 = document.getElementById("modelBtn1").getAttribute('data-selected-value') || 'gpt-4o';
+    const model2 = document.getElementById("modelBtn2").getAttribute('data-selected-value') || 'none';
+    const model3 = document.getElementById("modelBtn3").getAttribute('data-selected-value') || 'none';
     
     // Build array of selected models (excluding "none")
     const selectedModels = [];
@@ -240,105 +292,102 @@ class NotionEditor {
     if (model3 !== "none") selectedModels.push(model3);
     
     if (selectedModels.length === 0) {
-      alert("Please select at least one AI model");
-      return;
+        alert("Please select at least one AI model");
+        return;
     }
 
-    // Make parallel requests to selected models
-    const requests = selectedModels.map(modelName => 
-      this.apiRequest(
-        "POST",
-        "",
-        {
-          messages: [
-            {
-              role: "system",
-              content: "You are a helpful assistant.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          model: modelName,
-          temperature: 0.7,
-          max_tokens: 3999,
-          top_p: 1,
-        },
-        true
-      )
-    );
-
     try {
-      // Hide AI toolbar immediately
-      this.aiToolbar.style.display = 'none';
-      this.aiToolbar.classList.remove("visible");
+        // Hide AI toolbar immediately
+        this.aiToolbar.style.display = 'none';
+        this.aiToolbar.classList.remove("visible");
 
-      // Get the current block where selection is  
-      const selection = window.getSelection();
-      const currentBlock = selection.anchorNode.parentElement.closest(".block");
-      const range = selection.getRangeAt(0);
-      let commentedSpan = null;
+        // Get the current block where selection is  
+        const selection = window.getSelection();
+        const currentBlock = selection.anchorNode.parentElement.closest(".block");
+        const range = selection.getRangeAt(0);
+        let commentedSpan = null;
 
-      // Process each request as it completes
-      requests.forEach((request, index) => {
-        const modelName = selectedModels[index];
-        
-        request.then(response => {
-          if (response.choices && response.choices[0]) {
-            const aiResponse = response.choices[0].message.content;
+        if (useComment) {
+            // Create span for the selected text
+            commentedSpan = document.createElement("span");
+            commentedSpan.className = "commented-text";
+            range.surroundContents(commentedSpan);
+        }
 
-            if (useComment) {
-              if (!commentedSpan) {
-                // Create span for first response
-                commentedSpan = document.createElement("span");
-                commentedSpan.className = "commented-text";
-                range.surroundContents(commentedSpan);
-              }
+        // Make parallel requests to selected models
+        const requests = selectedModels.map(modelName => 
+            this.apiRequest(
+                "POST",
+                "",
+                {
+                    messages: [
+                        {
+                            role: "system",
+                            content: "You are a helpful assistant.",
+                        },
+                        {
+                            role: "user",
+                            content: prompt,
+                        },
+                    ],
+                    model: modelName,
+                    temperature: 0.7,
+                    max_tokens: 3999,
+                    top_p: 1,
+                },
+                true
+            )
+        );
 
-              // Add this response to the comment
-              const currentComment = commentedSpan.getAttribute("data-comment") || "";
-              const newResponse = `[${modelName}]:\n${aiResponse}\n\n`;
-              const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
-              commentedSpan.setAttribute("data-comment", updatedComment);
+        // Process each request as it completes
+        requests.forEach((request, index) => {
+            const modelName = selectedModels[index];
+            
+            request.then(response => {
+                if (response.choices && response.choices[0]) {
+                    const aiResponse = response.choices[0].message.content;
 
-              // Update tooltip if it's visible
-              const tooltip = document.getElementById('commentTooltip');
-              if (tooltip.style.display === 'block') {
-                this.showCommentTooltip(commentedSpan, updatedComment);
-              }
-            } else {
-              // Create a new block immediately after the existing one
-              const block = document.createElement("div");
-              block.className = "block";
-              block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong></p>${marked.parse(aiResponse)}`;
+                    if (useComment) {
+                        // Add this response to the comment
+                        const currentComment = commentedSpan.getAttribute("data-comment") || "";
+                        const newResponse = `[${modelName}]:\n${aiResponse}\n\n`;
+                        const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
+                        commentedSpan.setAttribute("data-comment", updatedComment);
 
-              // Find the last related AI response block
-              let lastRelatedBlock = currentBlock;
-              let nextBlock = currentBlock ? currentBlock.nextElementSibling : null;
-              while (nextBlock && nextBlock.innerHTML.includes(`<strong>AI ${action}`)) {
-                lastRelatedBlock = nextBlock;
-                nextBlock = nextBlock.nextElementSibling;
-              }
+                        // Show or update tooltip for all responses
+                        const tooltip = document.getElementById('commentTooltip');
+                        if (index === 0 || tooltip.style.display === 'block') {
+                            this.showCommentTooltip(commentedSpan, updatedComment);
+                        }
+                    } else {
+                        // Create a new block for longer responses
+                        const block = document.createElement("div");
+                        block.className = "block";
+                        block.innerHTML = `<p><strong>AI ${action} (${modelName}):</strong></p>${marked.parse(aiResponse)}`;
 
-              // Insert after the last related block
-              if (lastRelatedBlock) {
-                lastRelatedBlock.after(block);
-              } else {
-                this.editor.appendChild(block);
-              }
-            }
-          }
-        }).catch(error => {
-          console.error(`Error with ${modelName} request:`, error);
+                        // Find the last related AI response block
+                        let lastRelatedBlock = currentBlock;
+                        let nextBlock = currentBlock ? currentBlock.nextElementSibling : null;
+                        while (nextBlock && nextBlock.innerHTML.includes(`<strong>AI ${action}`)) {
+                            lastRelatedBlock = nextBlock;
+                            nextBlock = nextBlock.nextElementSibling;
+                        }
+
+                        // Insert after the last related block
+                        if (lastRelatedBlock) {
+                            lastRelatedBlock.after(block);
+                        } else {
+                            this.editor.appendChild(block);
+                        }
+                    }
+                }
+            }).catch(error => {
+                console.error(`Error with ${modelName} request:`, error);
+            });
         });
-      });
-
-    // Hide the toolbars immediately when an action is clicked
-  }
-  catch(e){
-    console.log(e);
-  }
+    } catch(e) {
+        console.error(e);
+    }
 }
 
   setupAISettings() {
@@ -680,9 +729,10 @@ class NotionEditor {
       return;
     }
 
-    const model1 = document.getElementById("aiModelSelect1").value;
-    const model2 = document.getElementById("aiModelSelect2").value;
-    const model3 = document.getElementById("aiModelSelect3").value;
+    // Get selected models from buttons
+    const model1 = document.getElementById("modelBtn1").getAttribute('data-selected-value') || 'gpt-4o';
+    const model2 = document.getElementById("modelBtn2").getAttribute('data-selected-value') || 'none';
+    const model3 = document.getElementById("modelBtn3").getAttribute('data-selected-value') || 'none';
     
     // Build array of selected models (excluding "none")
     const selectedModels = [];
@@ -891,6 +941,11 @@ class NotionEditor {
         this.showBlockMenu(e);
       }
     });
+
+    // Plain text button
+    document
+      .getElementById("plainTextBtn")
+      .addEventListener("click", () => this.convertToPlainText());
   }
 
   executeCommand(command, value = null) {
@@ -1493,6 +1548,25 @@ class NotionEditor {
       
       tocList.appendChild(tocItem);
     });
+  }
+
+  // Function to convert selected text to plain text
+  convertToPlainText() {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+    const selectedText = range.toString();
+
+    // Create a text node with the selected text
+    const textNode = document.createTextNode(selectedText);
+
+    // Replace the selected content with the plain text node
+    range.deleteContents();
+    range.insertNode(textNode);
+
+    // Clear the selection
+    selection.removeAllRanges();
   }
 }
 

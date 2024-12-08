@@ -64,11 +64,18 @@ body {
 }
 
 .folder-input-container {
+    z-index: 100;
+    position: fixed;
+    top: 50px;
+    left: 50px;
+    background: #f7f7f7;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 10px;
     display: flex;
+    align-items: center
     gap: 5px;
-    align-items: center;
     margin-bottom: 5px;
-    width: 100%;
 }
 
 .folder-input-container input {
@@ -494,7 +501,7 @@ body {
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     padding: 8px;
     display: none;
-    z-index: 1000;
+    z-index: 0;
 }
 
 .ai-toolbar-content {
@@ -827,4 +834,59 @@ body {
 
 .quick-ask-btn i {
     font-size: 20px;
+}
+
+.custom-dropdown {
+    position: relative;
+    flex: 1;
+}
+
+.model-select-btn {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: white;
+    font-size: 12px;
+    color: #333;
+    text-align: left;
+    cursor: pointer;
+}
+
+.model-select-btn:hover {
+    background: #f0f0f0;
+}
+
+.model-options {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.model-options.show {
+    display: block;
+}
+
+.model-options button {
+    width: 100%;
+    padding: 6px 8px;
+    border: none;
+    background: none;
+    font-size: 12px;
+    color: #333;
+    text-align: left;
+    cursor: pointer;
+}
+
+.model-options button:hover {
+    background: #f0f0f0;
 }
