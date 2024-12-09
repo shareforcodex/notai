@@ -1447,7 +1447,7 @@ class NotionEditor {
       // Show spinner, hide save icon
       saveIcon.style.display = "none";
       spinnerIcon.style.display = "inline-block";
-      spanText.textContent = "Saving...";
+      spanText.textContent = " ";
 
       // Get current title from the title element
       const currentTitle =
