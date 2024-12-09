@@ -136,13 +136,28 @@ class NotionEditor {
 
   toggleSourceView() {
     this.isSourceView = !this.isSourceView;
+    const sourceView = this.sourceView;
+    const editor = this.editor;
+
     if (this.isSourceView) {
-      this.updateContent();
-      this.editor.style.display = "none";
-      this.sourceView.style.display = "block";
+        // Switching to source view
+        this.updateContent();  // Convert current HTML to markdown
+        sourceView.value = editor.innerHTML;  // Show HTML source
+        editor.style.display = "none";
+        sourceView.style.display = "block";
+
+        // Add input event listener to sync changes
+        sourceView.addEventListener('input', () => {
+            editor.innerHTML = sourceView.value;
+            this.scheduleAutoSave();
+        });
     } else {
-      this.editor.style.display = "block";
-      this.sourceView.style.display = "none";
+        // Switching back to editor view
+        editor.innerHTML = sourceView.value;  // Apply source changes to editor
+        editor.style.display = "block";
+        sourceView.style.display = "none";
+        this.updateContent();  // Update markdown content
+        this.scheduleAutoSave();
     }
   }
 
@@ -319,8 +334,8 @@ class NotionEditor {
         this.aiToolbar.classList.remove("visible");
 
         // Get the current block where selection is  
-        const selection = window.getSelection();
-        const currentBlock = selection.anchorNode.parentElement.closest(".block");
+        let selection = window.getSelection();
+        let currentBlock = selection.anchorNode.parentElement.closest(".block");
         const range = selection.getRangeAt(0);
         let commentedSpan = null;
 
@@ -397,22 +412,22 @@ class NotionEditor {
                         // Create a new block for longer responses
                         const block = document.createElement("div");
                         block.className = "block";
-                        block.innerHTML = `<h2>AI ${action} (${modelName})</h2>\n\n${marked.parse(aiResponse)}\n\n`;
+                        block.innerHTML = `<h2> ${action} (${modelName})</h2>\n\n${marked.parse(aiResponse)}\n\n`;
 
-                        // Find the last related AI response block
-                        let lastRelatedBlock = currentBlock;
-                        let nextBlock = currentBlock ? currentBlock.nextElementSibling : null;
-                        while (nextBlock && nextBlock.querySelector('h2')?.textContent.includes(`AI ${action}`)) {
-                            lastRelatedBlock = nextBlock;
-                            nextBlock = nextBlock.nextElementSibling;
-                        }
+                        // Add blank line before new block
+                        const blankLine = document.createElement("div");
+                        blankLine.innerHTML = "<br>";
 
-                        // Insert after the last related block
-                        if (lastRelatedBlock) {
-                            lastRelatedBlock.after(block);
+                       
+                        // Insert blank line and block
+                        if (currentBlock) {
+                            currentBlock.after(blankLine);
+                            blankLine.after(block);
                         } else {
+                            this.editor.appendChild(blankLine);
                             this.editor.appendChild(block);
                         }
+                        currentBlock=block;
                     }
 
                     // Increment completed responses counter
@@ -852,20 +867,33 @@ class NotionEditor {
             block.className = "block";
             block.innerHTML = `<h2>AI Response (${modelName})</h2>\n\n${marked.parse(aiResponse)}\n\n`;
             
+            // Add blank line before new block
+            const blankLine = document.createElement("div");
+            blankLine.innerHTML = "<br>";
+            
             // Find the last AI response block for this quick ask
             let lastResponseBlock = currentBlock;
             let nextBlock = currentBlock.nextElementSibling;
-            while (nextBlock && nextBlock.querySelector('h2')?.textContent.includes('AI Response')) {
-                lastResponseBlock = nextBlock;
-                nextBlock = nextBlock.nextElementSibling;
-            }
             
-            // Insert after the last response block
+            // // Keep going until we find a block that's not an AI response
+            // while (nextBlock) {
+            //     if (nextBlock.querySelector('h2')?.textContent.includes('AI Response')) {
+            //         lastResponseBlock = nextBlock;
+            //         nextBlock = nextBlock.nextElementSibling;
+            //     } else {
+            //         break;
+            //     }
+            // }
+            
+            // Insert blank line and block
             if (lastResponseBlock) {
-              lastResponseBlock.after(block);
+                lastResponseBlock.after(blankLine);
+                blankLine.after(block);
             } else {
-              this.editor.appendChild(block);
+                this.editor.appendChild(blankLine);
+                this.editor.appendChild(block);
             }
+            currentBlock=nextBlock;
           }
         }).catch(error => {
           console.error(`Error with ${modelName} request:`, error);
@@ -960,6 +988,11 @@ class NotionEditor {
       document.execCommand("foreColor", false, e.target.value);
     });
 
+    // Background color
+    document.getElementById("bgColor").addEventListener("input", (e) => {
+      document.execCommand("hiliteColor", false, e.target.value);
+    });
+
     // Add block button
     document.getElementById("addBlockBtn").addEventListener("click", () => {
       this.addNewBlock();
@@ -1036,27 +1069,31 @@ class NotionEditor {
 
     // If no block found from selection, try to find last block before cursor
     if (!currentBlock) {
-      const blocks = Array.from(this.editor.querySelectorAll('.block'));
-      for (let i = blocks.length - 1; i >= 0; i--) {
-        const rect = blocks[i].getBoundingClientRect();
-        if (rect.top < range.getBoundingClientRect().top) {
-          currentBlock = blocks[i];
-          break;
+        const blocks = Array.from(this.editor.querySelectorAll('.block'));
+        for (let i = blocks.length - 1; i >= 0; i--) {
+            const rect = blocks[i].getBoundingClientRect();
+            if (rect.top < range.getBoundingClientRect().top) {
+                currentBlock = blocks[i];
+                break;
+            }
         }
-      }
     }
 
     if (currentBlock) {
-      // Insert after current block
-      currentBlock.after(block);
+        // Add blank line before new block
+        const blankLine = document.createElement("div");
+        blankLine.innerHTML = "<br>";
+        currentBlock.after(blankLine);
+        // Insert new block after blank line
+        blankLine.after(block);
     } else {
-      // If still no block found, insert at cursor position or append to editor
-      if (selection.rangeCount > 0) {
-        range.deleteContents();
-        range.insertNode(block);
-      } else {
-        this.editor.appendChild(block);
-      }
+        // If still no block found, insert at cursor position or append to editor
+        if (selection.rangeCount > 0) {
+            range.deleteContents();
+            range.insertNode(block);
+        } else {
+            this.editor.appendChild(block);
+        }
     }
 
     // Focus the new block and move cursor inside

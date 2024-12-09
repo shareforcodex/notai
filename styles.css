@@ -7,12 +7,51 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     line-height: 1.6;
+    scrollbar-color: lightblue white;
+
+    scrollbar-width:thin;
+
 }
+
+h1{
+    font-size: x-large;
+    font-family:Georgia, 'Times New Roman', Times, serif;
+}
+
+
+h2{
+    font-size: large;
+    font-family:Georgia, 'Times New Roman', Times, serif;
+}
+
+h3{
+    font-size: medium;
+    font-family:Georgia, 'Times New Roman', Times, serif;
+}
+
+
+
+
+#folders{
+    max-height: 40vh;
+}
+
+.block{
+    max-height: 40vh;
+    overflow: auto;
+    scrollbar-color: lightblue white;
+
+    scrollbar-width:thin;
+}
+
 
 .editor-container {
     display: flex;
     height: 100vh;
     position: relative;
+    scrollbar-color: lightblue white;
+
+    scrollbar-width:thin;
 }
 
 .toggle-sidebar-btn {
@@ -204,6 +243,8 @@ body {
     margin-top: 20px;
     border-top: 1px solid #e0e0e0;
     padding-top: 20px;
+    overflow: auto;
+    font-size: small;
 }
 
 .sidebar-btn {
@@ -224,15 +265,13 @@ body {
 }
 
 #tocList {
-    padding-left: 10px;
+    padding-left: 0px;
 }
 
 .toc-item {
-    padding: 4px 8px;
     cursor: pointer;
     border-radius: 4px;
-    margin: 2px 0;
-    font-size: 14px;
+    margin: 8px 0;
 }
 
 .toc-item:hover {
@@ -382,6 +421,9 @@ body {
     padding: 40px;
     overflow-y: auto;
     background-color: #fff;
+    scrollbar-color: rgb(219, 248, 219) white;
+
+    scrollbar-width:thin;
 }
 
 [contenteditable=true]:empty:before {
