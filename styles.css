@@ -1007,7 +1007,61 @@ h3{
     to {
         transform: translateY(0);
         opacity: 1;
-    }
+/* Profile Modal Styles */
+#profileModal {
+    display: none;
+    position: fixed;
+    z-index: 1002;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+#profileModal .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 400px;
+}
+
+#profileModal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#profileModal .modal-header .close {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#profileModal .modal-body {
+    margin-top: 10px;
+}
+
+#profileModal .modal-footer {
+    margin-top: 20px;
+    text-align: right;
+}
+
+#profileModal .close-profile-btn {
+    padding: 8px 16px;
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#profileModal .close-profile-btn:hover {
+    background-color: #27ae60;
 }
 
 @keyframes slideOut {

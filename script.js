@@ -1707,6 +1707,28 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     window.editor = new NotionEditor();
     await window.editor.loadFolders();
+    
+    // Profile Modal functionality
+    const profileModal = document.getElementById('profileModal');
+    const userProfileBtn = document.getElementById('userProfileBtn');
+    const closeProfileBtn = profileModal.querySelector('.close, .close-profile-btn');
+    const currentUserIdSpan = document.getElementById('currentUserId');
+    
+    userProfileBtn.addEventListener('click', () => {
+        currentUserIdSpan.textContent = currentUser.userId || 'Unknown';
+        profileModal.style.display = 'block';
+    });
+    
+    closeProfileBtn.addEventListener('click', () => {
+        profileModal.style.display = 'none';
+    });
+    
+    // Close modal when clicking outside of the modal content
+    window.addEventListener('click', (event) => {
+        if (event.target == profileModal) {
+            profileModal.style.display = 'none';
+        }
+    });
   } catch (error) {
     console.error('Error initializing editor:', error);
     // Redirect to auth page if initialization fails
