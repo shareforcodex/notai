@@ -1084,15 +1084,6 @@ h3{
 }
 
 /* Pin Block Button Styles */
-.pin-block-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #888;
-}
 
 .pin-block-btn:hover {
     color: #333;
@@ -1105,4 +1096,15 @@ h3{
     width: 100%;
     z-index: 1000;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+#topbarPinBtn {
+    margin-left: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+}
+
+#topbarPinBtn:hover {
+    color: #333;
 }

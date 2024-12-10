@@ -53,19 +53,6 @@ class NotionEditor {
     // Initialize content and check auth
     this.updateContent();
 
-    // Add event listener for pin block buttons
-    this.editor.addEventListener('click', (e) => {
-        if (e.target.closest('.pin-block-btn')) {
-            const block = e.target.closest('.block');
-            if (block.classList.contains('pinned')) {
-                block.classList.remove('pinned');
-            } else {
-                // Unpin other blocks
-                document.querySelectorAll('.block.pinned').forEach(b => b.classList.remove('pinned'));
-                block.classList.add('pinned');
-            }
-        }
-    });
     this.checkAuthAndLoadNotes();
     this.loadFolders();
   }
@@ -1071,7 +1058,6 @@ class NotionEditor {
     const block = document.createElement("div");
     block.className = "block";
     block.innerHTML = `
-        <button class="pin-block-btn"><i class="fas fa-thumbtack"></i></button>
         <p>New block</p>
     `;
 
@@ -1752,3 +1738,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     //window.location.href = 'auth.html';
   }
 });
+        // Add event listener for topbar pin button
+        document.getElementById('topbarPinBtn').addEventListener('click', () => {
+            const selection = window.getSelection();
+            if (selection.rangeCount === 0) return;
+            const range = selection.getRangeAt(0);
+            const currentBlock = range.startContainer.parentElement.closest('.block');
+            if (currentBlock) {
+                // Unpin other blocks
+                document.querySelectorAll('.block.pinned').forEach(b => b.classList.remove('pinned'));
+                currentBlock.classList.add('pinned');
+            }
+        });
