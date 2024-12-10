@@ -52,6 +52,20 @@ class NotionEditor {
 
     // Initialize content and check auth
     this.updateContent();
+
+    // Add event listener for pin block buttons
+    this.editor.addEventListener('click', (e) => {
+        if (e.target.closest('.pin-block-btn')) {
+            const block = e.target.closest('.block');
+            if (block.classList.contains('pinned')) {
+                block.classList.remove('pinned');
+            } else {
+                // Unpin other blocks
+                document.querySelectorAll('.block.pinned').forEach(b => b.classList.remove('pinned'));
+                block.classList.add('pinned');
+            }
+        }
+    });
     this.checkAuthAndLoadNotes();
     this.loadFolders();
   }
@@ -1056,7 +1070,10 @@ class NotionEditor {
   addNewBlock() {
     const block = document.createElement("div");
     block.className = "block";
-    block.innerHTML = "<p>New block</p>";
+    block.innerHTML = `
+        <button class="pin-block-btn"><i class="fas fa-thumbtack"></i></button>
+        <p>New block</p>
+    `;
 
     // Get current selection and find closest block
     const selection = window.getSelection();

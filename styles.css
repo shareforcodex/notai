@@ -1074,3 +1074,26 @@ h3{
         opacity: 0;
     }
 }
+
+/* Pin Block Button Styles */
+.pin-block-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+}
+
+.pin-block-btn:hover {
+    color: #333;
+}
+
+.block.pinned {
+    position: fixed;
+    top: 40px;
+    width: 90%; /* Adjust as needed */
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
