@@ -433,6 +433,13 @@ h3{
     font-style: italic;
 }
 
+.pinned {
+    position: fixed;
+    top: 30px;
+    width: 90%;
+    height: 30vh;
+}
+
 .block {
     margin: 10px 0;
     padding: 5px;
