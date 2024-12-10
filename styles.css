@@ -37,6 +37,7 @@ h3{
 }
 
 .block{
+    position: relative;
     max-height: 40vh;
     overflow: auto;
     scrollbar-color: lightblue white;
