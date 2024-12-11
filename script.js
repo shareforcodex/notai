@@ -1055,6 +1055,39 @@ class NotionEditor {
   }
 
   addNewBlock() {
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+
+    if (selectedText) {
+        // Create a new block element
+        const newBlock = document.createElement("div");
+        newBlock.className = "block";
+        newBlock.innerHTML = `<p>${selectedText}</p>`;
+
+        // Get the range of the selected text
+        const range = selection.getRangeAt(0);
+
+        // Replace the selected text with the new block
+        range.deleteContents();
+        range.insertNode(newBlock);
+
+        // Clear the selection
+        selection.removeAllRanges();
+
+        // Optionally, focus the new block's paragraph
+        const textNode = newBlock.querySelector('p');
+        if (textNode) {
+            textNode.focus();
+            range.selectNodeContents(textNode);
+            range.collapse(true);
+            selection.addRange(range);
+        }
+
+        // Exit the function after wrapping the text
+        return;
+    }
+
+    // Existing code below...
     const block = document.createElement("div");
     block.className = "block";
     block.innerHTML = `
@@ -1063,7 +1096,6 @@ class NotionEditor {
     `;
 
     // Get current selection and find closest block
-    const selection = window.getSelection();
     const range = selection.getRangeAt(0);
     
     // Try to find current block from selection
@@ -1107,21 +1139,9 @@ class NotionEditor {
     range.collapse(true);
     selection.removeAllRanges();
     selection.addRange(range);
-  }
+}
 
-  handleEnterKey(e) {
-    const selection = window.getSelection();
-    const range = selection.getRangeAt(0);
-    const currentBlock = range.startContainer.parentElement.closest(".block");
-
-    if (currentBlock) {
-      const isEmpty = currentBlock.textContent.trim() === "";
-      if (isEmpty) {
-        e.preventDefault();
-        this.addNewBlock();
-      }
-    }
-  }
+  
 
   showBlockMenu(e) {
     e.preventDefault();
