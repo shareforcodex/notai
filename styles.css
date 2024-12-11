@@ -33,7 +33,8 @@ h3{
 
 
 #folders{
-    max-height: 40vh;
+    max-height: 50vh;
+    overflow: auto;
 }
 
 .block{
@@ -113,8 +114,7 @@ h3{
     border-radius: 4px;
     padding: 10px;
     display: flex;
-    align-items: center
-    gap: 5px;
+    align-items: center;
     margin-bottom: 5px;
 }
 
@@ -303,6 +303,7 @@ h3{
 }
 
 .dropdown {
+    z-index: 101;
     position: relative;
     display: inline-block;
 }
@@ -404,11 +405,11 @@ h3{
 }
 
 .note-title {
-    padding: 20px 20px 0 20px;
-    font-size: 24px;
+    padding: 0px 20px 0 20px;
+    font-size: 20px;
     font-weight: bold;
-    background-color: #fff;
-    min-height: 40px;
+    background-color: rgb(251, 254, 243);
+
 }
 
 .note-title[placeholder]:empty:before {
@@ -433,13 +434,7 @@ h3{
     font-style: italic;
 }
 
-.pinned {
-    position: fixed;
-    top: 30px;
-    width: 90%;
-    height: 30vh;
-    z-index: 100;
-}
+
 
 .block {
     margin: 10px 0;
@@ -554,7 +549,7 @@ h3{
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     padding: 8px;
     display: none;
-    z-index: 0;
+    z-index: 100;
 }
 
 .ai-toolbar-content {
@@ -1016,6 +1011,8 @@ h3{
     to {
         transform: translateY(0);
         opacity: 1;
+    }}
+
 /* Profile Modal Styles */
 #profileModal {
     display: none;
@@ -1090,25 +1087,23 @@ h3{
     color: #333;
 }
 
-.block.pinned {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-    border: 2px solid #2ecc71;
-    background-color: #fffbea;
-    transition: box-shadow 0.3s ease, border 0.3s ease, background-color 0.3s ease;
-}
-#topbarPinBtn {
-    margin-left: 10px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #888;
-}
+
+
 
 #topbarPinBtn:hover {
     color: #333;
+}
+
+.pinned {
+    position: fixed;
+    max-height: 220px;
+    min-height: 100px;
+    width: 90%;
+    top: 40px;
+    left: 5vw;
+    z-index: 99;
+    box-shadow: 0 16px 16px rgba(0, 0, 0, 0.3);
+    border: 2px solid #2ecc71;
+    background-color: #fffbea;
+    transition: box-shadow 0.3s ease, border 0.3s ease, background-color 0.3s ease;
 }

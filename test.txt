@@ -1,0 +1,59 @@
+To make pinned blocks more noticeable by adding a pronounced shadow and enhancing their visual appearance, you can update the `styles.css` file. Here's how to do it:
+
+1. **Open `styles.css`.**
+
+2. **Locate the `.block.pinned` Selector:**
+
+   Find the existing `.block.pinned` CSS rule. It should look something like this:
+
+   ```css
+   .block.pinned {
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       z-index: 1000;
+       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+   }
+   ```
+
+3. **Enhance the `.block.pinned` Styles:**
+
+   Modify the `.block.pinned` selector to increase the shadow's intensity and add additional styling for better visibility. Here's an example of enhanced styles:
+
+   ```css
+   .block.pinned {
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       z-index: 1000;
+       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Increased shadow for prominence */
+       border: 2px solid #2ecc71; /* Optional: Adds a green border to highlight */
+       background-color: #fffbea; /* Optional: Light background color for distinction */
+       transition: box-shadow 0.3s ease, border 0.3s ease, background-color 0.3s ease; /* Smooth transitions */
+   }
+   ```
+
+   **Explanation of Changes:**
+   
+   - **Increased Box-Shadow:** The shadow has been intensified (`0 8px 16px rgba(0, 0, 0, 0.3)`) to make the pinned block stand out more against the background.
+   
+   - **Added Border:** A `2px` solid green border (`#2ecc71`) has been added to further distinguish the pinned block. This is optional but enhances visibility.
+   
+   - **Background Color:** A light background color (`#fffbea`) provides additional contrast, making the pinned block easily noticeable.
+   
+   - **Transitions:** Smooth transitions for the shadow, border, and background color changes improve the user experience when pinning/unpinning blocks.
+
+4. **Save the Changes:**
+
+   After updating the CSS, save the `styles.css` file. The next time you pin a block, it should now display with the enhanced shadow, border, and background color, making it more noticeable.
+
+5. **Optional - Adjust Script if Needed:**
+
+   If you want to further customize the behavior or appearance when pinning/unpinning blocks, you might consider updating `script.js`. However, based on your current setup, no changes to `script.js` are necessary for the visual enhancements in `styles.css`.
+
+**Final Note:**
+
+Feel free to tweak the color values, shadow intensity, and other properties to better fit the overall design and aesthetics of your application.
+  

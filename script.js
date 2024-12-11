@@ -1058,7 +1058,8 @@ class NotionEditor {
     const block = document.createElement("div");
     block.className = "block";
     block.innerHTML = `
-        <p>New block</p>
+        <p>NewBlock</p>
+        
     `;
 
     // Get current selection and find closest block
@@ -1745,6 +1746,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             const range = selection.getRangeAt(0);
             const currentBlock = range.startContainer.parentElement.closest('.block');
             if (currentBlock) {
+              if(currentBlock.classList.contains('pinned')){
+                currentBlock.classList.remove('pinned')
+                return;
+              }
                 // Unpin other blocks
                 document.querySelectorAll('.block.pinned').forEach(b => b.classList.remove('pinned'));
                 currentBlock.classList.add('pinned');
