@@ -762,10 +762,10 @@ h3{
 }
 
 .comment-tooltip {
-    max-height: 40vh;
-    overflow: scroll;
+    height: 30vh;
+    overflow: auto;
     position: fixed;
-    bottom: 20px;
+    top: 70vh;
     left: 5%;
     background: white;
     border: 1px solid #ddd;
@@ -779,27 +779,12 @@ h3{
     gap: 8px;
 }
 
-.tooltip-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 10px;
-    border-bottom: 1px solid #ddd;
-    background: #f5f5f5;
-    border-radius: 4px 4px 0 0;
-}
 
-.tooltip-header span {
-    font-weight: bold;
-    color: #555;
-}
+
+
 
 .tooltip-header .close-tooltip {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #888;
-    padding: 2px 6px;
+    
 }
 
 .tooltip-header .close-tooltip:hover {
@@ -808,13 +793,14 @@ h3{
 
 .comment-content {
     max-width: 400px;
-    width: 90vw;
+    width: 95%;
     font-size: 14px;
     color: #666;
-    min-height: 20px;
+    min-height: 100px;
     padding: 10px;
     white-space: pre-wrap;
-    max-height: 400px;
+    max-height: 300px;
+    overflow: auto;
 }
 
 /* Style for individual model responses */
@@ -826,8 +812,7 @@ h3{
 
 .tooltip-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background-color: #f0f0f0;
 }
 
 .comment-actions {
