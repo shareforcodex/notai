@@ -234,7 +234,6 @@ h3{
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.2s;
-    white-space: pre-wrap; /* Preserve spaces and newlines */
 }
 
 .page-item:hover {
