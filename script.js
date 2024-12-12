@@ -660,13 +660,13 @@ class NotionEditor {
     tooltip.innerHTML = `
       <div class="tooltip-header">
         <span>Comment</span>
+        <div class="comment-actions">
+          <button class="edit-comment">Edit</button>
+          <button class="delete-comment">Delete</button>
+        </div>
         <button class="close-tooltip"><i class="fas fa-times"></i></button>
       </div>
       <div class="comment-content">${comment}</div>
-      <div class="comment-actions">
-        <button class="edit-comment">Edit</button>
-        <button class="delete-comment">Delete</button>
-      </div>
     `;
 
     // Reattach close button event listener
