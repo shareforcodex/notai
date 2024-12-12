@@ -1046,8 +1046,8 @@ class NotionEditor {
           document.execCommand('insertLineBreak', false, null);
           e.preventDefault();
         } else {
-          // Insert a new paragraph
-          document.execCommand('insertParagraph', false, null);
+          // Insert a line break (instead of a new paragraph)
+          document.execCommand('insertLineBreak', false, null);
           e.preventDefault();
         }
       }
