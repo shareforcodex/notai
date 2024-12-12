@@ -1041,8 +1041,15 @@ class NotionEditor {
     // Handle keyboard shortcuts
     this.editor.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
-        e.preventDefault(); // Prevent the default Enter key behavior
-        document.execCommand('insertHTML', false, '<br><br>');
+        if (e.shiftKey) {
+          // Insert a single line break
+          document.execCommand('insertLineBreak', false, null);
+          e.preventDefault();
+        } else {
+          // Insert a new paragraph
+          document.execCommand('insertParagraph', false, null);
+          e.preventDefault();
+        }
       }
       if (e.key === "/" && !e.shiftKey) {
         this.showBlockMenu(e);
