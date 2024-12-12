@@ -234,6 +234,7 @@ h3{
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.2s;
+    white-space: pre-wrap; /* Preserve spaces and newlines */
 }
 
 .page-item:hover {
@@ -425,8 +426,8 @@ h3{
     overflow-y: auto;
     background-color: #fff;
     scrollbar-color: rgb(219, 248, 219) white;
-
     scrollbar-width:thin;
+    white-space: pre-wrap; /* Preserve spaces and newlines */
 }
 
 [contenteditable=true]:empty:before {

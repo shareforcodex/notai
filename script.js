@@ -50,6 +50,10 @@ class NotionEditor {
     this.isEditable = false;
     this.autoSaveTimeout = null;
 
+    // Ensure white-space is preserved
+    this.editor.style.whiteSpace = 'pre-wrap';
+    this.sourceView.style.whiteSpace = 'pre-wrap';
+
     // Initialize content and check auth
     this.updateContent();
 
@@ -81,6 +85,11 @@ class NotionEditor {
       console.error("API Error:", error);
       return { error: "Network error" };
     }
+  }
+
+  // Convert newline characters to <br> tags
+  convertNewlinesToBreaks(text) {
+    return text.replace(/\n/g, '<br>');
   }
 
   // Convert HTML to Markdown
@@ -116,6 +125,11 @@ class NotionEditor {
     if (this.sourceView) {
       this.sourceView.textContent = this.content;
     }
+  }
+
+  // Insert content into the editor, converting newlines to <br>
+  insertContent(text) {
+    this.editor.innerHTML += this.convertNewlinesToBreaks(text);
   }
 
   toggleEditable() {
