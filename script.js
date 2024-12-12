@@ -8,6 +8,14 @@ class NotionEditor {
   constructor() {
     // Initialize core editor elements with error checking
     const editor = document.getElementById("editor");
+
+    // Initialize last pointer position
+    this.lastPointerPosition = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+    // Listen for pointer down events to update the last position
+    document.addEventListener('pointerdown', (e) => {
+        this.lastPointerPosition = { x: e.clientX, y: e.clientY };
+    });
     const sourceView = document.getElementById("sourceView");
     const toolbar = document.querySelector(".toolbar");
     const aiToolbar = document.getElementById("aiToolbar");
@@ -16,6 +24,46 @@ class NotionEditor {
     if (!editor || !sourceView || !toolbar || !aiToolbar) {
       console.error("Required editor elements not found");
       return;
+    }
+
+    showSpinner() {
+        const spinner = document.getElementById('loadingSpinner');
+        if (!spinner) return;
+
+        // Position the spinner at the last pointer-down location
+        let x = this.lastPointerPosition.x;
+        let y = this.lastPointerPosition.y;
+        const spinnerSize = 40; // Assuming spinner width and height are 40px
+
+        // Adjust position to keep spinner within viewport
+        if (x + spinnerSize > window.innerWidth) {
+            x = window.innerWidth - spinnerSize - 10; // 10px padding
+        }
+        if (y + spinnerSize > window.innerHeight) {
+            y = window.innerHeight - spinnerSize - 10; // 10px padding
+        }
+
+        spinner.style.left = `${x}px`;
+        spinner.style.top = `${y}px`;
+        spinner.style.display = 'block';
+
+        // Automatically hide the spinner after 5 seconds
+        this.spinnerTimeout = setTimeout(() => {
+            this.hideSpinner();
+        }, 5000);
+    }
+
+    hideSpinner() {
+        const spinner = document.getElementById('loadingSpinner');
+        if (!spinner) return;
+
+        spinner.style.display = 'none';
+
+        // Clear the timeout if the spinner is hidden manually
+        if (this.spinnerTimeout) {
+            clearTimeout(this.spinnerTimeout);
+            this.spinnerTimeout = null;
+        }
     }
 
     // Assign verified elements
@@ -62,9 +110,12 @@ class NotionEditor {
   }
 
   async apiRequest(method, endpoint, body = null, isAIRequest = false) {
-    const headers = {
-      "Content-Type": "application/json",
-    };
+        // Show the spinner before making the request
+        this.showSpinner();
+
+        const headers = {
+            "Content-Type": "application/json",
+        };
 
     if (currentUser.userId && currentUser.credentials) {
       headers["Authorization"] = `Basic ${currentUser.credentials}`;
@@ -80,12 +131,19 @@ class NotionEditor {
         headers,
         body: body ? JSON.stringify(body) : null,
       });
-      return await response.json();
-    } catch (error) {
-      console.error("API Error:", error);
-      return { error: "Network error" };
+
+            const data = await response.json();
+
+            // Hide the spinner after the request completes
+            this.hideSpinner();
+
+            return data;
+        } catch (error) {
+            console.error("API Error:", error);
+            this.hideSpinner(); // Ensure spinner is hidden on error
+            return { error: "Network error" };
+        }
     }
-  }
 
   // Convert newline characters to <br> tags
   convertNewlinesToBreaks(text) {
