@@ -409,7 +409,8 @@ h3{
     font-size: 20px;
     font-weight: bold;
     background-color: rgb(251, 254, 243);
-
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 }
 
 .note-title[placeholder]:empty:before {
