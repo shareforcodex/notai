@@ -66,6 +66,46 @@ class NotionEditor {
         }
     }
 
+    showSpinner() {
+        const spinner = document.getElementById('loadingSpinner');
+        if (!spinner) return;
+
+        // Position the spinner at the last pointer-down location
+        let x = this.lastPointerPosition.x;
+        let y = this.lastPointerPosition.y;
+        const spinnerSize = 40; // Assuming spinner width and height are 40px
+
+        // Adjust position to keep spinner within viewport
+        if (x + spinnerSize > window.innerWidth) {
+            x = window.innerWidth - spinnerSize - 10; // 10px padding
+        }
+        if (y + spinnerSize > window.innerHeight) {
+            y = window.innerHeight - spinnerSize - 10; // 10px padding
+        }
+
+        spinner.style.left = `${x}px`;
+        spinner.style.top = `${y}px`;
+        spinner.style.display = 'block';
+
+        // Automatically hide the spinner after 5 seconds
+        this.spinnerTimeout = setTimeout(() => {
+            this.hideSpinner();
+        }, 5000);
+    }
+
+    hideSpinner() {
+        const spinner = document.getElementById('loadingSpinner');
+        if (!spinner) return;
+
+        spinner.style.display = 'none';
+
+        // Clear the timeout if the spinner is hidden manually
+        if (this.spinnerTimeout) {
+            clearTimeout(this.spinnerTimeout);
+            this.spinnerTimeout = null;
+        }
+    }
+
     // Assign verified elements
     this.editor = editor;
     this.sourceView = sourceView; 
@@ -108,6 +148,46 @@ class NotionEditor {
     this.checkAuthAndLoadNotes();
     this.loadFolders();
   }
+
+  showSpinner() {
+        const spinner = document.getElementById('loadingSpinner');
+        if (!spinner) return;
+
+        // Position the spinner at the last pointer-down location
+        let x = this.lastPointerPosition.x;
+        let y = this.lastPointerPosition.y;
+        const spinnerSize = 40; // Assuming spinner width and height are 40px
+
+        // Adjust position to keep spinner within viewport
+        if (x + spinnerSize > window.innerWidth) {
+            x = window.innerWidth - spinnerSize - 10; // 10px padding
+        }
+        if (y + spinnerSize > window.innerHeight) {
+            y = window.innerHeight - spinnerSize - 10; // 10px padding
+        }
+
+        spinner.style.left = `${x}px`;
+        spinner.style.top = `${y}px`;
+        spinner.style.display = 'block';
+
+        // Automatically hide the spinner after 5 seconds
+        this.spinnerTimeout = setTimeout(() => {
+            this.hideSpinner();
+        }, 5000);
+    }
+
+    hideSpinner() {
+        const spinner = document.getElementById('loadingSpinner');
+        if (!spinner) return;
+
+        spinner.style.display = 'none';
+
+        // Clear the timeout if the spinner is hidden manually
+        if (this.spinnerTimeout) {
+            clearTimeout(this.spinnerTimeout);
+            this.spinnerTimeout = null;
+        }
+    }
 
   async apiRequest(method, endpoint, body = null, isAIRequest = false) {
         // Show the spinner before making the request
