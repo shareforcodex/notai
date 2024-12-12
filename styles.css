@@ -519,6 +519,22 @@ h3{
     background: white;
 }
 
+/* Style for <pre> elements */
+pre {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: monospace;
+    margin: 10px 0;
+}
+
+/* Style for <code> elements within <pre> */
+pre code {
+    font-family: monospace;
+    white-space: pre-wrap; /* Preserve spaces and line breaks */
+}
+
 #headingSelect {
     padding: 5px;
     border: 1px solid #e0e0e0;

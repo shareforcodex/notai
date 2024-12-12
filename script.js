@@ -1059,6 +1059,81 @@ class NotionEditor {
         e.preventDefault();  // Prevent default behavior
         this.handleQuickAsk();
       }
+
+      // Detect '# ' to convert to H1
+      if (e.key === " " || e.key === "Enter") {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+        const range = selection.getRangeAt(0);
+        const node = selection.anchorNode;
+        if (!node) return;
+
+        // Get text before the cursor
+        const textBeforeCursor = node.textContent.slice(0, range.endOffset);
+
+        // Check if the line starts with '# '
+        const hashMatch = textBeforeCursor.match(/^(#)\s$/);
+        if (hashMatch) {
+            e.preventDefault(); // Prevent the space character from being inserted
+
+            // Remove '# ' from the editor
+            node.textContent = node.textContent.slice(0, range.endOffset - 2) + node.textContent.slice(range.endOffset);
+
+            // Create an H1 element
+            const h1 = document.createElement("h1");
+            h1.textContent = ""; // Empty H1 ready for user input
+            h1.setAttribute("contenteditable", "true");
+            h1.setAttribute("placeholder", "Enter heading here...");
+
+            // Insert the H1 element at the cursor position
+            range.insertNode(h1);
+
+            // Move the cursor inside the H1
+            selection.removeAllRanges();
+            const newRange = document.createRange();
+            newRange.setStart(h1, 0);
+            newRange.collapse(true);
+            selection.addRange(newRange);
+        }
+    }
+
+    // Detect '```' to convert to code block
+    if (e.key === "`") {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+        const range = selection.getRangeAt(0);
+        const node = selection.anchorNode;
+        if (!node) return;
+
+        // Get text before the cursor
+        const textBeforeCursor = node.textContent.slice(0, range.endOffset);
+
+        // Check if the last three characters are '```'
+        const backtickMatch = textBeforeCursor.match(/```$/);
+        if (backtickMatch) {
+            e.preventDefault(); // Prevent the backtick from being inserted
+
+            // Remove '```' from the editor
+            node.textContent = node.textContent.slice(0, range.endOffset - 3) + node.textContent.slice(range.endOffset);
+
+            // Create a code block
+            const pre = document.createElement("pre");
+            const code = document.createElement("code");
+            code.setAttribute("contenteditable", "true");
+            code.setAttribute("placeholder", "Enter code here...");
+            pre.appendChild(code);
+
+            // Insert the code block
+            range.insertNode(pre);
+
+            // Move the cursor inside the code block
+            selection.removeAllRanges();
+            const newRange = document.createRange();
+            newRange.setStart(code, 0);
+            newRange.collapse(true);
+            selection.addRange(newRange);
+        }
+    }
     });
 
     // Plain text button
