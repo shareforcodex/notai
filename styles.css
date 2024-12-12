@@ -819,7 +819,7 @@ pre code {
 }
 
 .comment-tooltip {
-    height: 30vh;
+    height: 28vh;
     overflow: auto;
     position: fixed;
     top: 70vh;
@@ -830,6 +830,7 @@ pre code {
     padding: 0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     max-width: 400px;
+    width: 90vh;
     z-index: 1000;
     display: flex;
     flex-direction: column;
@@ -849,14 +850,9 @@ pre code {
 }
 
 .comment-content {
-    max-width: 400px;
-    width: 95%;
-    font-size: 14px;
-    color: #666;
-    min-height: 100px;
+   
     padding: 10px;
     white-space: pre-wrap;
-    max-height: 300px;
 }
 
 /* Style for individual model responses */
