@@ -149,7 +149,7 @@ class NotionEditor {
     this.loadFolders();
   }
 
-  showSpinner() {
+    showSpinner() {
         const spinner = document.getElementById('loadingSpinner');
         if (!spinner) return;
 
