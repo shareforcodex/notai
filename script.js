@@ -1105,9 +1105,8 @@ class NotionEditor {
     const block = document.createElement("div");
     block.className = "block";
     block.innerHTML = `
-        <p>NewBlock</p>
-        
-    `;
+ 
+`;
 
     // Get current selection and find closest block
     const range = selection.getRangeAt(0);
