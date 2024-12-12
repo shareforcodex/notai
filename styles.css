@@ -815,7 +815,6 @@ pre code {
     padding: 10px;
     white-space: pre-wrap;
     max-height: 300px;
-    overflow: auto;
 }
 
 /* Style for individual model responses */
