@@ -427,7 +427,7 @@ class NotionEditor {
                         // Create a new block for longer responses
                         const block = document.createElement("div");
                         block.className = "block";
-                        block.innerHTML = `<h2> ${action} (${modelName})</h2>\n\n${marked.parse(aiResponse)}\n\n`;
+                        block.innerHTML = `<h2> ${action} (${modelName})</h2>${marked.parse(aiResponse)}`;
 
                         // Add blank line before new block
                         const blankLine = document.createElement("div");
@@ -880,7 +880,7 @@ class NotionEditor {
             // Create new block for this model's response with h2 header
             const block = document.createElement("div");
             block.className = "block";
-            block.innerHTML = `<h2>AI Response (${modelName})</h2>\n\n${marked.parse(aiResponse)}\n\n`;
+            block.innerHTML = `<h2>AI Response (${modelName})</h2>${marked.parse(aiResponse)}`;
             
             // Add blank line before new block
             const blankLine = document.createElement("div");
@@ -1084,7 +1084,7 @@ class NotionEditor {
         // Create a new block element
         const newBlock = document.createElement("div");
         newBlock.className = "block";
-        newBlock.innerHTML = `<p>${selectedText}</p>`;
+        newBlock.innerHTML = `${selectedText}`;
 
         // Get the range of the selected text
         const range = selection.getRangeAt(0);
@@ -1097,7 +1097,7 @@ class NotionEditor {
         selection.removeAllRanges();
 
         // Optionally, focus the new block's paragraph
-        const textNode = newBlock.querySelector('p');
+        const textNode = newBlock;
         if (textNode) {
             textNode.focus();
             range.selectNodeContents(textNode);
@@ -1154,7 +1154,7 @@ class NotionEditor {
     }
 
     // Focus the new block and move cursor inside
-    const textNode = block.querySelector('p');
+    const textNode = block;
     textNode.focus();
     range.selectNodeContents(textNode);
     range.collapse(true);
@@ -1299,7 +1299,7 @@ class NotionEditor {
                 const result = await this.apiRequest("POST", "/notes", {
                     note_id: "default_note_" + currentUser.userId,
                     title: "default_note",
-                    content: "<p>Welcome to your default note!</p>",
+                    content: "Welcome to your default note!",
                     folder_id: "1733485657799jj0.5911120915160637",
                 });
                 if (result.success) {
@@ -1472,7 +1472,7 @@ class NotionEditor {
     const result = await this.apiRequest("POST", "/notes", {
       note_id: noteId,
       title: title,
-      content: "<p>Start writing here...</p>",
+      content: "Start writing here...",
       folder_id: folderId || "1733485657799jj0.5911120915160637", // Use default folder if none provided
     });
 
@@ -1576,7 +1576,7 @@ class NotionEditor {
 
   clearNotes() {
     document.getElementById("pagesList").innerHTML = "";
-    this.editor.innerHTML = "<p>Start writing here...</p>";
+    this.editor.innerHTML = "Start writing here...>";
   }
 
   toggleSidebar() {
