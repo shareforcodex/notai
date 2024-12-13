@@ -272,27 +272,34 @@ class NotionEditor {
         });
         options.classList.toggle('show');
       });
-      
-      const modelOptions = this.aiSettings.models.map(model =>
-        `<button data-value="${model.model_id}">${model.name}</button>`
-      ).join('');
-      options.innerHTML = modelOptions;
+      // First, clear any existing options to avoid duplication
+      options.innerHTML = '';
 
-      // Handle option selection
-      options.querySelectorAll('button').forEach(option => {
-        option.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const value = option.dataset.value;
-          const displayName = option.textContent;
-          btn.textContent = displayName;
-          btn.setAttribute('data-selected-value', value);
-          options.classList.remove('show');
+      // Dynamically create and append a button for each model
+      this.aiSettings.models.forEach(model => {
+          const button = document.createElement('button');
+          button.setAttribute('data-value', model.model_id);
+          button.textContent = model.name;
 
-          // Save preference
-          const preferences = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
-          preferences[`model${index + 1}`] = value;
-          localStorage.setItem('aiModelPreferences', JSON.stringify(preferences));
-        });
+          // Add an event listener to handle model selection
+          button.addEventListener('click', (e) => {
+              e.stopPropagation(); // Prevent the click from bubbling up
+
+              // Update the button text and data-selected-value attribute
+              btn.textContent = model.name;
+              btn.setAttribute('data-selected-value', model.model_id);
+
+              // Hide the dropdown after selection
+              options.classList.remove('show');
+
+              // Save the selected model preference to localStorage
+              const preferences = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
+              preferences[`model${index + 1}`] = model.model_id;
+              localStorage.setItem('aiModelPreferences', JSON.stringify(preferences));
+          });
+
+          // Append the button to the options container
+          options.appendChild(button);
       });
     });
 
