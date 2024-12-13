@@ -1087,7 +1087,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             
             // Find the last AI response block for this quick ask
             let lastResponseBlock = currentBlock;
-            let nextBlock = currentBlock.nextElementSibling;
+            let nextBlock = currentBlock?.nextElementSibling || currentBlock;
             
             // // Keep going until we find a block that's not an AI response
             // while (nextBlock) {
