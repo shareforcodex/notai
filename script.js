@@ -469,8 +469,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   async handleAIAction(action, text) {
     // Check if text has less than 3 words
-    const wordCount = text.trim().split(/\s+/).length;
-    const useComment = wordCount < 3;
+    const useComment = text.length < 10;
 
     let prompt = "";
     if (this.aiSettings.prompts[action]) {
