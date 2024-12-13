@@ -658,7 +658,13 @@ class NotionEditor {
       if (parsedConfig.models) {
         this.aiSettings.models = parsedConfig.models;
       } else {
-        this.aiSettings.models = [];
+        this.aiSettings.models = [
+          { name: "GPT-4O", model_id: "gpt-4o", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+          { name: "GPT-4O Mini", model_id: "gpt-4o-mini", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+          { name: "Llama 3.1 405B", model_id: "Meta-Llama-3.1-405B-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+          { name: "Llama 3.2 90B", model_id: "Llama-3.2-90B-Vision-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+          { name: "Mistral Large", model_id: "Mistral-large", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+        ];
       }
     }
 
@@ -669,6 +675,14 @@ class NotionEditor {
   }
 
   async saveAISettings() {
+    // Gather updated model data from the UI
+    const modelConfigs = document.querySelectorAll('.model-config');
+    const updatedModels = Array.from(modelConfigs).map(mc => ({
+      name: mc.querySelector('.model-name').value,
+      model_id: mc.querySelector('.model-id').value,
+      url: mc.querySelector('.model-url').value
+    }));
+
     // Prepare the config object
     const config = {
       prompts: {
@@ -681,7 +695,7 @@ class NotionEditor {
         name: toolDiv.querySelector('.tool-name').value,
         prompt: toolDiv.querySelector('.tool-prompt').value
       })),
-      models: this.aiSettings.models
+      models: updatedModels // Use the updated models from the UI
     };
     
     try {
