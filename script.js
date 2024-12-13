@@ -128,16 +128,14 @@ class NotionEditor {
             "Content-Type": "application/json",
         };
         
-        if (isAIRequest && body?.model) {
-            const model = this.aiSettings.models.find(m => m.model_id === body.model);
+        if (isAIRequest) {
+            const model = this.aiSettings.models.find(m => m.model_id === body?.model);
             if (model?.api_key) {
                 headers["Authorization"] = `Bearer ${model.api_key}`;
             }
+        } else if (currentUser.userId && currentUser.credentials) {
+            headers["Authorization"] = `Basic ${currentUser.credentials}`;
         }
-
-    if (currentUser.userId && currentUser.credentials) {
-      headers["Authorization"] = `Basic ${currentUser.credentials}`;
-    }
 
     try {
       const url = isAIRequest
