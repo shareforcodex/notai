@@ -272,6 +272,26 @@ class NotionEditor {
         });
         options.classList.toggle('show');
       });
+      
+      this.updateModelDropdowns();
+    });
+
+    // Close dropdowns when clicking outside, but not the AI toolbar itself
+    document.addEventListener('click', (e) => {
+      // Don't close if clicking inside the AI toolbar
+      if (!this.aiToolbar.contains(e.target)) {
+        document.querySelectorAll('.model-options').forEach(opt => {
+          opt.classList.remove('show');
+        });
+      }
+    });
+  }
+
+  updateModelDropdowns() {
+    document.querySelectorAll('.custom-dropdown').forEach((dropdown, index) => {
+      const btn = dropdown.querySelector('.model-select-btn');
+      const options = dropdown.querySelector('.model-options');
+      
       // First, clear any existing options to avoid duplication
       options.innerHTML = '';
 
@@ -299,18 +319,26 @@ class NotionEditor {
           });
 
           // Append the button to the options container
+          // Add an event listener to handle model selection
+          button.addEventListener('click', (e) => {
+              e.stopPropagation(); // Prevent the click from bubbling up
+
+              // Update the button text and data-selected-value attribute
+              btn.textContent = model.name;
+              btn.setAttribute('data-selected-value', model.model_id);
+
+              // Hide the dropdown after selection
+              options.classList.remove('show');
+
+              // Save the selected model preference to localStorage
+              const preferences = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
+              preferences[`model${index + 1}`] = model.model_id;
+              localStorage.setItem('aiModelPreferences', JSON.stringify(preferences));
+          });
+
+          // Append the button to the options container
           options.appendChild(button);
       });
-    });
-
-    // Close dropdowns when clicking outside, but not the AI toolbar itself
-    document.addEventListener('click', (e) => {
-      // Don't close if clicking inside the AI toolbar
-      if (!this.aiToolbar.contains(e.target)) {
-        document.querySelectorAll('.model-options').forEach(opt => {
-          opt.classList.remove('show');
-        });
-      }
     });
 
     // Handle selection changes
@@ -674,7 +702,6 @@ class NotionEditor {
         ];
       }
     }
-
       this.updateAIToolbar();
     } catch (error) {
       console.error("Error loading user config:", error);
