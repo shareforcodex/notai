@@ -214,7 +214,10 @@ class NotionEditor {
       return await marked(response.text()) ;
     } catch (error) {
       console.error("Failed to fetch README.md:", error);
-      return "Welcome to your default note!"; // Fallback content
+      return `Welcome to your default note! 
+go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#introduction"> Help </a>  to see how to use the Notetaking app powered by LLM
+
+`; // Fallback content
     }
   }
 
@@ -1587,7 +1590,10 @@ class NotionEditor {
                 const result = await this.apiRequest("POST", "/notes", {
                     note_id: "default_note_" + currentUser.userId,
                     title: "default_note",
-                    content: "Welcome to your default note! go to github to see how to use the Notetaking app powered by LLM",
+                    content: `Welcome to your default note! 
+go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#introduction"> Help </a>  to see how to use the Notetaking app powered by LLM
+
+ `,
                     folder_id: "1733485657799jj0.5911120915160637",
                 });
                 if (result.success) {
