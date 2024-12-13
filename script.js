@@ -19,7 +19,16 @@ class NotionEditor {
     const sourceView = document.getElementById("sourceView");
     const toolbar = document.querySelector(".toolbar");
     const aiToolbar = document.getElementById("aiToolbar");
-    
+
+    // Define DEFAULT_MODELS as a class property
+    this.DEFAULT_MODELS = [
+      { name: "GPT-4O", model_id: "gpt-4o", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+      { name: "GPT-4O Mini", model_id: "gpt-4o-mini", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+      { name: "Llama 3.1 405B", model_id: "Meta-Llama-3.1-405B-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+      { name: "Llama 3.2 90B", model_id: "Llama-3.2-90B-Vision-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+      { name: "Mistral Large", model_id: "Mistral-large", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+    ];
+
     // Verify required elements exist
     if (!editor || !sourceView || !toolbar || !aiToolbar) {
       console.error("Required editor elements not found");
@@ -41,13 +50,7 @@ class NotionEditor {
         translate: "Translate this text to English: {text}"
       },
       customTools: [],
-      models: [
-        { name: "GPT-4O", model_id: "gpt-4o", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-        { name: "GPT-4O Mini", model_id: "gpt-4o-mini", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-        { name: "Llama 3.1 405B", model_id: "Meta-Llama-3.1-405B-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-        { name: "Llama 3.2 90B", model_id: "Llama-3.2-90B-Vision-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-        { name: "Mistral Large", model_id: "Mistral-large", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-      ]
+      models: [...this.DEFAULT_MODELS]
     };
     this.loadUserConfig();
     this.setupEventListeners();
@@ -681,26 +684,27 @@ class NotionEditor {
       if (config && !config.error) {
         // Parse the config if it's a string
         const parsedConfig = JSON.parse(config.config);
-        // Update aiSettings with config values or defaults
-        this.aiSettings = {
-          prompts: parsedConfig.prompts || {
+        // Merge prompts
+        this.aiSettings.prompts = parsedConfig.prompts || {
             ask: "Answer this question: {text}",
             correct: "Correct any grammar or spelling errors in this text: {text}",
             translate: "Translate this text to English: {text}"
-          },
-          customTools: parsedConfig.customTools || []
         };
-      console.log("load config, pasedconfig",parsedConfig,"this.aisettings ",this,this.aiSettings);
+
+        // Merge customTools
+        this.aiSettings.customTools = parsedConfig.customTools || [];
+
       if (parsedConfig.models) {
-        this.aiSettings.models = parsedConfig.models;
+          // Filter out remote models that already exist in DEFAULT_MODELS
+          const remoteModels = parsedConfig.models.filter(remoteModel => 
+              !this.DEFAULT_MODELS.some(defaultModel => defaultModel.model_id === remoteModel.model_id)
+          );
+          
+          // Append remote models to DEFAULT_MODELS
+          this.aiSettings.models = [...this.DEFAULT_MODELS, ...remoteModels];
       } else {
-        this.aiSettings.models = [
-          { name: "GPT-4O", model_id: "gpt-4o", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-          { name: "GPT-4O Mini", model_id: "gpt-4o-mini", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-          { name: "Llama 3.1 405B", model_id: "Meta-Llama-3.1-405B-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-          { name: "Llama 3.2 90B", model_id: "Llama-3.2-90B-Vision-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-          { name: "Mistral Large", model_id: "Mistral-large", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-        ];
+          // If no remote models, retain only DEFAULT_MODELS
+          this.aiSettings.models = [...this.DEFAULT_MODELS];
       }
       this.updateModelDropdowns();
     }
