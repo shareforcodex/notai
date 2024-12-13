@@ -396,22 +396,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     // Handle selection changes
     this.setupSelectionHandler();
-
-    // Handle AI action buttons
-    this.aiToolbar.querySelectorAll("button[data-ai-action]").forEach((button) => {
-      button.addEventListener("click", async () => {
-        const action = button.dataset.aiAction;
-        const selectedText = window.getSelection().toString().trim();
-        
-        // Hide toolbar only when clicking action buttons
-        this.aiToolbar.style.display = 'none';
-
-        // Only process action if there's selected text
-        if (selectedText) {
-          await this.handleAIAction(action, selectedText);
-        }
-      });
-    });
   }
 
   // Helper function to get display name for model
