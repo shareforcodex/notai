@@ -80,8 +80,8 @@ h3{
 }
 
 .block{
-    position: relative;
-    max-height: 40vh;
+    position: static;
+    max-height: 300px;
     overflow: auto;
     scrollbar-color: lightblue white;
 

@@ -1,212 +1,383 @@
-# Notion Editor WebApp
 
-![App Screenshot](path/to/screenshot.png)
+
+![App Screenshot](assets/screenshot.png)
 
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [Features](#features)
 - [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-- [Usage](#usage)
-- [AI Integration](#ai-integration)
-- [Folder and Note Management](#folder-and-note-management)
+  - [Creating an Account](#creating-an-account)
+  - [Logging In](#logging-in)
+- [Dashboard Overview](#dashboard-overview)
+- [Managing Notes](#managing-notes)
+  - [Creating a New Note](#creating-a-new-note)
+  - [Editing a Note](#editing-a-note)
+  - [Saving Your Work](#saving-your-work)
+  - [Auto-Save Feature](#auto-save-feature)
+- [Organizing with Folders](#organizing-with-folders)
+  - [Creating a New Folder](#creating-a-new-folder)
+  - [Adding Notes to Folders](#adding-notes-to-folders)
+  - [Navigating Folders](#navigating-folders)
+- [Using AI-Powered Features](#using-ai-powered-features)
+  - [Accessing AI Tools](#accessing-ai-tools)
+  - [Ask a Question](#ask-a-question)
+  - [Correcting Text](#correcting-text)
+  - [Translating Text](#translating-text)
+  - [Custom AI Tools](#custom-ai-tools)
+- [Formatting Your Notes](#formatting-your-notes)
+  - [Basic Text Formatting](#basic-text-formatting)
+  - [Inserting Media](#inserting-media)
+  - [Adding Links](#adding-links)
 - [Comments and Collaboration](#comments-and-collaboration)
-- [Customization](#customization)
-- [Contributing](#contributing)
-- [License](#license)
+  - [Adding Comments](#adding-comments)
+  - [Editing and Deleting Comments](#editing-and-deleting-comments)
+- [Table of Contents](#table-of-contents)
+  - [Generating TOC](#generating-toc)
+  - [Navigating TOC](#navigating-toc)
+- [Profile Management](#profile-management)
+  - [Viewing Your Profile](#viewing-your-profile)
+  - [Logging Out](#logging-out)
+- [Tips and Tricks](#tips-and-tricks)
+- [Troubleshooting](#troubleshooting)
+- [Support](#support)
+- [Privacy and Security](#privacy-and-security)
 
 ## Introduction
 
-Welcome to the **Notion Editor WebApp**, a powerful and intuitive web-based text editor designed to enhance your productivity and streamline your note-taking experience. Whether you're drafting documents, organizing thoughts, or managing projects, our editor offers a seamless and feature-rich environment to cater to all your writing needs.
-
-Built with modern web technologies, the Notion Editor WebApp integrates advanced AI capabilities to assist you in generating, correcting, and translating your content, making your workflow smarter and more efficient.
-
-## Features
-
-- **Rich Text Editing:** Create and format text with ease using a comprehensive set of formatting tools.
-- **AI-Powered Assistance:** Utilize AI models to ask questions, correct grammar, and translate text directly within the editor.
-- **Custom AI Tools:** Add and configure custom AI tools tailored to your specific needs.
-- **Source View Toggle:** Switch between the WYSIWYG editor and the raw HTML source for advanced editing.
-- **Auto-Save:** Automatically save your work at regular intervals to prevent data loss.
-- **Comments and Annotations:** Add comments to specific sections of your text for better collaboration and feedback.
-- **Folder and Note Management:** Organize your notes into folders for easy access and management.
-- **Media Insertion:** Insert images, audio, video, and iframes to enrich your content.
-- **Table of Contents:** Generate and navigate through a table of contents based on your document's headings.
-- **User Authentication:** Secure login and registration system to protect your notes and settings.
-- **Responsive Design:** Access your editor from any device with a responsive and adaptive layout.
+Welcome to the **Notion Editor WebApp**—your all-in-one solution for creating, organizing, and managing notes with the added power of AI assistance. Whether you're a student, professional, or casual note-taker, our intuitive interface and robust features are designed to enhance your productivity and streamline your workflow.
 
 ## Getting Started
 
-### Prerequisites
+### Creating an Account
 
-Before you begin, ensure you have met the following requirements:
+1. **Visit the Sign-Up Page:**
+   - Open your web browser and navigate to the Notion Editor WebApp homepage.
+   - Click on the **"Sign Up"** button located at the top-right corner.
 
-- **Web Browser:** A modern web browser (e.g., Chrome, Firefox, Safari, Edge) with JavaScript enabled.
-- **Internet Connection:** Required for API calls and AI integrations.
-- **Node.js and npm (Optional):** If you plan to run a local development server or make customizations.
+2. **Fill in Your Details:**
+   - **User ID:** Choose a unique identifier for your account.
+   - **Password:** Create a strong password. Ensure it contains a mix of letters, numbers, and special characters.
+   - **Email:** Enter a valid email address for account verification and recovery.
 
-### Installation
+3. **Complete Registration:**
+   - After filling in the details, click on the **"Register"** button.
+   - You may receive a confirmation email. Follow the instructions to verify your account.
 
-1. **Clone the Repository:**
+### Logging In
 
-   ```bash
-   git clone https://github.com/yourusername/notion-editor-webapp.git
-   ```
+1. **Access the Login Page:**
+   - Go to the Notion Editor WebApp homepage.
+   - Click on the **"Login"** button at the top-right corner.
 
-2. **Navigate to the Project Directory:**
+2. **Enter Credentials:**
+   - **User ID:** Your unique identifier.
+   - **Password:** The password you set during registration.
 
-   ```bash
-   cd notion-editor-webapp
-   ```
+3. **Sign In:**
+   - Click the **"Login"** button to access your dashboard.
 
-3. **Install Dependencies (If Applicable):**
+## Dashboard Overview
 
-   If your project uses package managers like npm or yarn, install the necessary dependencies:
+Upon logging in, you'll be greeted with the **Dashboard**, your central hub for all activities within the Notion Editor WebApp.
 
-   ```bash
-   npm install
-   ```
+- **Sidebar:**
+  - **Folders:** Organize your notes into different folders.
+  - **Pages List:** View and select notes within the selected folder.
+  
+- **Main Content Area:**
+  - **Editor:** Create and edit your notes using rich text formatting.
+  - **Toolbar:** Access formatting tools, AI features, and other utilities.
+  
+- **Top Bar:**
+  - **Profile:** Manage your account settings.
+  - **AI Settings:** Configure AI tools and preferences.
+  - **Table of Contents:** Generate and navigate your document's TOC.
 
-4. **Configure API Endpoints:**
+## Managing Notes
 
-   Ensure that the `API_BASE_URL` in `script.js` points to your backend server:
+### Creating a New Note
 
-   ```javascript
-   const API_BASE_URL = "https://your-api-endpoint.com";
-   ```
+1. **Navigate to the Dashboard:**
+   - Ensure you're on the main dashboard screen after logging in.
 
-5. **Run the Application:**
+2. **Click on "New Page":**
+   - Located in the sidebar or top toolbar, click the **"New Page"** button.
 
-   You can open the `index.html` file directly in your browser or use a local development server for better performance.
+3. **Enter Note Title:**
+   - A prompt will appear. Enter a meaningful title for your note and confirm.
 
-   ```bash
-   # Using a simple HTTP server with Python
-   python -m http.server 8000
-   ```
+4. **Start Writing:**
+   - The editor will open with a default message like "Start writing here...". Begin adding your content.
 
-   Then, navigate to `http://localhost:8000` in your web browser.
+### Editing a Note
 
-## Usage
+1. **Select a Note:**
+   - From the **Pages List** in the sidebar, click on the note you wish to edit.
 
-1. **Register an Account:**
+2. **Use the Editor:**
+   - The selected note will load in the main editor area.
+   - Click anywhere in the editor to start modifying the content.
 
-   - Click on the **Register** button.
-   - Provide your **User ID**, **Password**, and **Email**.
-   - Submit the form to create your account.
+3. **Formatting Tools:**
+   - Utilize the toolbar to format text, add headings, lists, and more.
 
-2. **Login:**
+### Saving Your Work
 
-   - Enter your **User ID** and **Password**.
-   - Click on the **Login** button to access your dashboard.
+- **Manual Save:**
+  - Click on the **"Save"** button located in the top toolbar to manually save your changes.
 
-3. **Creating and Managing Notes:**
+- **Auto-Save:**
+  - The application automatically saves your work every 10 seconds. Look for the **"Saved"** indicator after changes.
 
-   - **Create a New Note:** Click on the **New Page** button to create a new note.
-   - **Organize with Folders:** Use the **New Folder** button to create folders and organize your notes.
-   - **Edit Notes:** Click on any note to open it in the editor. Use the formatting toolbar to style your text.
-   - **Auto-Save:** Your changes are automatically saved every 10 seconds.
+### Auto-Save Feature
 
-4. **Using AI Features:**
+- **Reliability:**
+  - Prevents data loss by automatically saving your notes at regular intervals.
+  
+- **Visibility:**
+  - A **"Saving..."** indicator appears during the auto-save process, followed by a **"Saved"** confirmation.
 
-   - **AI Toolbar:** Select text and use the AI toolbar to ask questions, correct grammar, or translate content.
-   - **Custom Tools:** Access additional AI tools you've configured in the settings.
+## Organizing with Folders
 
-5. **Comments and Collaboration:**
+### Creating a New Folder
 
-   - **Add Comments:** Highlight text and click the **Add Comment** button to annotate specific sections.
-   - **Edit/Delete Comments:** Click on commented text to view, edit, or delete comments.
+1. **Click on "New Folder":**
+   - Located in the sidebar, click the **"New Folder"** button.
 
-6. **Media Insertion:**
+2. **Name Your Folder:**
+   - Enter a descriptive name for your folder and confirm.
 
-   - **Insert Images, Audio, Video, Iframes:** Use the respective buttons to embed media into your notes.
+3. **Folder Creation:**
+   - The new folder will appear in the sidebar, ready to house your notes.
 
-7. **Table of Contents:**
+### Adding Notes to Folders
 
-   - **Generate TOC:** Click on the **Toggle TOC** button to view a table of contents based on your headings.
-   - **Navigate:** Click on any TOC entry to jump to that section in your document.
+1. **Create or Select a Note:**
+   - Either create a new note or select an existing one from the **Pages List**.
 
-## AI Integration
+2. **Assign to Folder:**
+   - During note creation, choose the desired folder from the dropdown.
+   - For existing notes, use the **"Move"** option to relocate them to a different folder.
 
-The Notion Editor WebApp integrates multiple AI models to assist you in various tasks:
+### Navigating Folders
 
-- **Ask:** Generate answers to your questions based on the selected text.
-- **Correct:** Automatically correct grammar and spelling errors.
-- **Translate:** Translate selected text to English or other languages.
-- **Custom Tools:** Add and configure your own AI tools with custom prompts.
+- **Expand/Collapse Folders:**
+  - Click on the folder icon to expand or collapse its contents.
+  
+- **Accessing Notes:**
+  - Click on a folder to view all notes within it in the **Pages List**.
 
-### Selecting AI Models
+## Using AI-Powered Features
 
-1. **Access AI Settings:**
+Enhance your writing experience with integrated AI tools designed to assist you in various tasks.
 
-   - Click on the **AI Settings** button in the toolbar.
+### Accessing AI Tools
 
-2. **Choose Models:**
+1. **Select Text:**
+   - Highlight the text within your note that you want the AI to interact with.
 
-   - Select from the default AI models or add new ones by providing the **Model Name**, **Model ID**, **API URL**, and **API Key**.
+2. **AI Toolbar:**
+   - An AI toolbar will appear near your selection with available AI actions.
 
-3. **Configure Preferences:**
+### Ask a Question
 
-   - Assign specific models to different AI tool buttons for personalized assistance.
+- **Functionality:**
+  - Generate answers or insights based on the selected text.
 
-## Folder and Note Management
+- **How to Use:**
+  - Highlight the text and click the **"Ask"** button in the AI toolbar.
+  - The AI will provide a detailed response directly within your note.
 
-- **Create Folders:** Organize your notes into folders for better structure.
-- **Add Notes to Folders:** Assign notes to specific folders during creation or editing.
-- **View Folder Contents:** Click on a folder to view and manage its notes and sub-folders.
-- **Search and Filter:** Easily find notes within folders using the search functionality.
+### Correcting Text
+
+- **Functionality:**
+  - Automatically correct grammar and spelling errors in your selected text.
+
+- **How to Use:**
+  - Highlight the text and click the **"Correct"** button in the AI toolbar.
+  - The AI will refine the selected text, ensuring clarity and correctness.
+
+### Translating Text
+
+- **Functionality:**
+  - Translate your selected text into English or other supported languages.
+
+- **How to Use:**
+  - Highlight the text and click the **"Translate"** button in the AI toolbar.
+  - The AI will provide a translated version of the selected text.
+
+### Custom AI Tools
+
+- **Functionality:**
+  - Add and configure custom AI tools tailored to your specific needs.
+
+- **How to Use:**
+  - Access **AI Settings** from the top bar.
+  - Add new tools by specifying prompts and configurations.
+  - Utilize these tools similarly to the default AI actions.
+
+## Formatting Your Notes
+
+Customize the appearance and structure of your notes using various formatting options.
+
+### Basic Text Formatting
+
+- **Bold, Italic, Underline:**
+  - Use the toolbar buttons to apply bold, italic, or underline styles to your text.
+
+- **Headings:**
+  - Create headings (H1, H2, H3) to organize content hierarchically.
+
+- **Lists:**
+  - Generate ordered or unordered lists for structured information.
+
+### Inserting Media
+
+1. **Insert Image:**
+   - Click the **"Insert Image"** button and provide the image URL.
+
+2. **Insert Audio:**
+   - Click the **"Insert Audio"** button and provide the audio file URL.
+
+3. **Insert Video:**
+   - Click the **"Insert Video"** button and provide the video URL.
+
+4. **Insert Iframe:**
+   - Click the **"Insert Iframe"** button and enter the webpage URL to embed.
+
+### Adding Links
+
+- **Functionality:**
+  - Embed hyperlinks within your text for easy navigation.
+
+- **How to Use:**
+  - Highlight the desired text and click the **"Link"** button.
+  - Enter the target URL and confirm to create the hyperlink.
 
 ## Comments and Collaboration
 
-Enhance collaboration by adding comments to specific parts of your notes:
+Facilitate collaboration by adding comments and annotations to specific sections of your notes.
 
-- **Add Comments:** Select text and click the **Add Comment** button to annotate.
-- **View Comments:** Click on commented text to view existing comments.
-- **Edit/Delete Comments:** Modify or remove comments as needed.
+### Adding Comments
 
-## Customization
+1. **Select Text:**
+   - Highlight the portion of text you want to comment on.
 
-Tailor the editor to your preferences:
+2. **Add Comment:**
+   - Click the **"Add Comment"** button in the toolbar.
 
-- **AI Prompts:** Customize AI prompts for different actions in the AI settings.
-- **Formatting Tools:** Use the toolbar to format text, insert media, and manage content structure.
-- **Themes and Styles:** (If applicable) Choose from different themes or customize the editor's appearance.
+3. **Enter Comment:**
+   - A prompt will appear. Type your comment and confirm.
+   - The commented text will be highlighted, indicating an active comment.
 
-## Contributing
+### Editing and Deleting Comments
 
-Contributions are welcome! If you'd like to contribute to the Notion Editor WebApp, please follow these steps:
+- **Viewing Comments:**
+  - Click on the highlighted commented text to view existing comments.
 
-1. **Fork the Repository:**
+- **Editing a Comment:**
+  - In the comment tooltip, click the **"Edit"** button.
+  - Modify your comment in the provided field and save.
 
-   Click the **Fork** button at the top right of the repository page.
+- **Deleting a Comment:**
+  - In the comment tooltip, click the **"Delete"** button.
+  - Confirm the deletion when prompted.
 
-2. **Create a New Branch:**
+## Table of Contents
 
-   ```bash
-   git checkout -b feature/YourFeatureName
-   ```
+Generate and navigate through a structured overview of your document's headings.
 
-3. **Make Your Changes:**
+### Generating TOC
 
-   Implement your feature or bug fix.
+1. **Toggle TOC:**
+   - Click the **"Toggle TOC"** button in the top bar to display the table of contents.
 
-4. **Commit Your Changes:**
+2. **Automatic Generation:**
+   - The TOC is generated based on all H1, H2, and H3 headings in your document.
 
-   ```bash
-   git commit -m "Add Your Feature"
-   ```
+### Navigating TOC
 
-5. **Push to the Branch:**
+- **Jump to Section:**
+  - Click on any entry in the TOC to smoothly scroll to the corresponding section in your note.
 
-   ```bash
-   git push origin feature/YourFeatureName
-   ```
+## Profile Management
 
-6. **Open a Pull Request:**
+Manage your account and personalize your experience.
 
-   Go to the repository on GitHub and click **Compare & pull request**.
+### Viewing Your Profile
 
-## License
+1. **Access Profile:**
+   - Click on the **"Profile"** button in the top bar.
 
-This project is licensed under the [MIT License](LICENSE).
+2. **View Details:**
+   - Your User ID and other account details will be displayed.
+
+### Logging Out
+
+1. **Click Logout:**
+   - In the profile section, click the **"Logout"** button.
+
+2. **Confirm Logout:**
+   - You will be redirected to the login page upon successful logout.
+
+## Tips and Tricks
+
+- **Keyboard Shortcuts:**
+  - Utilize shortcuts for faster formatting and navigation (e.g., Ctrl+B for bold).
+
+- **Drag and Drop:**
+  - Easily rearrange notes and folders by dragging and dropping them within the sidebar.
+
+- **Search Functionality:**
+  - Use the search bar to quickly find specific notes or folders.
+
+- **Dark Mode:**
+  - Switch to dark mode for a comfortable editing experience in low-light environments (if available).
+
+## Troubleshooting
+
+Encountering issues? Here are some common problems and solutions.
+
+- **Unable to Save Notes:**
+  - Ensure you have a stable internet connection.
+  - Check if you are logged in. If not, log in again and try saving.
+
+- **AI Features Not Responding:**
+  - Verify your AI model configurations in **AI Settings**.
+  - Ensure that your API keys are valid and have not expired.
+
+- **Comments Not Showing:**
+  - Refresh the page to reload comments.
+  - Ensure that comments are enabled in your settings.
+
+- **Media Not Displaying:**
+  - Confirm that the media URLs are correct and accessible.
+  - Check your internet connection.
+
+## Support
+
+Need help or have feedback? Reach out to our support team!
+
+- **Email:** support@notioneditor.com
+- **Help Center:** [Help Center Link](https://notioneditor.com/help)
+- **Community Forum:** [Join the Discussion](https://forum.notioneditor.com)
+
+## Privacy and Security
+
+Your privacy and data security are paramount to us.
+
+- **Data Encryption:**
+  - All data transmitted between your browser and our servers is encrypted.
+
+- **Secure Authentication:**
+  - Passwords are hashed and never stored in plain text.
+
+- **Data Backup:**
+  - Regular backups are performed to prevent data loss.
+
+- **Privacy Policy:**
+  - Read our [Privacy Policy](https://notioneditor.com/privacy) to understand how we handle your data.
+
+---
+
+**Enjoy using the Notion Editor WebApp!** If you have any suggestions or encounter any issues, please don't hesitate to contact our support team.
