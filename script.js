@@ -556,8 +556,8 @@ class NotionEditor {
 
     addCustomToolBtn.onclick = () => this.addCustomTool();
     
-    saveBtn.onclick = () => {
-      this.saveAISettings();
+    saveBtn.onclick = async () => {
+      await this.saveAISettings();
       modal.style.display = "none";
       this.updateAIToolbar();
     };
