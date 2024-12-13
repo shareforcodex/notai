@@ -996,7 +996,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     return {
         currentText: currentBlock.textContent.trim(),
-        contextText: context.join('\n\n')
+        contextText: context.join('\n')
     };
   }
 
@@ -1101,12 +1101,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             
             // Insert blank line and block
             if (lastResponseBlock) {
-                lastResponseBlock.after(blankLine);
-                blankLine.after(block);
+                lastResponseBlock.after(block);
+                block.after(blankLine);
             } else {
-                this.editor.appendChild(blankLine);
                 this.editor.appendChild(block);
-            }
+                this.editor.appendChild(blankLine);
+
+              }
             currentBlock=nextBlock;
           }
         }).catch(error => {
