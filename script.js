@@ -1525,7 +1525,7 @@ class NotionEditor {
                         <i class="fas fa-folder"></i>
                         <span>${folder.folder_name}</span>
                         <div class="folder-count">${
-                          folder.children ? folder.children.length : 0
+                          ' '
                         }</div>
                     </div>
                     <button class="add-note-btn" title="Add note to folder">
