@@ -607,6 +607,7 @@ class NotionEditor {
       await this.saveAISettings();
       modal.style.display = "none";
       this.updateAIToolbar();
+      this.updateModelDropdowns();
     };
   }
 
