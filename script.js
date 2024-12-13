@@ -608,6 +608,9 @@ class NotionEditor {
   renderModelSettings() {
     const container = document.getElementById('modelSettingsContainer');
     container.innerHTML = '';
+    if (!this.aiSettings.models) {
+      this.aiSettings.models = [];
+    }
     this.aiSettings.models.forEach((model, index) => {
       const div = document.createElement('div');
       div.className = 'model-config';
@@ -653,6 +656,8 @@ class NotionEditor {
       console.log("load config, pasedconfig",parsedConfig,"this.aisettings ",this,this.aiSettings);
       if (parsedConfig.models) {
         this.aiSettings.models = parsedConfig.models;
+      } else {
+        this.aiSettings.models = [];
       }
       }
 
