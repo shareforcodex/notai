@@ -127,6 +127,13 @@ class NotionEditor {
         const headers = {
             "Content-Type": "application/json",
         };
+        
+        if (isAIRequest && body?.model) {
+            const model = this.aiSettings.models.find(m => m.model_id === body.model);
+            if (model?.api_key) {
+                headers["Authorization"] = `Bearer ${model.api_key}`;
+            }
+        }
 
     if (currentUser.userId && currentUser.credentials) {
       headers["Authorization"] = `Basic ${currentUser.credentials}`;
@@ -673,6 +680,7 @@ class NotionEditor {
         <input type="text" class="model-name" placeholder="Model Name" value="${model.name}">
         <input type="text" class="model-id" placeholder="Model ID" value="${model.model_id}">
         <input type="text" class="model-url" placeholder="Model URL" value="${model.url}">
+        <input type="text" class="model-api-key" placeholder="API Key" value="${model.api_key}">
         <button class="remove-model" data-index="${index}"><i class="fas fa-trash"></i></button>
       `;
 
@@ -688,7 +696,8 @@ class NotionEditor {
     this.aiSettings.models.push({
       name: '',
       model_id: '',
-      url: 'https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions'
+      url: 'https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions',
+      api_key: ''
     });
     this.renderModelSettings();
   }
@@ -735,7 +744,8 @@ class NotionEditor {
     const updatedModels = Array.from(modelConfigs).map(mc => ({
       name: mc.querySelector('.model-name').value,
       model_id: mc.querySelector('.model-id').value,
-      url: mc.querySelector('.model-url').value
+      url: mc.querySelector('.model-url').value,
+      api_key: mc.querySelector('.model-api-key').value
     }));
 
     // Prepare the config object
