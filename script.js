@@ -679,7 +679,7 @@ class NotionEditor {
       const config = await this.apiRequest("GET", "/users/config");
       if (config && !config.error) {
         // Parse the config if it's a string
-        const parsedConfig =  JSON.parse(config.config);
+        const parsedConfig = JSON.parse(config.config);
         // Update aiSettings with config values or defaults
         this.aiSettings = {
           prompts: parsedConfig.prompts || {
