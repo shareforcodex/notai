@@ -40,7 +40,14 @@ class NotionEditor {
         correct: "Correct any grammar or spelling errors in this text: {text}",
         translate: "Translate this text to English: {text}"
       },
-      customTools: []
+      customTools: [],
+      models: [
+        { name: "GPT-4O", model_id: "gpt-4o", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+        { name: "GPT-4O Mini", model_id: "gpt-4o-mini", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+        { name: "Llama 3.1 405B", model_id: "Meta-Llama-3.1-405B-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+        { name: "Llama 3.2 90B", model_id: "Llama-3.2-90B-Vision-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+        { name: "Mistral Large", model_id: "Mistral-large", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+      ]
     };
     this.loadUserConfig();
     this.setupEventListeners();
@@ -127,6 +134,9 @@ class NotionEditor {
         ? "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions"
         : `${API_BASE_URL}${endpoint}`;
 
+      const url = isAIRequest && body?.model
+        ? this.aiSettings.models.find(m => m.model_id === body.model)?.url || `${API_BASE_URL}${endpoint}`
+        : `${API_BASE_URL}${endpoint}`;
       const response = await fetch(url, {
         method,
         headers,
@@ -261,6 +271,11 @@ class NotionEditor {
         });
         options.classList.toggle('show');
       });
+      
+      const modelOptions = this.aiSettings.models.map(model =>
+        `<button data-value="${model.model_id}">${model.name}</button>`
+      ).join('');
+      options.innerHTML = modelOptions;
 
       // Handle option selection
       options.querySelectorAll('button').forEach(option => {
@@ -312,15 +327,8 @@ class NotionEditor {
 
   // Helper function to get display name for model
   getModelDisplayName(value) {
-    const modelNames = {
-        'gpt-4o': 'GPT-4O',
-        'gpt-4o-mini': 'GPT-4O Mini',
-        'Meta-Llama-3.1-405B-Instruct': 'Llama 3.1 405B',
-        'Llama-3.2-90B-Vision-Instruct': 'Llama 3.2 90B',
-        'Mistral-large': 'Mistral Large',
-        'none': 'No Model'
-    };
-    return modelNames[value] || value;
+    const model = this.aiSettings.models.find(m => m.model_id === value);
+    return model ? model.name : value;
   }
 
   setupSelectionHandler() {
@@ -539,6 +547,7 @@ class NotionEditor {
     document.getElementById('translatePrompt').value = this.aiSettings.prompts.translate;
     
     this.renderCustomTools();
+    this.renderModelSettings();
 
     // Event listeners
     aiSettingsBtn.onclick = () => {
@@ -547,6 +556,7 @@ class NotionEditor {
       document.getElementById('correctPrompt').value = this.aiSettings.prompts.correct;
       document.getElementById('translatePrompt').value = this.aiSettings.prompts.translate;
       this.renderCustomTools();
+      this.renderModelSettings();
       modal.style.display = "block";
     };
     closeBtn.onclick = () => modal.style.display = "none";
@@ -555,6 +565,7 @@ class NotionEditor {
     };
 
     addCustomToolBtn.onclick = () => this.addCustomTool();
+    document.getElementById('addModelBtn').onclick = () => this.addModel();
     
     saveBtn.onclick = async () => {
       await this.saveAISettings();
@@ -594,6 +605,36 @@ class NotionEditor {
     this.renderCustomTools();
   }
 
+  renderModelSettings() {
+    const container = document.getElementById('modelSettingsContainer');
+    container.innerHTML = '';
+    this.aiSettings.models.forEach((model, index) => {
+      const div = document.createElement('div');
+      div.className = 'model-config';
+      div.innerHTML = `
+        <input type="text" class="model-name" placeholder="Model Name" value="${model.name}">
+        <input type="text" class="model-id" placeholder="Model ID" value="${model.model_id}">
+        <input type="text" class="model-url" placeholder="Model URL" value="${model.url}">
+        <button class="remove-model" data-index="${index}"><i class="fas fa-trash"></i></button>
+      `;
+
+      div.querySelector('.remove-model').onclick = () => {
+        this.aiSettings.models.splice(index, 1);
+        this.renderModelSettings();
+      };
+      container.appendChild(div);
+    });
+  }
+
+  addModel() {
+    this.aiSettings.models.push({
+      name: '',
+      model_id: '',
+      url: 'https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions'
+    });
+    this.renderModelSettings();
+  }
+
   async loadUserConfig() {
     try {
       const config = await this.apiRequest("GET", "/users/config");
@@ -610,7 +651,9 @@ class NotionEditor {
           customTools: parsedConfig.customTools || []
         };
       console.log("load config, pasedconfig",parsedConfig,"this.aisettings ",this,this.aiSettings);
-
+      if (parsedConfig.models) {
+        this.aiSettings.models = parsedConfig.models;
+      }
       }
 
       this.updateAIToolbar();
@@ -631,7 +674,8 @@ class NotionEditor {
         id: this.aiSettings.customTools[index]?.id || 'custom_' + Date.now(),
         name: toolDiv.querySelector('.tool-name').value,
         prompt: toolDiv.querySelector('.tool-prompt').value
-      }))
+      })),
+      models: this.aiSettings.models
     };
     
     try {

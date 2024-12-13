@@ -797,6 +797,28 @@ pre code {
     background-color: #e0e0e0;
 }
 
+.model-config {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+  }
+  .model-config input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  .model-config .remove-model {
+    color: #ff4444;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+
 .save-settings-btn {
     padding: 10px 20px;
     background-color: #2ecc71 !important;
