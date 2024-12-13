@@ -110,9 +110,9 @@ class NotionEditor {
         }
     }
 
-  async apiRequest(method, endpoint, body = null, isAIRequest = false) {
+  async apiRequest(method, endpoint, body = null, isAIRequest = false, noSpinner = false) {
         // Show the spinner before making the request
-        this.showSpinner();
+        if (!noSpinner) this.showSpinner();
 
         const headers = {
             "Content-Type": "application/json",
