@@ -205,6 +205,33 @@ class NotionEditor {
     }
   }
 
+  async fetchReadmeContent() {
+    try {
+      const response = await fetch('README.md');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.text();
+    } catch (error) {
+      console.error("Failed to fetch README.md:", error);
+      return "Welcome to your default note!"; // Fallback content
+    }
+  }
+
+  async loadHelpPage() {
+    try {
+        const readmeContent = await this.fetchReadmeContent();
+        const helpMarkdown = document.getElementById('helpMarkdown');
+        if (helpMarkdown) {
+            helpMarkdown.innerHTML = marked.parse(readmeContent);
+        }
+        window.location.href = 'help.html';
+    } catch (error) {
+        console.error("Error loading help page:", error);
+        this.showToast("Failed to load help page.");
+    }
+  }
+
   // Insert content into the editor, converting newlines to <br>
   insertContent(text) {
     this.editor.innerHTML += this.convertNewlinesToBreaks(text);
