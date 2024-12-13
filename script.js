@@ -134,10 +134,10 @@ class NotionEditor {
         ? "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions"
         : `${API_BASE_URL}${endpoint}`;
 
-      const url = isAIRequest && body?.model
+      const response = await fetch(
+        isAIRequest && body?.model
         ? this.aiSettings.models.find(m => m.model_id === body.model)?.url || `${API_BASE_URL}${endpoint}`
-        : `${API_BASE_URL}${endpoint}`;
-      const response = await fetch(url, {
+        : url, {
         method,
         headers,
         body: body ? JSON.stringify(body) : null,
