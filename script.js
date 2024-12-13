@@ -702,6 +702,7 @@ class NotionEditor {
           { name: "Mistral Large", model_id: "Mistral-large", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
         ];
       }
+      this.updateModelDropdowns();
     }
       this.updateAIToolbar();
     } catch (error) {
