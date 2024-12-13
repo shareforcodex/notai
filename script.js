@@ -298,6 +298,21 @@ class NotionEditor {
       // First, clear any existing options to avoid duplication
       options.innerHTML = '';
 
+      // Add a "None" option
+      const noneButton = document.createElement('button');
+      noneButton.setAttribute('data-value', 'none');
+      noneButton.textContent = 'None';
+      noneButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        btn.textContent = 'None';
+        btn.setAttribute('data-selected-value', 'none');
+        options.classList.remove('show');
+        const preferences = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
+        preferences[`model${index + 1}`] = 'none';
+        localStorage.setItem('aiModelPreferences', JSON.stringify(preferences));
+      });
+      options.appendChild(noneButton);
+
       // Dynamically create and append a button for each model
       this.aiSettings.models.forEach(model => {
           const button = document.createElement('button');
