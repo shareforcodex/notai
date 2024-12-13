@@ -1675,7 +1675,7 @@ class NotionEditor {
         note_id: this.currentNoteId,
         content: this.editor.innerHTML,
         title: currentTitle,
-      });
+      }, false, true);
 
       if (result.success) {
         // Show saved state
