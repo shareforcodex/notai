@@ -1910,11 +1910,6 @@ class NotionEditor {
         <div class="toast-message">${message}</div>
         <button class="toast-close"><i class="fas fa-times"></i></button>
     `;
-    const toastContainer = document.getElementById('toastContainer');
-    if (!toastContainer) {
-      console.error("No toast container found");
-      return;
-    }
     
     // Add to container
     toastContainer.appendChild(toast);
