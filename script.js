@@ -136,7 +136,8 @@ class NotionEditor {
 
       const response = await fetch(
         isAIRequest && body?.model
-        ? this.aiSettings.models.find(m => m.model_id === body.model)?.url || `${API_BASE_URL}${endpoint}`
+        ? (this.aiSettings.models.find(m => m.model_id === body.model)?.url || 
+           "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions")
         : url, {
         method,
         headers,
@@ -659,7 +660,7 @@ class NotionEditor {
       } else {
         this.aiSettings.models = [];
       }
-      }
+    }
 
       this.updateAIToolbar();
     } catch (error) {
@@ -1910,6 +1911,10 @@ class NotionEditor {
         <div class="toast-message">${message}</div>
         <button class="toast-close"><i class="fas fa-times"></i></button>
     `;
+    if (!toastContainer) {
+      console.error("toastContainer not found in the DOM");
+      return; 
+    }
     
     // Add to container
     toastContainer.appendChild(toast);
