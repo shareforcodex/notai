@@ -540,7 +540,7 @@ class NotionEditor {
                     if (useComment) {
                         // Add this response to the comment
                         const currentComment = commentedSpan.getAttribute("data-comment") || "";
-                        const newResponse = `[${modelName}]:\n${aiResponse}\n\n`;
+                        const newResponse = `[${modelName}]:\n${aiResponse}\n`;
                         const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
                         commentedSpan.setAttribute("data-comment", updatedComment);
 
