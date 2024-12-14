@@ -2026,6 +2026,15 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     
     // Auto close after 10 seconds
     setTimeout(closeToast, 10000);
+
+    // **New Code Starts Here**
+    if (type === 'error') {
+        // After 1 second, add the 'hide' class to transition background to white
+        setTimeout(() => {
+            toast.classList.add('hide');
+        }, 1000); // 1000 milliseconds = 1 second
+    }
+    // **New Code Ends Here**
   }
 }
 

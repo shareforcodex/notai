@@ -1041,6 +1041,7 @@ pre code {
     animation: slideIn 0.3s ease-out;
     max-width: 450px;
     min-width: 300px;
+    transition: background-color 0.5s ease;
 }
 
 .toast.success {
@@ -1068,6 +1069,14 @@ pre code {
 
 .toast-close:hover {
     color: #333;
+}
+
+.toast.error {
+    background-color: #ff4444; /* Red background for error */
+}
+
+.toast.error.hide {
+    background-color: #ffffff; /* White background after 1 second */
 }
 
 @keyframes slideIn {
