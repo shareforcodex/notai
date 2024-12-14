@@ -578,10 +578,30 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
                             currentBlock.after(blankLine);
                             blankLine.after(block);
                         } else {
-                            this.editor.appendChild(blankLine);
-                            this.editor.appendChild(block);
+                            // Insert at cursor position
+                            const selection = window.getSelection();
+                            if (selection.rangeCount > 0) {
+                                const range = selection.getRangeAt(0);
+                                range.collapse(false); // Collapse the range to the end point
+
+                                // Insert the blank line
+                                range.insertNode(blankLine);
+
+                                // Insert the new block
+                                range.insertNode(block);
+
+                                // Move the cursor after the inserted block
+                                range.setStartAfter(block);
+                                range.collapse(true);
+                                selection.removeAllRanges();
+                                selection.addRange(range);
+                            } else {
+                                // Fallback to appending at the end if no selection range is available
+                                this.editor.appendChild(blankLine);
+                                this.editor.appendChild(block);
+                            }
                         }
-                        currentBlock=block;
+                        currentBlock = block;
                     }
 
                     // Increment completed responses counter
@@ -1104,11 +1124,25 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
                 lastResponseBlock.after(block);
                 block.after(blankLine);
             } else {
-                this.editor.appendChild(block);
-                this.editor.appendChild(blankLine);
+                // Insert at cursor position
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    range.collapse(false);
 
-              }
-            currentBlock=nextBlock;
+                    range.insertNode(block);
+                    range.insertNode(blankLine);
+
+                    range.setStartAfter(blankLine);
+                    range.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                } else {
+                    this.editor.appendChild(block);
+                    this.editor.appendChild(blankLine);
+                }
+            }
+            currentBlock = nextBlock;
           }
         }).catch(error => {
           console.error(`Error with ${modelName} request:`, error);
