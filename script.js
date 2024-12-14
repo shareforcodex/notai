@@ -291,7 +291,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     // Set initial button texts and values
     ['modelBtn1', 'modelBtn2', 'modelBtn3'].forEach((btnId, index) => {
       const btn = document.getElementById(btnId);
-      const modelValue = savedModels[`model${index + 1}`] || (index === 0 ? 'gpt-4o' : 'none');
+      const modelValue = savedModels[`model${index + 1}`] || (index === 0 ? 'gpt-4o-mini' : 'none');
       btn.textContent = this.getModelDisplayName(modelValue);
       btn.setAttribute('data-selected-value', modelValue);
     });
