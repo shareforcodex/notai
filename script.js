@@ -871,12 +871,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       }
     });
 
-    // Handle close button click
-    tooltip.querySelector('.close-tooltip')?.addEventListener('click', () => {
-      tooltip.style.display = 'none';
-      currentCommentElement = null;
-    });
-
     // Handle comment editing
     tooltip.addEventListener('click', (e) => {
       if (e.target.classList.contains('edit-comment')) {
@@ -925,8 +919,34 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     htmlContent += `</div>`;
 
     tooltip.innerHTML = htmlContent;
+    tooltip.style.display = 'block';
 
-    // Add click event listeners to each model name to enable scrolling
+    // Reattach event listener for the Close button
+    const closeBtn = tooltip.querySelector('.close-tooltip');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            tooltip.style.display = 'none';
+            this.currentCommentElement = null;
+        });
+    }
+
+    // Reattach event listener for the Edit button
+    const editBtn = tooltip.querySelector('.edit-comment');
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            this.editComment(element);
+        });
+    }
+
+    // Reattach event listener for the Delete button
+    const deleteBtn = tooltip.querySelector('.delete-comment');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            this.deleteComment(element);
+        });
+    }
+
+    // Reattach event listeners for model-name clicks to enable scrolling
     tooltip.querySelectorAll('.model-name').forEach(h4 => {
         h4.style.cursor = 'pointer';
         h4.addEventListener('click', () => {
