@@ -555,8 +555,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
                     if (useComment) {
                         // Add this response to the comment
                         const currentComment = commentedSpan.getAttribute("data-comment") || "";
-                        const newResponse = `[${modelName}]:\n${aiResponse}\n`;
-                        const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
+                        const newResponse = `[${modelName}]:\n${aiResponse}\n---\n`;
+                        const updatedComment = currentComment ? currentComment + newResponse : newResponse;
                         commentedSpan.setAttribute("data-comment", updatedComment);
     
                        
@@ -900,10 +900,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     `;
 
     commentSections.forEach(section => {
-        const match = section.match(/\[(.*?)\]:\n([\s\S]*)/);
+        const match = section.match(/\[(.*?)\]:\n([\s\S]*?)/);
         if (match) {
             const modelName = match[1];
-            const response = match[2];
+            const response = match[2].trim();
 
             // Get the ID of the commented span to enable scrolling
             const elementId = element.getAttribute('id');
