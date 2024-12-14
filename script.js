@@ -893,7 +893,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       <div class="tooltip-header">
         <div class="comment-actions">
           <button class="edit-comment">Edit</button>
-          <button class="delete-comment">Delete</button>
           <button class="close-tooltip">Close</button>
           </div>
         
