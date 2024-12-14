@@ -14,7 +14,7 @@ class NotionEditor {
 
     // Listen for pointer down events to update the last position
     document.addEventListener('pointerdown', (e) => {
-        this.lastPointerPosition = { x: e.clientX, y: e.clientY };
+      this.lastPointerPosition = { x: e.clientX, y: e.clientY };
     });
     const sourceView = document.getElementById("sourceView");
     const toolbar = document.querySelector(".toolbar");
@@ -38,7 +38,7 @@ class NotionEditor {
 
     // Assign verified elements
     this.editor = editor;
-    this.sourceView = sourceView; 
+    this.sourceView = sourceView;
     this.toolbar = toolbar;
     this.aiToolbar = aiToolbar;
     this.currentNoteTitle = "";
@@ -80,62 +80,62 @@ class NotionEditor {
     this.loadFolders();
   }
 
-    showSpinner() {
-        const spinner = document.getElementById('loadingSpinner');
-        if (!spinner) return;
+  showSpinner() {
+    const spinner = document.getElementById('loadingSpinner');
+    if (!spinner) return;
 
-        // Position the spinner at the last pointer-down location
-        let x = this.lastPointerPosition.x;
-        let y = this.lastPointerPosition.y;
-        const spinnerSize = 40; // Assuming spinner width and height are 40px
+    // Position the spinner at the last pointer-down location
+    let x = this.lastPointerPosition.x;
+    let y = this.lastPointerPosition.y;
+    const spinnerSize = 40; // Assuming spinner width and height are 40px
 
-        // Adjust position to keep spinner within viewport
-        if (x + spinnerSize > window.innerWidth) {
-            x = window.innerWidth - spinnerSize - 10; // 10px padding
-        }
-        if (y + spinnerSize > window.innerHeight) {
-            y = window.innerHeight - spinnerSize - 10; // 10px padding
-        }
-
-        spinner.style.left = `${x}px`;
-        spinner.style.top = `${y}px`;
-        spinner.style.display = 'block';
-
-        // Automatically hide the spinner after 5 seconds
-        this.spinnerTimeout = setTimeout(() => {
-            this.hideSpinner();
-        }, 5000);
+    // Adjust position to keep spinner within viewport
+    if (x + spinnerSize > window.innerWidth) {
+      x = window.innerWidth - spinnerSize - 10; // 10px padding
+    }
+    if (y + spinnerSize > window.innerHeight) {
+      y = window.innerHeight - spinnerSize - 10; // 10px padding
     }
 
-    hideSpinner() {
-        const spinner = document.getElementById('loadingSpinner');
-        if (!spinner) return;
+    spinner.style.left = `${x}px`;
+    spinner.style.top = `${y}px`;
+    spinner.style.display = 'block';
 
-        spinner.style.display = 'none';
+    // Automatically hide the spinner after 5 seconds
+    this.spinnerTimeout = setTimeout(() => {
+      this.hideSpinner();
+    }, 5000);
+  }
 
-        // Clear the timeout if the spinner is hidden manually
-        if (this.spinnerTimeout) {
-            clearTimeout(this.spinnerTimeout);
-            this.spinnerTimeout = null;
-        }
+  hideSpinner() {
+    const spinner = document.getElementById('loadingSpinner');
+    if (!spinner) return;
+
+    spinner.style.display = 'none';
+
+    // Clear the timeout if the spinner is hidden manually
+    if (this.spinnerTimeout) {
+      clearTimeout(this.spinnerTimeout);
+      this.spinnerTimeout = null;
     }
+  }
 
   async apiRequest(method, endpoint, body = null, isAIRequest = false, noSpinner = false) {
-        // Show the spinner before making the request
-        if (!noSpinner) this.showSpinner();
+    // Show the spinner before making the request
+    if (!noSpinner) this.showSpinner();
 
-        const headers = {
-            "Content-Type": "application/json",
-        };
-        
-        if (isAIRequest) {
-            const model = this.aiSettings.models.find(m => m.model_id === body?.model);
-            if (model?.api_key) {
-                headers["Authorization"] = `Bearer ${model.api_key}`;
-            }
-        } else if (currentUser.userId && currentUser.credentials) {
-            headers["Authorization"] = `Basic ${currentUser.credentials}`;
-        }
+    const headers = {
+      "Content-Type": "application/json",
+    };
+
+    if (isAIRequest) {
+      const model = this.aiSettings.models.find(m => m.model_id === body?.model);
+      if (model?.api_key) {
+        headers["Authorization"] = `Bearer ${model.api_key}`;
+      }
+    } else if (currentUser.userId && currentUser.credentials) {
+      headers["Authorization"] = `Basic ${currentUser.credentials}`;
+    }
 
     try {
       const url = isAIRequest
@@ -144,26 +144,26 @@ class NotionEditor {
 
       const response = await fetch(
         isAIRequest && body?.model
-        ? (this.aiSettings.models.find(m => m.model_id === body.model)?.url || 
-           "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions")
-        : url, {
+          ? (this.aiSettings.models.find(m => m.model_id === body.model)?.url ||
+            "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions")
+          : url, {
         method,
         headers,
         body: body ? JSON.stringify(body) : null,
       });
 
-            const data = await response.json();
+      const data = await response.json();
 
-            // Hide the spinner after the request completes
-            this.hideSpinner();
+      // Hide the spinner after the request completes
+      this.hideSpinner();
 
-            return data;
-        } catch (error) {
-            console.error("API Error:", error);
-            this.hideSpinner(); // Ensure spinner is hidden on error
-            return { error: "Network error" };
-        }
+      return data;
+    } catch (error) {
+      console.error("API Error:", error);
+      this.hideSpinner(); // Ensure spinner is hidden on error
+      return { error: "Network error" };
     }
+  }
 
   // Convert newline characters to <br> tags
   convertNewlinesToBreaks(text) {
@@ -211,7 +211,7 @@ class NotionEditor {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return await marked(response.text()) ;
+      return await marked(response.text());
     } catch (error) {
       console.error("Failed to fetch README.md:", error);
       return `Welcome to your default note! 
@@ -223,15 +223,15 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   async loadHelpPage() {
     try {
-        const readmeContent = await this.fetchReadmeContent();
-        const helpMarkdown = document.getElementById('helpMarkdown');
-        if (helpMarkdown) {
-            helpMarkdown.innerHTML = marked.parse(readmeContent);
-        }
-        window.location.href = 'help.html';
+      const readmeContent = await this.fetchReadmeContent();
+      const helpMarkdown = document.getElementById('helpMarkdown');
+      if (helpMarkdown) {
+        helpMarkdown.innerHTML = marked.parse(readmeContent);
+      }
+      window.location.href = 'help.html';
     } catch (error) {
-        console.error("Error loading help page:", error);
-        this.showToast("Failed to load help page.");
+      console.error("Error loading help page:", error);
+      this.showToast("Failed to load help page.");
     }
   }
 
@@ -244,7 +244,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     this.isEditable = !this.isEditable;
     this.editor.contentEditable = this.isEditable;
     document.getElementById("noteTitle").contentEditable = this.isEditable;
-    
+
     // Update button icon
     const button = document.getElementById("toggleEditableBtn");
     const icon = button.querySelector("i");
@@ -263,31 +263,31 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const editor = this.editor;
 
     if (this.isSourceView) {
-        // Switching to source view
-        this.updateContent();  // Convert current HTML to markdown
-        sourceView.value = editor.innerHTML;  // Show HTML source
-        editor.style.display = "none";
-        sourceView.style.display = "block";
+      // Switching to source view
+      this.updateContent();  // Convert current HTML to markdown
+      sourceView.value = editor.innerHTML;  // Show HTML source
+      editor.style.display = "none";
+      sourceView.style.display = "block";
 
-        // Add input event listener to sync changes
-        sourceView.addEventListener('input', () => {
-            editor.innerHTML = sourceView.value;
-            this.scheduleAutoSave();
-        });
-    } else {
-        // Switching back to editor view
-        editor.innerHTML = sourceView.value;  // Apply source changes to editor
-        editor.style.display = "block";
-        sourceView.style.display = "none";
-        this.updateContent();  // Update markdown content
+      // Add input event listener to sync changes
+      sourceView.addEventListener('input', () => {
+        editor.innerHTML = sourceView.value;
         this.scheduleAutoSave();
+      });
+    } else {
+      // Switching back to editor view
+      editor.innerHTML = sourceView.value;  // Apply source changes to editor
+      editor.style.display = "block";
+      sourceView.style.display = "none";
+      this.updateContent();  // Update markdown content
+      this.scheduleAutoSave();
     }
   }
 
   setupAIToolbar() {
     // Load saved model preferences
     const savedModels = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
-    
+
     // Set initial button texts and values
     ['modelBtn1', 'modelBtn2', 'modelBtn3'].forEach((btnId, index) => {
       const btn = document.getElementById(btnId);
@@ -300,7 +300,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     document.querySelectorAll('.custom-dropdown').forEach((dropdown, index) => {
       const btn = dropdown.querySelector('.model-select-btn');
       const options = dropdown.querySelector('.model-options');
-      
+
       // Toggle dropdown
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -310,7 +310,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         });
         options.classList.toggle('show');
       });
-      
+
       this.updateModelDropdowns();
     });
 
@@ -329,7 +329,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     document.querySelectorAll('.custom-dropdown').forEach((dropdown, index) => {
       const btn = dropdown.querySelector('.model-select-btn');
       const options = dropdown.querySelector('.model-options');
-      
+
       // First, clear any existing options to avoid duplication
       options.innerHTML = '';
 
@@ -350,47 +350,47 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
       // Dynamically create and append a button for each model
       this.aiSettings.models.forEach(model => {
-          const button = document.createElement('button');
-          button.setAttribute('data-value', model.model_id);
-          button.textContent = model.name;
+        const button = document.createElement('button');
+        button.setAttribute('data-value', model.model_id);
+        button.textContent = model.name;
 
-          // Add an event listener to handle model selection
-          button.addEventListener('click', (e) => {
-              e.stopPropagation(); // Prevent the click from bubbling up
+        // Add an event listener to handle model selection
+        button.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent the click from bubbling up
 
-              // Update the button text and data-selected-value attribute
-              btn.textContent = model.name;
-              btn.setAttribute('data-selected-value', model.model_id);
+          // Update the button text and data-selected-value attribute
+          btn.textContent = model.name;
+          btn.setAttribute('data-selected-value', model.model_id);
 
-              // Hide the dropdown after selection
-              options.classList.remove('show');
+          // Hide the dropdown after selection
+          options.classList.remove('show');
 
-              // Save the selected model preference to localStorage
-              const preferences = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
-              preferences[`model${index + 1}`] = model.model_id;
-              localStorage.setItem('aiModelPreferences', JSON.stringify(preferences));
-          });
+          // Save the selected model preference to localStorage
+          const preferences = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
+          preferences[`model${index + 1}`] = model.model_id;
+          localStorage.setItem('aiModelPreferences', JSON.stringify(preferences));
+        });
 
-          // Append the button to the options container
-          // Add an event listener to handle model selection
-          button.addEventListener('click', (e) => {
-              e.stopPropagation(); // Prevent the click from bubbling up
+        // Append the button to the options container
+        // Add an event listener to handle model selection
+        button.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent the click from bubbling up
 
-              // Update the button text and data-selected-value attribute
-              btn.textContent = model.name;
-              btn.setAttribute('data-selected-value', model.model_id);
+          // Update the button text and data-selected-value attribute
+          btn.textContent = model.name;
+          btn.setAttribute('data-selected-value', model.model_id);
 
-              // Hide the dropdown after selection
-              options.classList.remove('show');
+          // Hide the dropdown after selection
+          options.classList.remove('show');
 
-              // Save the selected model preference to localStorage
-              const preferences = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
-              preferences[`model${index + 1}`] = model.model_id;
-              localStorage.setItem('aiModelPreferences', JSON.stringify(preferences));
-          });
+          // Save the selected model preference to localStorage
+          const preferences = JSON.parse(localStorage.getItem('aiModelPreferences') || '{}');
+          preferences[`model${index + 1}`] = model.model_id;
+          localStorage.setItem('aiModelPreferences', JSON.stringify(preferences));
+        });
 
-          // Append the button to the options container
-          options.appendChild(button);
+        // Append the button to the options container
+        options.appendChild(button);
       });
     });
 
@@ -407,44 +407,44 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   setupSelectionHandler() {
     // Remove any existing listener
     document.removeEventListener("selectionchange", this.selectionChangeHandler);
-    
+
     // Create the handler
     this.selectionChangeHandler = () => {
-        const selection = window.getSelection();
-        if (!selection.isCollapsed && selection.toString().trim()) {
-            const range = selection.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-            
-            // Get toolbar dimensions
-            const toolbarWidth = this.aiToolbar.offsetWidth || 300; // Fallback width if not yet rendered
-            const toolbarHeight = this.aiToolbar.offsetHeight || 150; // Fallback height
-            
-            // Calculate initial position - center the toolbar on the selection
-            let leftPosition = rect.left + (rect.width / 2) - (toolbarWidth / 2);
-            let topPosition = rect.bottom + window.scrollY + 30;  // 30px below pointer
-            
-            // Ensure left position stays within window bounds
-            const maxLeft = window.innerWidth - toolbarWidth - 20; // 20px padding from right
-            const minLeft = 20; // 20px padding from left
-            
-            // Clamp the position between min and max bounds
-            leftPosition = Math.min(Math.max(leftPosition, minLeft), maxLeft);
-            
-            // Check bottom boundary
-            if (topPosition + toolbarHeight > window.innerHeight + window.scrollY) {
-                // Place above the selection if it would overflow bottom
-                topPosition = rect.top + window.scrollY - toolbarHeight - 10;
-            }
-            
-            // Apply the position
-            this.aiToolbar.style.display = 'block';
-            this.aiToolbar.style.top = `${topPosition}px`;
-            this.aiToolbar.style.left = `${leftPosition}px`;
-        } else {
-            // Hide toolbar completely when no selection
-            this.aiToolbar.style.display = 'none';
-            this.aiToolbar.classList.remove("visible");
+      const selection = window.getSelection();
+      if (!selection.isCollapsed && selection.toString().trim()) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+
+        // Get toolbar dimensions
+        const toolbarWidth = this.aiToolbar.offsetWidth || 300; // Fallback width if not yet rendered
+        const toolbarHeight = this.aiToolbar.offsetHeight || 150; // Fallback height
+
+        // Calculate initial position - center the toolbar on the selection
+        let leftPosition = rect.left + (rect.width / 2) - (toolbarWidth / 2);
+        let topPosition = rect.bottom + window.scrollY + 30;  // 30px below pointer
+
+        // Ensure left position stays within window bounds
+        const maxLeft = window.innerWidth - toolbarWidth - 20; // 20px padding from right
+        const minLeft = 20; // 20px padding from left
+
+        // Clamp the position between min and max bounds
+        leftPosition = Math.min(Math.max(leftPosition, minLeft), maxLeft);
+
+        // Check bottom boundary
+        if (topPosition + toolbarHeight > window.innerHeight + window.scrollY) {
+          // Place above the selection if it would overflow bottom
+          topPosition = rect.top + window.scrollY - toolbarHeight - 10;
         }
+
+        // Apply the position
+        this.aiToolbar.style.display = 'block';
+        this.aiToolbar.style.top = `${topPosition}px`;
+        this.aiToolbar.style.left = `${leftPosition}px`;
+      } else {
+        // Hide toolbar completely when no selection
+        this.aiToolbar.style.display = 'none';
+        this.aiToolbar.classList.remove("visible");
+      }
     };
 
     // Add the listener
@@ -457,231 +457,206 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     let prompt = "";
     if (this.aiSettings.prompts[action]) {
-        prompt = this.aiSettings.prompts[action].replace('{text}', text);
+      prompt = this.aiSettings.prompts[action].replace('{text}', text);
     } else {
-        // Handle custom tools
-        const customTool = this.aiSettings.customTools.find(tool => tool.id === action);
-        if (customTool) {
-            prompt = customTool.prompt.replace('{text}', text);
-        }
+      // Handle custom tools
+      const customTool = this.aiSettings.customTools.find(tool => tool.id === action);
+      if (customTool) {
+        prompt = customTool.prompt.replace('{text}', text);
+      }
     }
 
     // Get selected models from buttons
     const model1 = document.getElementById("modelBtn1").getAttribute('data-selected-value') || 'gpt-4o';
     const model2 = document.getElementById("modelBtn2").getAttribute('data-selected-value') || 'none';
     const model3 = document.getElementById("modelBtn3").getAttribute('data-selected-value') || 'none';
-    
+
     // Build array of selected models (excluding "none")
     const selectedModels = [];
     if (model1 !== "none") selectedModels.push(model1);
     if (model2 !== "none") selectedModels.push(model2);
     if (model3 !== "none") selectedModels.push(model3);
-    
+
     if (selectedModels.length === 0) {
-        alert("Please select at least one AI model");
-        return;
+      alert("Please select at least one AI model");
+      return;
     }
 
     try {
-        // Hide AI toolbar immediately
-        this.aiToolbar.style.display = 'none';
-        this.aiToolbar.classList.remove("visible");
+      // Hide AI toolbar immediately
+      this.aiToolbar.style.display = 'none';
+      this.aiToolbar.classList.remove("visible");
 
-        // Get the current block where selection is  
-        let selection = window.getSelection();
-        let currentBlock = selection.anchorNode.parentElement.closest(".block");
-        const range = selection.getRangeAt(0);
-        let commentedSpan = null;
+      // Get the current block where selection is  
+      let selection = window.getSelection();
+      let currentBlock = selection.anchorNode.parentElement.closest(".block");
+      const range = selection.getRangeAt(0);
+      let commentedSpan = null;
 
-        if (useComment) {
-            // Check if the selection is within a text node
-            if (range.startContainer.nodeType !== Node.TEXT_NODE || range.endContainer.nodeType !== Node.TEXT_NODE) {
-                // If not, create a new range that encompasses only the text content
-                const newRange = document.createRange();
-                
-                // Find the closest text node within the selected range
-                let startNode = range.startContainer;
-                while (startNode && startNode.nodeType !== Node.TEXT_NODE) {
-                    if (startNode.firstChild) {
-                        startNode = startNode.firstChild;
-                    } else {
-                        startNode = startNode.nextSibling || startNode.parentNode;
-                    }
-                }
-                let endNode = range.endContainer;
-                 while (endNode && endNode.nodeType !== Node.TEXT_NODE) {
-                    if (endNode.lastChild) {
-                        endNode = endNode.lastChild;
-                    } else {
-                        endNode = endNode.previousSibling || endNode.parentNode;
-                    }
-                }
-                
-                if (startNode && endNode) {
-                    newRange.setStart(startNode, 0);
-                    newRange.setEnd(endNode, endNode.textContent.length);
-                    range.selectNodeContents(newRange.commonAncestorContainer);
-                    range.setStart(newRange.startContainer, newRange.startOffset);
-                    range.setEnd(newRange.endContainer, newRange.endOffset);
+      if (useComment) {
+        // Create span for the selected text
+        commentedSpan = document.createElement("span");
+        commentedSpan.className = "commented-text";
+        try {
+          range.surroundContents(commentedSpan);
+        } catch (e) {
+          // Fallback method for complex selections
+          // 1. Extract the range contents
+          const contents = range.extractContents();
+
+          // 2. Append the contents to the commented span
+          commentedSpan.appendChild(contents);
+
+          // 3. Insert the commented span at the range start
+          range.insertNode(commentedSpan);
+        }
+      }
+
+      // Make parallel requests to selected models
+      const requests = selectedModels.map(modelName =>
+        this.apiRequest(
+          "POST",
+          "",
+          {
+            messages: [
+              {
+                role: "system",
+                content: "You are a helpful assistant.",
+              },
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+            model: modelName,
+            temperature: 0.7,
+            max_tokens: 3999,
+            top_p: 1,
+          },
+          true
+        )
+      );
+
+      // Keep track of completed responses
+      let completedResponses = 0;
+      const totalResponses = selectedModels.length;
+
+      // Process each request as it completes
+      requests.forEach((request, index) => {
+        const modelName = selectedModels[index];
+
+        request.then(response => {
+          if (response.error) {
+            // Handle rate limit or other API errors
+            const errorMessage = response.error.code === "RateLimitReached"
+              ? `Rate limit reached for ${modelName}. Please try again later or choose another model.`
+              : `Error with ${modelName}: ${response.error.message || response.error.toString() || 'Unknown error'}`;
+            this.showToast(errorMessage);
+            completedResponses++;
+            if (completedResponses === totalResponses) {
+              this.saveNote(true);
+            }
+            return;
+          }
+
+          if (response.choices && response.choices[0]) {
+            const aiResponse = response.choices[0].message.content;
+
+            if (useComment) {
+              // Add this response to the comment
+              const currentComment = commentedSpan.getAttribute("data-comment") || "";
+              const newResponse = `<h4 onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'" 
+                        style="position: sticky; top: 0; background: white; z-index: 100; padding: 8px 0; margin: 0; font-size: small; text-decoration: underline;">${modelName}</h4><div style="display:block"
+                        >${marked.parse(aiResponse)}</div>`;
+              const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
+              commentedSpan.setAttribute("data-comment", updatedComment);
+
+
+              // Show or update tooltip for all responses
+              const tooltip = document.getElementById('commentTooltip');
+              if (index === 0 || tooltip.style.display === 'block') {
+                this.showCommentTooltip(commentedSpan, updatedComment);
+                // Add highlight effect to AI-generated comment
+                document.querySelector('.comment-tooltip').classList.add('highlight');
+                setTimeout(() => {
+                  document.querySelector('.comment-tooltip').classList.remove('highlight');
+                }, 1000);
+
+              }
+            } else {
+              // Create a new block for longer responses
+              const block = document.createElement("div");
+              block.className = "block";
+              block.innerHTML = `<h2> ${action} (${modelName})</h2>${marked.parse(aiResponse)}`;
+              block.classList.add('highlight')
+              setTimeout(() => {
+                block.classList.remove('highlight')
+
+              }, 1500);
+
+              // Add blank line before new block
+              const blankLine = document.createElement("div");
+              blankLine.innerHTML = "<br>";
+
+
+              // Insert blank line and block
+              if (currentBlock) {
+                currentBlock.after(blankLine);
+                blankLine.after(block);
+              } else {
+                // Insert at cursor position
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                  const range = selection.getRangeAt(0);
+                  range.collapse(false); // Collapse the range to the end point
+
+                  // Insert the blank line
+                  range.insertNode(blankLine);
+
+                  // Insert the new block
+                  range.insertNode(block);
+
+                  // Add highlight effect
+                  block.classList.add('highlight');
+                  setTimeout(() => {
+                    block.classList.remove('highlight');
+                  }, 1000);
+
+                  // Move the cursor after the inserted block
+                  range.setStartAfter(block);
+                  range.collapse(true);
+                  selection.removeAllRanges();
+                  selection.addRange(range);
                 } else {
-                    return; // Exit if no text nodes found
+                  // Fallback to appending at the end if no selection range is available
+                  this.editor.appendChild(blankLine);
+                  this.editor.appendChild(block);
                 }
+              }
+              currentBlock = block;
             }
 
-            // Create span for the selected text
-            const commentId = `comment_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-            commentedSpan = document.createElement("span");
-            commentedSpan.className = "commented-text";
-            commentedSpan.setAttribute("id", commentId);
-            
-            // Extract the selected content
-            const extractedContents = range.extractContents();
+            // Increment completed responses counter
+            completedResponses++;
 
-            // Append the extracted content to the span
-            commentedSpan.appendChild(extractedContents);
-
-            // Insert the span back into the document at the range's position
-            range.insertNode(commentedSpan);
-        }
-
-        // Make parallel requests to selected models
-        const requests = selectedModels.map(modelName => 
-            this.apiRequest(
-                "POST",
-                "",
-                {
-                    messages: [
-                        {
-                            role: "system",
-                            content: "You are a helpful assistant.",
-                        },
-                        {
-                            role: "user",
-                            content: prompt,
-                        },
-                    ],
-                    model: modelName,
-                    temperature: 0.7,
-                    max_tokens: 3999,
-                    top_p: 1,
-                },
-                true
-            )
-        );
-
-        // Keep track of completed responses
-        let completedResponses = 0;
-        const totalResponses = selectedModels.length;
-
-        // Process each request as it completes
-        requests.forEach((request, index) => {
-            const modelName = selectedModels[index];
-            
-            request.then(response => {
-                if (response.error) {
-                    // Handle rate limit or other API errors
-                    const errorMessage = response.error.code === "RateLimitReached" 
-                        ? `Rate limit reached for ${modelName}. Please try again later or choose another model.`
-                        : `Error with ${modelName}: ${response.error.message || response.error.toString() || 'Unknown error'}`;
-                    this.showToast(errorMessage);
-                    completedResponses++;
-                    if (completedResponses === totalResponses) {
-                        this.saveNote(true);
-                    }
-                    return;
-                }
-
-                if (response.choices && response.choices[0]) {
-                    const aiResponse = response.choices[0].message.content;
-
-                    if (useComment) {
-                        // Add this response to the comment
-                        const currentComment = commentedSpan.getAttribute("data-comment") || "";
-                        const newResponse = `[${modelName}]:\n${aiResponse}\n---\n`;
-                        const updatedComment = currentComment ? currentComment + newResponse : newResponse;
-                        commentedSpan.setAttribute("data-comment", updatedComment);
-    
-                       
-                        // Show or update tooltip for all responses
-                        const tooltip = document.getElementById('commentTooltip');
-                        if (index === 0 || tooltip.style.display === 'block') {
-                            this.showCommentTooltip(commentedSpan, updatedComment);
-                             // Add highlight effect to AI-generated comment
-                        document.querySelector('.comment-tooltip').classList.add('highlight');
-                        setTimeout(() => {
-                          document.querySelector('.comment-tooltip').classList.remove('highlight');
-                        }, 1000);
-    
-                        }
-                    } else {
-                        // Create a new block for longer responses
-                        const block = document.createElement("div");
-                        block.className = "block";
-                        block.innerHTML = `<h2> ${action} (${modelName})</h2>${marked.parse(aiResponse)}`;
-
-                        // Add blank line before new block
-                        const blankLine = document.createElement("div");
-                        blankLine.innerHTML = "<br>";
-
-                       
-                        // Insert blank line and block
-                        if (currentBlock) {
-                            currentBlock.after(blankLine);
-                            blankLine.after(block);
-                        } else {
-                            // Insert at cursor position
-                            const selection = window.getSelection();
-                            if (selection.rangeCount > 0) {
-                                const range = selection.getRangeAt(0);
-                                range.collapse(false); // Collapse the range to the end point
-
-                                // Insert the blank line
-                                range.insertNode(blankLine);
-
-                                // Insert the new block
-                                range.insertNode(block);
-                
-                                // Add highlight effect
-                                block.classList.add('highlight');
-                                setTimeout(() => {
-                                    block.classList.remove('highlight');
-                                }, 1000);
-
-                                // Move the cursor after the inserted block
-                                range.setStartAfter(block);
-                                range.collapse(true);
-                                selection.removeAllRanges();
-                                selection.addRange(range);
-                            } else {
-                                // Fallback to appending at the end if no selection range is available
-                                this.editor.appendChild(blankLine);
-                                this.editor.appendChild(block);
-                            }
-                        }
-                        currentBlock = block;
-                    }
-
-                    // Increment completed responses counter
-                    completedResponses++;
-
-                    // If all responses are complete, save the note
-                    if (completedResponses === totalResponses) {
-                        this.saveNote(true);
-                    }
-                }
-            }).catch(error => {
-                console.error(`Error with ${modelName} request:`, error);
-                this.showToast(`Error with ${modelName}: ${error.message || 'Network error'}`);
-                completedResponses++;
-                if (completedResponses === totalResponses) {
-                    this.saveNote(true);
-                }
-            });
+            // If all responses are complete, save the note
+            if (completedResponses === totalResponses) {
+              this.saveNote(true);
+            }
+          }
+        }).catch(error => {
+          console.error(`Error with ${modelName} request:`, error);
+          this.showToast(`Error with ${modelName}: ${error.message || 'Network error'}`);
+          completedResponses++;
+          if (completedResponses === totalResponses) {
+            this.saveNote(true);
+          }
         });
-    } catch(e) {
-        console.error(e);
+      });
+    } catch (e) {
+      console.error(e);
     }
-}
+  }
 
   setupAISettings() {
     const modal = document.getElementById('aiSettingsModal');
@@ -689,12 +664,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const closeBtn = modal.querySelector('.close');
     const saveBtn = document.getElementById('saveSettings');
     const addCustomToolBtn = document.getElementById('addCustomTool');
-    
+
     // Load current settings
     document.getElementById('askPrompt').value = this.aiSettings.prompts.ask;
     document.getElementById('correctPrompt').value = this.aiSettings.prompts.correct;
     document.getElementById('translatePrompt').value = this.aiSettings.prompts.translate;
-    
+
     this.renderCustomTools();
     this.renderModelSettings();
 
@@ -715,7 +690,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     addCustomToolBtn.onclick = () => this.addCustomTool();
     document.getElementById('addModelBtn').onclick = () => this.addModel();
-    
+
     saveBtn.onclick = async () => {
       await this.saveAISettings();
       modal.style.display = "none";
@@ -727,7 +702,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   renderCustomTools() {
     const container = document.getElementById('customTools');
     container.innerHTML = '';
-    
+
     this.aiSettings.customTools.forEach((tool, index) => {
       const toolDiv = document.createElement('div');
       toolDiv.className = 'custom-tool';
@@ -736,12 +711,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         <input type="text" class="tool-prompt" placeholder="Prompt Template" value="${tool.prompt}">
         <button class="remove-tool" data-index="${index}"><i class="fas fa-trash"></i></button>
       `;
-      
+
       toolDiv.querySelector('.remove-tool').onclick = () => {
         this.aiSettings.customTools.splice(index, 1);
         this.renderCustomTools();
       };
-      
+
       container.appendChild(toolDiv);
     });
   }
@@ -798,28 +773,28 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         const parsedConfig = JSON.parse(config.config);
         // Merge prompts
         this.aiSettings.prompts = parsedConfig.prompts || {
-            ask: "Answer this question: {text}",
-            correct: "Correct any grammar or spelling errors in this text: {text}",
-            translate: "Translate this text to English: {text}"
+          ask: "Answer this question: {text}",
+          correct: "Correct any grammar or spelling errors in this text: {text}",
+          translate: "Translate this text to English: {text}"
         };
 
         // Merge customTools
         this.aiSettings.customTools = parsedConfig.customTools || [];
 
-      if (parsedConfig.models) {
+        if (parsedConfig.models) {
           // Filter out remote models that already exist in DEFAULT_MODELS
-          const remoteModels = parsedConfig.models.filter(remoteModel => 
-              !this.DEFAULT_MODELS.some(defaultModel => defaultModel.model_id === remoteModel.model_id)
+          const remoteModels = parsedConfig.models.filter(remoteModel =>
+            !this.DEFAULT_MODELS.some(defaultModel => defaultModel.model_id === remoteModel.model_id)
           );
-          
+
           // Append remote models to DEFAULT_MODELS
           this.aiSettings.models = [...this.DEFAULT_MODELS, ...remoteModels];
-      } else {
+        } else {
           // If no remote models, retain only DEFAULT_MODELS
           this.aiSettings.models = [...this.DEFAULT_MODELS];
+        }
+        this.updateModelDropdowns();
       }
-      this.updateModelDropdowns();
-    }
       this.updateAIToolbar();
     } catch (error) {
       console.error("Error loading user config:", error);
@@ -850,9 +825,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       })),
       models: updatedModels // Use the updated models from the UI
     };
-    
+
     try {
-      await this.apiRequest("POST", "/users/config", {config: JSON.stringify(config)});
+      await this.apiRequest("POST", "/users/config", { config: JSON.stringify(config) });
       // Update local settings after successful save
       this.aiSettings = config;
     } catch (error) {
@@ -868,7 +843,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       <button data-ai-action="correct"><i class="fas fa-check-circle"></i> Correct</button>
       <button data-ai-action="translate"><i class="fas fa-language"></i> Translate</button>
     `;
-    
+
     // Add custom tool buttons
     this.aiSettings.customTools.forEach(tool => {
       if (tool.name) {
@@ -895,7 +870,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const tooltip = document.getElementById('commentTooltip');
     let currentCommentElement = null;
     let isEditing = false;
-    
+
     // Handle clicking on commented text
     this.editor.addEventListener('click', (e) => {
       const target = e.target;
@@ -938,28 +913,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           <button class="close-tooltip">Close</button>
         </div>
       </div>
-      <div class="comment-content">
+      <div class="comment-content">${comment}</div>
     `;
 
-    commentSections.forEach(section => {
-        const match = section.match(/\[(.*?)\]:\n([\s\S]*?)/);
-        if (match) {
-            const modelName = match[1];
-            const response = match[2].trim();
-
-            // Get the ID of the commented span to enable scrolling
-            const elementId = element.getAttribute('id');
-
-            htmlContent += `
-              <h4 class="model-name" data-target="${elementId}">${modelName}</h4>
-              <div class="comment-body">${marked.parse(response)}</div>
-            `;
-        }
+    // Reattach close button event listener
+    tooltip.querySelector('.close-tooltip').addEventListener('click', () => {
+      tooltip.style.display = 'none';
+      currentCommentElement = null;
     });
 
-    htmlContent += `</div>`;
-
-    tooltip.innerHTML = htmlContent;
+    // Position the tooltip
     tooltip.style.display = 'block';
 
     // Reattach event listener for the Close button
@@ -1007,7 +970,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   editComment(element) {
     const tooltip = document.getElementById('commentTooltip');
     const currentComment = element.getAttribute('data-comment');
-    
+
     tooltip.innerHTML = `
       <textarea class="comment-edit-input" rows="3">${currentComment}</textarea>
       <div class="comment-actions">
@@ -1030,9 +993,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Add highlight effect
         element.classList.add('highlight');
         setTimeout(() => {
-            element.classList.remove('highlight');
+          element.classList.remove('highlight');
         }, 1000);
-    
+
         this.showCommentTooltip(element, newComment);
         this.scheduleAutoSave();
       }
@@ -1075,19 +1038,19 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     if (!selection.isCollapsed) {
       const range = selection.getRangeAt(0);
       const comment = prompt('Enter your comment:');
-      
+
       if (comment) {
         const span = document.createElement('span');
         span.className = 'commented-text';
         span.setAttribute('data-comment', comment);
-        
+
         range.surroundContents(span);
         // Add highlight effect
         span.classList.add('highlight');
         setTimeout(() => {
-            span.classList.remove('highlight');
+          span.classList.remove('highlight');
         }, 1000);
-    
+
         this.scheduleAutoSave();
       }
     } else {
@@ -1099,42 +1062,42 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   getBlockContext() {
     const selection = window.getSelection();
     const range = selection.getRangeAt(0);
-    
+
     // Handle text nodes by getting their parent element
-    const startElement = range.startContainer.nodeType === Node.TEXT_NODE ? 
-                        range.startContainer.parentElement : 
-                        range.startContainer;
-    
+    const startElement = range.startContainer.nodeType === Node.TEXT_NODE ?
+      range.startContainer.parentElement :
+      range.startContainer;
+
     let currentBlock = startElement.closest('.block');
-    
+
     if (!currentBlock) {
-        // If no block is selected, get the last block
-        const blocks = this.editor.querySelectorAll('.block');
-        currentBlock = blocks[blocks.length - 1];
+      // If no block is selected, get the last block
+      const blocks = this.editor.querySelectorAll('.block');
+      currentBlock = blocks[blocks.length - 1];
     }
 
     if (!currentBlock) {
-        return null;
+      return null;
     }
 
     // Get all preceding text for context
     let context = [];
     let allBlocks = Array.from(this.editor.querySelectorAll('.block'));
     let currentBlockIndex = allBlocks.indexOf(currentBlock);
-    
+
     // Get all blocks up to the current one
     for (let i = 0; i <= currentBlockIndex; i++) {
-        const block = allBlocks[i];
-        // Skip empty blocks and only include text content
-        const blockText = block.textContent.trim();
-        if (blockText) {
-            context.push(blockText);
-        }
+      const block = allBlocks[i];
+      // Skip empty blocks and only include text content
+      const blockText = block.textContent.trim();
+      if (blockText) {
+        context.push(blockText);
+      }
     }
 
     return {
-        currentText: currentBlock.textContent.trim(),
-        contextText: context.join('\n')
+      currentText: currentBlock.textContent.trim(),
+      contextText: context.join('\n')
     };
   }
 
@@ -1149,20 +1112,20 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const model1 = document.getElementById("modelBtn1").getAttribute('data-selected-value') || 'gpt-4o';
     const model2 = document.getElementById("modelBtn2").getAttribute('data-selected-value') || 'none';
     const model3 = document.getElementById("modelBtn3").getAttribute('data-selected-value') || 'none';
-    
+
     // Build array of selected models (excluding "none")
     const selectedModels = [];
     if (model1 !== "none") selectedModels.push(model1);
     if (model2 !== "none") selectedModels.push(model2);
     if (model3 !== "none") selectedModels.push(model3);
-    
+
     if (selectedModels.length === 0) {
       alert("Please select at least one AI model");
       return;
     }
 
     // Make parallel requests to selected models
-    const requests = selectedModels.map(modelName => 
+    const requests = selectedModels.map(modelName =>
       this.apiRequest(
         "POST",
         "",
@@ -1200,33 +1163,33 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       // Process each request
       requests.forEach((request, index) => {
         const modelName = selectedModels[index];
-        
+
         request.then(response => {
           if (response.error) {
             // Handle rate limit or other API errors
-            const errorMessage = response.error.code === "RateLimitReached" 
-                ? `Rate limit reached for ${modelName}. Please try again later.`
-                : `Error with ${modelName}: ${response.error.message || 'Unknown error'}`;
+            const errorMessage = response.error.code === "RateLimitReached"
+              ? `Rate limit reached for ${modelName}. Please try again later.`
+              : `Error with ${modelName}: ${response.error.message || 'Unknown error'}`;
             this.showToast(errorMessage);
             return;
           }
 
           if (response.choices && response.choices[0]) {
             const aiResponse = response.choices[0].message.content;
-            
+
             // Create new block for this model's response with h2 header
             const block = document.createElement("div");
             block.className = "block";
             block.innerHTML = `<h2>AI Response (${modelName})</h2>${marked.parse(aiResponse)}`;
-            
+
             // Add blank line before new block
             const blankLine = document.createElement("div");
             blankLine.innerHTML = "<br>";
-            
+
             // Find the last AI response block for this quick ask
             let lastResponseBlock = currentBlock;
             let nextBlock = currentBlock?.nextElementSibling || currentBlock;
-            
+
             // // Keep going until we find a block that's not an AI response
             // while (nextBlock) {
             //     if (nextBlock.querySelector('h2')?.textContent.includes('AI Response')) {
@@ -1236,29 +1199,34 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             //         break;
             //     }
             // }
-            
+
             // Insert blank line and block
             if (lastResponseBlock) {
-                lastResponseBlock.after(block);
-                block.after(blankLine);
+              lastResponseBlock.after(block);
+              block.after(blankLine);
+              block.classList.add('highlight')
+              setTimeout(() => {
+                block.classList.remove('highlight')
+
+              }, 1500);
             } else {
-                // Insert at cursor position
-                const selection = window.getSelection();
-                if (selection.rangeCount > 0) {
-                    const range = selection.getRangeAt(0);
-                    range.collapse(false);
+              // Insert at cursor position
+              const selection = window.getSelection();
+              if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                range.collapse(false);
 
-                    range.insertNode(block);
-                    range.insertNode(blankLine);
+                range.insertNode(block);
+                range.insertNode(blankLine);
 
-                    range.setStartAfter(blankLine);
-                    range.collapse(true);
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                } else {
-                    this.editor.appendChild(block);
-                    this.editor.appendChild(blankLine);
-                }
+                range.setStartAfter(blankLine);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+              } else {
+                this.editor.appendChild(block);
+                this.editor.appendChild(blankLine);
+              }
             }
             currentBlock = nextBlock;
           }
@@ -1278,7 +1246,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     document.querySelectorAll('#quickAskBtn').forEach(btn => {
       btn.addEventListener('click', () => {
         this.handleQuickAsk();
-      }); 
+      });
     });
 
     // Sidebar toggle
@@ -1348,7 +1316,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         });
       });
 
-    
+
 
     // Text color
     document.getElementById("textColor").addEventListener("input", (e) => {
@@ -1426,31 +1394,31 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Check if the line starts with '# '
         const hashMatch = textBeforeCursor.match(/^(#)\s$/);
         if (hashMatch) {
-            e.preventDefault(); // Prevent the space character from being inserted
+          e.preventDefault(); // Prevent the space character from being inserted
 
-            // Remove '# ' from the editor
-            node.textContent = node.textContent.slice(0, range.endOffset - 2) + node.textContent.slice(range.endOffset);
+          // Remove '# ' from the editor
+          node.textContent = node.textContent.slice(0, range.endOffset - 2) + node.textContent.slice(range.endOffset);
 
-            // Create an H1 element
-            const h1 = document.createElement("h1");
-            h1.textContent = ""; // Empty H1 ready for user input
-            h1.setAttribute("contenteditable", "true");
-            h1.setAttribute("placeholder", "Enter heading here...");
+          // Create an H1 element
+          const h1 = document.createElement("h1");
+          h1.textContent = ""; // Empty H1 ready for user input
+          h1.setAttribute("contenteditable", "true");
+          h1.setAttribute("placeholder", "Enter heading here...");
 
-            // Insert the H1 element at the cursor position
-            range.insertNode(h1);
+          // Insert the H1 element at the cursor position
+          range.insertNode(h1);
 
-            // Move the cursor inside the H1
-            selection.removeAllRanges();
-            const newRange = document.createRange();
-            newRange.setStart(h1, 0);
-            newRange.collapse(true);
-            selection.addRange(newRange);
+          // Move the cursor inside the H1
+          selection.removeAllRanges();
+          const newRange = document.createRange();
+          newRange.setStart(h1, 0);
+          newRange.collapse(true);
+          selection.addRange(newRange);
         }
-    }
+      }
 
-    // Detect '```' to convert to code block
-    if (e.key === "`") {
+      // Detect '```' to convert to code block
+      if (e.key === "`") {
         const selection = window.getSelection();
         if (!selection.rangeCount) return;
         const range = selection.getRangeAt(0);
@@ -1463,29 +1431,29 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Check if the last three characters are '```'
         const backtickMatch = textBeforeCursor.match(/```$/);
         if (backtickMatch) {
-            e.preventDefault(); // Prevent the backtick from being inserted
+          e.preventDefault(); // Prevent the backtick from being inserted
 
-            // Remove '```' from the editor
-            node.textContent = node.textContent.slice(0, range.endOffset - 3) + node.textContent.slice(range.endOffset);
+          // Remove '```' from the editor
+          node.textContent = node.textContent.slice(0, range.endOffset - 3) + node.textContent.slice(range.endOffset);
 
-            // Create a code block
-            const pre = document.createElement("pre");
-            const code = document.createElement("code");
-            code.setAttribute("contenteditable", "true");
-            code.setAttribute("placeholder", "Enter code here...");
-            pre.appendChild(code);
+          // Create a code block
+          const pre = document.createElement("pre");
+          const code = document.createElement("code");
+          code.setAttribute("contenteditable", "true");
+          code.setAttribute("placeholder", "Enter code here...");
+          pre.appendChild(code);
 
-            // Insert the code block
-            range.insertNode(pre);
+          // Insert the code block
+          range.insertNode(pre);
 
-            // Move the cursor inside the code block
-            selection.removeAllRanges();
-            const newRange = document.createRange();
-            newRange.setStart(code, 0);
-            newRange.collapse(true);
-            selection.addRange(newRange);
+          // Move the cursor inside the code block
+          selection.removeAllRanges();
+          const newRange = document.createRange();
+          newRange.setStart(code, 0);
+          newRange.collapse(true);
+          selection.addRange(newRange);
         }
-    }
+      }
     });
 
     // Plain text button
@@ -1508,32 +1476,38 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const selectedText = selection.toString().trim();
 
     if (selectedText) {
-        // Create a new block element
-        const newBlock = document.createElement("div");
-        newBlock.className = "block";
-        newBlock.innerHTML = `${selectedText}`;
+      // Create a new block element
+      const newBlock = document.createElement("div");
+      newBlock.className = "block";
+      newBlock.innerHTML = `${selectedText}`;
+      let block = newBlock;
+      block.classList.add('highlight')
+      setTimeout(() => {
+        block.classList.remove('highlight')
 
-        // Get the range of the selected text
-        const range = selection.getRangeAt(0);
+      }, 1500);
 
-        // Replace the selected text with the new block
-        range.deleteContents();
-        range.insertNode(newBlock);
+      // Get the range of the selected text
+      const range = selection.getRangeAt(0);
 
-        // Clear the selection
-        selection.removeAllRanges();
+      // Replace the selected text with the new block
+      range.deleteContents();
+      range.insertNode(newBlock);
 
-        // Optionally, focus the new block's paragraph
-        const textNode = newBlock;
-        if (textNode) {
-            textNode.focus();
-            range.selectNodeContents(textNode);
-            range.collapse(true);
-            selection.addRange(range);
-        }
+      // Clear the selection
+      selection.removeAllRanges();
 
-        // Exit the function after wrapping the text
-        return;
+      // Optionally, focus the new block's paragraph
+      const textNode = newBlock;
+      if (textNode) {
+        textNode.focus();
+        range.selectNodeContents(textNode);
+        range.collapse(true);
+        selection.addRange(range);
+      }
+
+      // Exit the function after wrapping the text
+      return;
     }
 
     // Existing code below...
@@ -1542,62 +1516,48 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     block.innerHTML = `
  
 `;
-    
+
     // Add highlight effect
     block.classList.add('highlight');
     setTimeout(() => {
-        block.classList.remove('highlight');
+      block.classList.remove('highlight');
     }, 1000);
 
     // Get current selection and find closest block
     const range = selection.getRangeAt(0);
-    
+
     // Try to find current block from selection
-    let currentBlock = range.startContainer.nodeType === Node.TEXT_NODE 
+    let currentBlock = range.startContainer.nodeType === Node.TEXT_NODE
       ? range.startContainer.parentElement.closest(".block")
       : range.startContainer.closest(".block");
 
     // If no block found from selection, try to find last block before cursor
     if (!currentBlock) {
-        const blocks = Array.from(this.editor.querySelectorAll('.block'));
-        for (let i = blocks.length - 1; i >= 0; i--) {
-            const rect = blocks[i].getBoundingClientRect();
-            if (rect.top < range.getBoundingClientRect().top) {
-                currentBlock = blocks[i];
-                break;
-            }
+      const blocks = Array.from(this.editor.querySelectorAll('.block'));
+      for (let i = blocks.length - 1; i >= 0; i--) {
+        const rect = blocks[i].getBoundingClientRect();
+        if (rect.top < range.getBoundingClientRect().top) {
+          currentBlock = blocks[i];
+          break;
         }
-
-        // Function to check if all nodes in the range are text nodes
-        function isRangeAllText(range) {
-            const contents = range.cloneContents();
-            const treeWalker = document.createTreeWalker(contents, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, null, false);
-            let currentNode = treeWalker.nextNode();
-            while (currentNode) {
-                if (currentNode.nodeType === Node.ELEMENT_NODE) {
-                    return false; // Contains non-text node
-                }
-                currentNode = treeWalker.nextNode();
-            }
-            return true;
-        }
+      }
     }
 
     if (currentBlock) {
-        // Add blank line before new block
-        const blankLine = document.createElement("div");
-        blankLine.innerHTML = "<br>";
-        currentBlock.after(blankLine);
-        // Insert new block after blank line
-        blankLine.after(block);
+      // Add blank line before new block
+      const blankLine = document.createElement("div");
+      blankLine.innerHTML = "<br>";
+      currentBlock.after(blankLine);
+      // Insert new block after blank line
+      blankLine.after(block);
     } else {
-        // If still no block found, insert at cursor position or append to editor
-        if (selection.rangeCount > 0) {
-            range.deleteContents();
-            range.insertNode(block);
-        } else {
-            this.editor.appendChild(block);
-        }
+      // If still no block found, insert at cursor position or append to editor
+      if (selection.rangeCount > 0) {
+        range.deleteContents();
+        range.insertNode(block);
+      } else {
+        this.editor.appendChild(block);
+      }
     }
 
     // Focus the new block and move cursor inside
@@ -1607,9 +1567,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     range.collapse(true);
     selection.removeAllRanges();
     selection.addRange(range);
-}
+  }
 
-  
+
 
   showBlockMenu(e) {
     e.preventDefault();
@@ -1737,35 +1697,35 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   async checkAuthAndLoadNotes() {
     if (currentUser.userId && currentUser.credentials) {
-        const notes = await this.apiRequest("GET", `/folders/1733485657799jj0.5911120915160637/notes`);
-        if (!notes.error) {
-            // Check for default note
-            const defaultNote = notes.find((note) => note.title === "default_note");
-            if (!defaultNote) {
-                // Create default note if it doesn't exist
-                const result = await this.apiRequest("POST", "/notes", {
-                    note_id: "default_note_" + currentUser.userId,
-                    title: "default_note",
-                    content: `Welcome to your default note! 
+      const notes = await this.apiRequest("GET", `/folders/1733485657799jj0.5911120915160637/notes`);
+      if (!notes.error) {
+        // Check for default note
+        const defaultNote = notes.find((note) => note.title === "default_note");
+        if (!defaultNote) {
+          // Create default note if it doesn't exist
+          const result = await this.apiRequest("POST", "/notes", {
+            note_id: "default_note_" + currentUser.userId,
+            title: "default_note",
+            content: `Welcome to your default note! 
 go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#introduction"> Help </a>  to see how to use the Notetaking app powered by LLM
 
  `,
-                    folder_id: "1733485657799jj0.5911120915160637",
-                });
-                if (result.success) {
-                    await this.loadNotes();  // Will load notes from default folder
-                    await this.loadNote("default_note_" + currentUser.userId);
-                }
-            } else {
-                // Load notes from default folder and then load the default note
-                await this.loadNotes();
-                await this.loadNote(defaultNote.note_id);
-            }
+            folder_id: "1733485657799jj0.5911120915160637",
+          });
+          if (result.success) {
+            await this.loadNotes();  // Will load notes from default folder
+            await this.loadNote("default_note_" + currentUser.userId);
+          }
         } else {
-            this.logout();
+          // Load notes from default folder and then load the default note
+          await this.loadNotes();
+          await this.loadNote(defaultNote.note_id);
         }
-    } else {
+      } else {
         this.logout();
+      }
+    } else {
+      this.logout();
     }
   }
 
@@ -1840,9 +1800,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
                     <div class="folder-content">
                         <i class="fas fa-folder"></i>
                         <span>${folder.folder_name}</span>
-                        <div class="folder-count">${
-                          ' '
-                        }</div>
+                        <div class="folder-count">${' '
+          }</div>
                     </div>
                     <button class="add-note-btn" title="Add note to folder">
                         <i class="fas fa-plus"></i>
@@ -1881,20 +1840,20 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   async loadNotes(folderId = "1733485657799jj0.5911120915160637") {  // Set default folder ID
     const endpoint = `/folders/${folderId}/notes`;  // Always use folder-specific endpoint
     const notes = await this.apiRequest("GET", endpoint);
-    
+
     if (Array.isArray(notes)) {
-        const pagesList = document.getElementById("pagesList");
-        pagesList.innerHTML = "";
-        notes.forEach((note) => {
-            // Only show notes that belong to this folder
-            if (note.folder_id === folderId) {
-                const noteElement = document.createElement("div");
-                noteElement.className = "page-item";
-                noteElement.textContent = note.title || "Untitled Note";
-                noteElement.onclick = () => this.loadNote(note.note_id);
-                pagesList.appendChild(noteElement);
-            }
-        });
+      const pagesList = document.getElementById("pagesList");
+      pagesList.innerHTML = "";
+      notes.forEach((note) => {
+        // Only show notes that belong to this folder
+        if (note.folder_id === folderId) {
+          const noteElement = document.createElement("div");
+          noteElement.className = "page-item";
+          noteElement.textContent = note.title || "Untitled Note";
+          noteElement.onclick = () => this.loadNote(note.note_id);
+          pagesList.appendChild(noteElement);
+        }
+      });
     }
   }
 
@@ -2113,7 +2072,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   setupTableOfContents() {
     const tocBtn = document.getElementById('toggleTocBtn');
     const tocList = document.getElementById('tocList');
-    
+
     tocBtn.addEventListener('click', () => {
       const isHidden = tocList.style.display === 'none';
       tocList.style.display = isHidden ? 'block' : 'none';
@@ -2130,21 +2089,21 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     // Get all headings from the editor
     const headings = this.editor.querySelectorAll('h1, h2, h3');
-    
+
     headings.forEach((heading, index) => {
       const level = heading.tagName.toLowerCase();
       const text = heading.textContent;
-      
+
       // Create TOC item
       const tocItem = document.createElement('div');
       tocItem.className = `toc-item toc-${level}`;
       tocItem.textContent = text;
-      
+
       // Add click handler to scroll to heading
       tocItem.addEventListener('click', () => {
         heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
-      
+
       tocList.appendChild(tocItem);
     });
   }
@@ -2167,13 +2126,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     // Remove any parent elements that are not div tags
     let parent = textNode.parentElement;
     while (parent && parent.tagName.toLowerCase() !== 'div') {
-        const grandparent = parent.parentElement;
-        if (grandparent) {
-            grandparent.replaceChild(textNode, parent);
-            parent = textNode.parentElement;
-        } else {
-            break;
-        }
+      const grandparent = parent.parentElement;
+      if (grandparent) {
+        grandparent.replaceChild(textNode, parent);
+        parent = textNode.parentElement;
+      } else {
+        break;
+      }
     }
 
     // Clear the selection
@@ -2184,39 +2143,39 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const toastContainer = document.getElementById('toastContainer');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     toast.innerHTML = `
         <div class="toast-message">${message}</div>
         <button class="toast-close"><i class="fas fa-times"></i></button>
     `;
     if (!toastContainer) {
       console.error("toastContainer not found in the DOM");
-      return; 
+      return;
     }
-    
+
     // Add to container
     toastContainer.appendChild(toast);
-    
+
     // Handle close button
     const closeBtn = toast.querySelector('.toast-close');
     const closeToast = () => {
-        toast.style.animation = 'slideOut 0.3s ease-out forwards';
-        setTimeout(() => {
-            toastContainer.removeChild(toast);
-        }, 300);
+      toast.style.animation = 'slideOut 0.3s ease-out forwards';
+      setTimeout(() => {
+        toastContainer.removeChild(toast);
+      }, 300);
     };
-    
+
     closeBtn.addEventListener('click', closeToast);
-    
+
     // Auto close after 10 seconds
     setTimeout(closeToast, 10000);
 
     // **New Code Starts Here**
     if (type === 'error') {
-        // After 1 second, add the 'hide' class to transition background to white
-        setTimeout(() => {
-            toast.classList.add('hide');
-        }, 1000); // 1000 milliseconds = 1 second
+      // After 1 second, add the 'hide' class to transition background to white
+      setTimeout(() => {
+        toast.classList.add('hide');
+      }, 1000); // 1000 milliseconds = 1 second
     }
     // **New Code Ends Here**
   }
@@ -2227,27 +2186,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     window.editor = new NotionEditor();
     await window.editor.loadFolders();
-    
+
     // Profile Modal functionality
     const profileModal = document.getElementById('profileModal');
     const userProfileBtn = document.getElementById('userProfileBtn');
     const closeProfileBtn = profileModal.querySelector('.close, .close-profile-btn');
     const currentUserIdSpan = document.getElementById('currentUserId');
-    
+
     userProfileBtn.addEventListener('click', () => {
-        currentUserIdSpan.textContent = currentUser.userId || 'Unknown';
-        profileModal.style.display = 'block';
+      currentUserIdSpan.textContent = currentUser.userId || 'Unknown';
+      profileModal.style.display = 'block';
     });
-    
+
     closeProfileBtn.addEventListener('click', () => {
-        profileModal.style.display = 'none';
+      profileModal.style.display = 'none';
     });
-    
+
     // Close modal when clicking outside of the modal content
     window.addEventListener('click', (event) => {
-        if (event.target == profileModal) {
-            profileModal.style.display = 'none';
-        }
+      if (event.target == profileModal) {
+        profileModal.style.display = 'none';
+      }
     });
   } catch (error) {
     console.error('Error initializing editor:', error);
@@ -2255,19 +2214,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     //window.location.href = 'auth.html';
   }
 });
-        // Add event listener for topbar pin button
-        document.getElementById('topbarPinBtn').addEventListener('click', () => {
-            const selection = window.getSelection();
-            if (selection.rangeCount === 0) return;
-            const range = selection.getRangeAt(0);
-            const currentBlock = range.startContainer.parentElement.closest('.block');
-            if (currentBlock) {
-              if(currentBlock.classList.contains('pinned')){
-                currentBlock.classList.remove('pinned')
-                return;
-              }
-                // Unpin other blocks
-                document.querySelectorAll('.block.pinned').forEach(b => b.classList.remove('pinned'));
-                currentBlock.classList.add('pinned');
-            }
-        });
+// Add event listener for topbar pin button
+document.getElementById('topbarPinBtn').addEventListener('click', () => {
+  const selection = window.getSelection();
+  if (selection.rangeCount === 0) return;
+  const range = selection.getRangeAt(0);
+  const currentBlock = range.startContainer.parentElement.closest('.block');
+  if (currentBlock) {
+    if (currentBlock.classList.contains('pinned')) {
+      currentBlock.classList.remove('pinned')
+      return;
+    }
+    // Unpin other blocks
+    document.querySelectorAll('.block.pinned').forEach(b => b.classList.remove('pinned'));
+    currentBlock.classList.add('pinned');
+  }
+});
