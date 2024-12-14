@@ -1126,6 +1126,11 @@ pre code {
 
 /* Pin Block Button Styles */
 
+.highlight {
+    background-color: green;
+    transition: background-color 1s ease;
+}
+
 .pin-block-btn:hover {
     color: #333;
 }
