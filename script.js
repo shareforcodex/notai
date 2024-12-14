@@ -537,8 +537,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
                 if (response.error) {
                     // Handle rate limit or other API errors
                     const errorMessage = response.error.code === "RateLimitReached" 
-                        ? `Rate limit reached for ${modelName}. Please try again later.`
-                        : `Error with ${modelName}: ${response.error.message || 'Unknown error'}`;
+                        ? `Rate limit reached for ${modelName}. Please try again later or choose another model.`
+                        : `Error with ${modelName}: ${response.error.message || response.error.toString() || 'Unknown error'}`;
                     this.showToast(errorMessage);
                     completedResponses++;
                     if (completedResponses === totalResponses) {
