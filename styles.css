@@ -82,6 +82,7 @@ h3{
     max-height: 300px;
     overflow: auto;
     scrollbar-color: lightblue white;
+    background-color: #f5f5f5; /* Light gray */
 
     scrollbar-width:thin;
 }
@@ -489,50 +490,15 @@ h3{
 }
 
 /* Alternating block colors */
-.block:nth-child(odd) {
+/* .block:nth-child(odd) {
     background-color: #f0f8ff; /* Light blue */
-}
+} */
 
-.block:nth-child(even) {
+/* .block:nth-child(even) {
     background-color: #f5f5f5; /* Light gray */
-}
+} */
 
 /* Different block type colors */
-.block h1 {
-    background-color: #fff0f0;  /* Very light red */
-}
-
-.block h2 {
-    background-color: #f0fff0;  /* Very light green */
-}
-
-.block h3 {
-    background-color: #f0f0ff;  /* Very light blue */
-}
-
-.block ul, .block ol {
-    background-color: #fff5e6;  /* Very light orange */
-}
-
-.media-block {
-    background-color: #f5f0ff;  /* Very light purple */
-}
-
-.iframe-block {
-    background-color: #e6fff7;  /* Very light mint */
-}
-
-.block p {
-    background-color: #fafafa;  /* Very light gray */
-}
-
-.media-block {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 20px 0;
-    max-width: 100%;
-}
 
 .image-block img {
     max-width: 100%;
@@ -546,7 +512,8 @@ h3{
 
 .iframe-block {
     position: relative;
-    width: 100%;
+    width: 90%;
+    height: 40%;
     padding: 10px;
     background: #f8f9fa;
     border-radius: 4px;
