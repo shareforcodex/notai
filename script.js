@@ -1977,7 +1977,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     });
   }
 
-  // Function to convert selected text to plain text
+  // Function to convert selected text to plain text, supporting text outside of blocks
   convertToPlainText() {
     const selection = window.getSelection();
     if (!selection.rangeCount) return;
@@ -1987,25 +1987,21 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     if (!selectedText) return;
 
-    // Get the closest block element containing the selection
-    const block = range.commonAncestorContainer.closest('.block');
-    if (!block) return;
-
     // Replace the selected content with plain text
     const textNode = document.createTextNode(selectedText);
     range.deleteContents();
     range.insertNode(textNode);
 
-    // Remove any parent elements of the text node that are not the block
+    // Remove any parent elements that are not div tags
     let parent = textNode.parentElement;
-    while (parent && parent !== block) {
-      const grandparent = parent.parentElement;
-      if (grandparent) {
-        grandparent.replaceChild(textNode, parent);
-        parent = textNode.parentElement;
-      } else {
-        break;
-      }
+    while (parent && parent.tagName.toLowerCase() !== 'div') {
+        const grandparent = parent.parentElement;
+        if (grandparent) {
+            grandparent.replaceChild(textNode, parent);
+            parent = textNode.parentElement;
+        } else {
+            break;
+        }
     }
 
     // Clear the selection
