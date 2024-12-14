@@ -557,16 +557,17 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
                         const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
                         commentedSpan.setAttribute("data-comment", updatedComment);
     
-                        // Add highlight effect to AI-generated comment
-                        commentedSpan.classList.add('highlight');
-                        setTimeout(() => {
-                            commentedSpan.classList.remove('highlight');
-                        }, 1000);
-    
+                       
                         // Show or update tooltip for all responses
                         const tooltip = document.getElementById('commentTooltip');
                         if (index === 0 || tooltip.style.display === 'block') {
                             this.showCommentTooltip(commentedSpan, updatedComment);
+                             // Add highlight effect to AI-generated comment
+                        document.querySelector('.comment-tooltip').classList.add('highlight');
+                        setTimeout(() => {
+                          document.querySelector('.comment-tooltip').classList.remove('highlight');
+                        }, 1000);
+    
                         }
                     } else {
                         // Create a new block for longer responses
