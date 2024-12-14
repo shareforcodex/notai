@@ -923,6 +923,28 @@ pre code {
     flex: 1;
 }
 
+/* Styles for model names in comments */
+.model-name {
+    cursor: pointer;
+    color: #007BFF; /* Blue color to indicate interactivity */
+    margin-top: 10px;
+}
+
+.model-name:hover {
+    text-decoration: underline;
+}
+
+.comment-body {
+    margin-left: 10px;
+    padding-bottom: 10px;
+}
+
+/* Highlight effect for scrolling */
+.highlight {
+    background-color: #ffff99; /* Light yellow */
+    transition: background-color 0.5s ease;
+}
+
 .model-select-btn {
     width: 100%;
     padding: 6px 8px;

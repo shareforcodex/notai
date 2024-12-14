@@ -889,26 +889,57 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   showCommentTooltip(element, comment) {
     const tooltip = document.getElementById('commentTooltip');
-    tooltip.innerHTML = `
+    
+    // Split comments by '---\n' to handle multiple model responses
+    const commentSections = comment.split('---\n');
+
+    let htmlContent = `
       <div class="tooltip-header">
         <div class="comment-actions">
           <button class="edit-comment">Edit</button>
+          <button class="delete-comment">Delete</button>
           <button class="close-tooltip">Close</button>
-          </div>
-        
+        </div>
       </div>
-      <div class="comment-content">${comment}</div>
+      <div class="comment-content">
     `;
 
-    // Reattach close button event listener
-    tooltip.querySelector('.close-tooltip').addEventListener('click', () => {
-      tooltip.style.display = 'none';
-      currentCommentElement = null;
+    commentSections.forEach(section => {
+        const match = section.match(/\[(.*?)\]:\n([\s\S]*)/);
+        if (match) {
+            const modelName = match[1];
+            const response = match[2];
+
+            // Get the ID of the commented span to enable scrolling
+            const elementId = element.getAttribute('id');
+
+            htmlContent += `
+              <h4 class="model-name" data-target="${elementId}">${modelName}</h4>
+              <div class="comment-body">${marked.parse(response)}</div>
+            `;
+        }
     });
-    
-    // Position the tooltip
-    tooltip.style.display = 'block';
-  }
+
+    htmlContent += `</div>`;
+
+    tooltip.innerHTML = htmlContent;
+
+    // Add click event listeners to each model name to enable scrolling
+    tooltip.querySelectorAll('.model-name').forEach(h4 => {
+        h4.style.cursor = 'pointer';
+        h4.addEventListener('click', () => {
+            const targetId = h4.getAttribute('data-target');
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetElement.classList.add('highlight');
+                setTimeout(() => {
+                    targetElement.classList.remove('highlight');
+                }, 2000);
+            }
+        });
+    });
+}
 
   editComment(element) {
     const tooltip = document.getElementById('commentTooltip');
