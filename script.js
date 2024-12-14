@@ -494,12 +494,52 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         let commentedSpan = null;
 
         if (useComment) {
+            // Check if the selection is within a text node
+            if (range.startContainer.nodeType !== Node.TEXT_NODE || range.endContainer.nodeType !== Node.TEXT_NODE) {
+                // If not, create a new range that encompasses only the text content
+                const newRange = document.createRange();
+                
+                // Find the closest text node within the selected range
+                let startNode = range.startContainer;
+                while (startNode && startNode.nodeType !== Node.TEXT_NODE) {
+                    if (startNode.firstChild) {
+                        startNode = startNode.firstChild;
+                    } else {
+                        startNode = startNode.nextSibling || startNode.parentNode;
+                    }
+                }
+                let endNode = range.endContainer;
+                 while (endNode && endNode.nodeType !== Node.TEXT_NODE) {
+                    if (endNode.lastChild) {
+                        endNode = endNode.lastChild;
+                    } else {
+                        endNode = endNode.previousSibling || endNode.parentNode;
+                    }
+                }
+                
+                if (startNode && endNode) {
+                    newRange.setStart(startNode, 0);
+                    newRange.setEnd(endNode, endNode.textContent.length);
+                    range.selectNodeContents(newRange.commonAncestorContainer);
+                    range.setStart(newRange.startContainer, newRange.startOffset);
+                    range.setEnd(newRange.endContainer, newRange.endOffset);
+                } else {
+                    return; // Exit if no text nodes found
+                }
+            }
+
             // Create span for the selected text
             const commentId = `comment_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
             commentedSpan = document.createElement("span");
             commentedSpan.className = "commented-text";
             commentedSpan.setAttribute("id", commentId);
-            range.surroundContents(commentedSpan);
+            
+            try {
+                range.surroundContents(commentedSpan);
+            } catch (e) {
+                console.error("Error surrounding contents:", e);
+                return;
+            }
         }
 
         // Make parallel requests to selected models
