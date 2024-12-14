@@ -553,9 +553,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
               : `Error with ${modelName}: ${response.error.message || response.error.toString() || 'Unknown error'}`;
             this.showToast(errorMessage);
             completedResponses++;
-            if (completedResponses === totalResponses) {
-              this.saveNote(true);
-            }
             return;
           }
 
@@ -571,18 +568,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
               const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
               commentedSpan.setAttribute("data-comment", updatedComment);
 
-
-              // Show or update tooltip for all responses
-              const tooltip = document.getElementById('commentTooltip');
-              if (index === 0 || tooltip.style.display === 'block') {
-                this.showCommentTooltip(commentedSpan, updatedComment);
-                // Add highlight effect to AI-generated comment
-                document.querySelector('.comment-tooltip').classList.add('highlight');
-                setTimeout(() => {
-                  document.querySelector('.comment-tooltip').classList.remove('highlight');
-                }, 1000);
-
-              }
+              // Show tooltip for each response as it arrives
+              this.showCommentTooltip(commentedSpan, updatedComment);
+              // Add highlight effect to AI-generated comment
+              document.querySelector('.comment-tooltip').classList.add('highlight');
+              setTimeout(() => {
+                document.querySelector('.comment-tooltip').classList.remove('highlight');
+              }, 1000);
             } else {
               // Create a new block for longer responses
               const block = document.createElement("div");
@@ -591,13 +583,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
               block.classList.add('highlight')
               setTimeout(() => {
                 block.classList.remove('highlight')
-
               }, 1500);
 
               // Add blank line before new block
               const blankLine = document.createElement("div");
               blankLine.innerHTML = "<br>";
-
 
               // Insert blank line and block
               if (currentBlock) {
@@ -608,29 +598,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
                 const selection = window.getSelection();
                 if (selection.rangeCount > 0) {
                   const range = selection.getRangeAt(0);
-                  range.collapse(false); // Collapse the range to the end point
+                  range.collapse(false);
 
-                  // Insert the blank line
+                  range.insertNode(block);
                   range.insertNode(blankLine);
 
-                  // Insert the new block
-                  range.insertNode(block);
-
-                  // Add highlight effect
-                  block.classList.add('highlight');
-                  setTimeout(() => {
-                    block.classList.remove('highlight');
-                  }, 1000);
-
-                  // Move the cursor after the inserted block
-                  range.setStartAfter(block);
+                  range.setStartAfter(blankLine);
                   range.collapse(true);
                   selection.removeAllRanges();
                   selection.addRange(range);
                 } else {
-                  // Fallback to appending at the end if no selection range is available
-                  this.editor.appendChild(blankLine);
                   this.editor.appendChild(block);
+                  this.editor.appendChild(blankLine);
                 }
               }
               currentBlock = block;
@@ -639,7 +618,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             // Increment completed responses counter
             completedResponses++;
 
-            // If all responses are complete, save the note
+            // Save note only after all responses are complete
             if (completedResponses === totalResponses) {
               this.saveNote(true);
             }
