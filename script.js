@@ -497,7 +497,19 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             // Create span for the selected text
             commentedSpan = document.createElement("span");
             commentedSpan.className = "commented-text";
-            range.surroundContents(commentedSpan);
+            try {
+                range.surroundContents(commentedSpan);
+            } catch (e) {
+                // Fallback method for complex selections
+                // 1. Extract the range contents
+                const contents = range.extractContents();
+                
+                // 2. Append the contents to the commented span
+                commentedSpan.appendChild(contents);
+                
+                // 3. Insert the commented span at the range start
+                range.insertNode(commentedSpan);
+            }
         }
 
         // Make parallel requests to selected models
@@ -553,7 +565,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
                     if (useComment) {
                         // Add this response to the comment
                         const currentComment = commentedSpan.getAttribute("data-comment") || "";
-                        const newResponse = `[${modelName}]:\n${aiResponse}\n`;
+                        const newResponse = `<h4 onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'" 
+                        style="position: sticky; top: 0; background: white; z-index: 100; padding: 8px 0; margin: 0; font-size: small; text-decoration: underline;">${modelName}</h4>\n<div style="display:block"
+                        >${aiResponse}\n</div>`;
                         const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
                         commentedSpan.setAttribute("data-comment", updatedComment);
     
