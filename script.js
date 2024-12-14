@@ -495,8 +495,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
         if (useComment) {
             // Create span for the selected text
+            const commentId = `comment_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
             commentedSpan = document.createElement("span");
             commentedSpan.className = "commented-text";
+            commentedSpan.setAttribute("id", commentId);
             range.surroundContents(commentedSpan);
         }
 
