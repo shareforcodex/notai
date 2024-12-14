@@ -534,12 +534,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             commentedSpan.className = "commented-text";
             commentedSpan.setAttribute("id", commentId);
             
-            try {
-                range.surroundContents(commentedSpan);
-            } catch (e) {
-                console.error("Error surrounding contents:", e);
-                return;
-            }
+            // Extract the selected content
+            const extractedContents = range.extractContents();
+
+            // Append the extracted content to the span
+            commentedSpan.appendChild(extractedContents);
+
+            // Insert the span back into the document at the range's position
+            range.insertNode(commentedSpan);
         }
 
         // Make parallel requests to selected models
@@ -1564,6 +1566,20 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
                 currentBlock = blocks[i];
                 break;
             }
+        }
+
+        // Function to check if all nodes in the range are text nodes
+        function isRangeAllText(range) {
+            const contents = range.cloneContents();
+            const treeWalker = document.createTreeWalker(contents, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, null, false);
+            let currentNode = treeWalker.nextNode();
+            while (currentNode) {
+                if (currentNode.nodeType === Node.ELEMENT_NODE) {
+                    return false; // Contains non-text node
+                }
+                currentNode = treeWalker.nextNode();
+            }
+            return true;
         }
     }
 
