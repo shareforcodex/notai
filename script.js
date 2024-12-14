@@ -888,12 +888,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       }
     });
 
-    // Handle close button click
-    tooltip.querySelector('.close-tooltip')?.addEventListener('click', () => {
-      tooltip.style.display = 'none';
-      currentCommentElement = null;
-    });
-
     // Handle comment editing
     tooltip.addEventListener('click', (e) => {
       if (e.target.classList.contains('edit-comment')) {
@@ -908,13 +902,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   showCommentTooltip(element, comment) {
     const tooltip = document.getElementById('commentTooltip');
-    tooltip.innerHTML = `
+    
+    // Split comments by '---\n' to handle multiple model responses
+    const commentSections = comment.split('---\n');
+
+    let htmlContent = `
       <div class="tooltip-header">
         <div class="comment-actions">
           <button class="edit-comment">Edit</button>
           <button class="close-tooltip">Close</button>
-          </div>
-        
+        </div>
       </div>
       <div class="comment-content">${comment}</div>
     `;
@@ -927,7 +924,48 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     // Position the tooltip
     tooltip.style.display = 'block';
-  }
+
+    // Reattach event listener for the Close button
+    const closeBtn = tooltip.querySelector('.close-tooltip');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            tooltip.style.display = 'none';
+            this.currentCommentElement = null;
+        });
+    }
+
+    // Reattach event listener for the Edit button
+    const editBtn = tooltip.querySelector('.edit-comment');
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            this.editComment(element);
+        });
+    }
+
+    // Reattach event listener for the Delete button
+    const deleteBtn = tooltip.querySelector('.delete-comment');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            this.deleteComment(element);
+        });
+    }
+
+    // Reattach event listeners for model-name clicks to enable scrolling
+    tooltip.querySelectorAll('.model-name').forEach(h4 => {
+        h4.style.cursor = 'pointer';
+        h4.addEventListener('click', () => {
+            const targetId = h4.getAttribute('data-target');
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetElement.classList.add('highlight');
+                setTimeout(() => {
+                    targetElement.classList.remove('highlight');
+                }, 2000);
+            }
+        });
+    });
+}
 
   editComment(element) {
     const tooltip = document.getElementById('commentTooltip');
