@@ -589,6 +589,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
                                 // Insert the new block
                                 range.insertNode(block);
+                
+                                // Add highlight effect
+                                block.classList.add('highlight');
+                                setTimeout(() => {
+                                    block.classList.remove('highlight');
+                                }, 1000);
 
                                 // Move the cursor after the inserted block
                                 range.setStartAfter(block);
@@ -921,6 +927,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       const newComment = input.value.trim();
       if (newComment) {
         element.setAttribute('data-comment', newComment);
+        // Add highlight effect
+        element.classList.add('highlight');
+        setTimeout(() => {
+            element.classList.remove('highlight');
+        }, 1000);
+    
         this.showCommentTooltip(element, newComment);
         this.scheduleAutoSave();
       }
@@ -970,6 +982,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         span.setAttribute('data-comment', comment);
         
         range.surroundContents(span);
+        // Add highlight effect
+        span.classList.add('highlight');
+        setTimeout(() => {
+            span.classList.remove('highlight');
+        }, 1000);
+    
         this.scheduleAutoSave();
       }
     } else {
@@ -1424,6 +1442,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     block.innerHTML = `
  
 `;
+    
+    // Add highlight effect
+    block.classList.add('highlight');
+    setTimeout(() => {
+        block.classList.remove('highlight');
+    }, 1000);
 
     // Get current selection and find closest block
     const range = selection.getRangeAt(0);
