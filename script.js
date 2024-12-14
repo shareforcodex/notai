@@ -1985,12 +1985,28 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const range = selection.getRangeAt(0);
     const selectedText = range.toString();
 
-    // Create a text node with the selected text
-    const textNode = document.createTextNode(selectedText);
+    if (!selectedText) return;
 
-    // Replace the selected content with the plain text node
+    // Get the closest block element containing the selection
+    const block = range.commonAncestorContainer.closest('.block');
+    if (!block) return;
+
+    // Replace the selected content with plain text
+    const textNode = document.createTextNode(selectedText);
     range.deleteContents();
     range.insertNode(textNode);
+
+    // Remove any parent elements of the text node that are not the block
+    let parent = textNode.parentElement;
+    while (parent && parent !== block) {
+      const grandparent = parent.parentElement;
+      if (grandparent) {
+        grandparent.replaceChild(textNode, parent);
+        parent = textNode.parentElement;
+      } else {
+        break;
+      }
+    }
 
     // Clear the selection
     selection.removeAllRanges();
