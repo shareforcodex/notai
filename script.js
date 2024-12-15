@@ -918,7 +918,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       <div class="tooltip-header">
         <div class="comment-actions">
           <button class="edit-comment">Edit</button>
-          <button class="toggle-size-comment">Toggle Size</button>
+          <button class="toggle-size-comment">Zoom</button>
           <button class="close-tooltip">Close</button>
           </div>
         
@@ -938,9 +938,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         tooltip.dataset.large = 'false';
         tooltip.style.maxWidth = '';
         tooltip.style.top = '';
+        tooltip.style.height = '';
+
       } else {
         tooltip.dataset.large = 'true';
         tooltip.style.maxWidth = '90vw';
+        tooltip.style.height = '50vh';
         tooltip.style.top = '50vh';
       }
     });
