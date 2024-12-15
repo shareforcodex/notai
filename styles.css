@@ -766,19 +766,22 @@ pre code {
 
 .model-config {
     display: flex;
-    gap: 10px;
-    align-items: center;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
     margin-bottom: 10px;
     padding: 10px;
     border: 1px solid #eee;
     border-radius: 4px;
-  }
-  .model-config input {
+}
+.model-config input {
+    width: 100%;
+    max-width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
-  }
+}
   .model-config .remove-model {
     color: #ff4444;
     cursor: pointer;
