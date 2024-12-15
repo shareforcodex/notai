@@ -22,11 +22,11 @@ class NotionEditor {
 
     // Define DEFAULT_MODELS as a class property
     this.DEFAULT_MODELS = [
-      { name: "GPT-4O", model_id: "gpt-4o", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-      { name: "GPT-4O Mini", model_id: "gpt-4o-mini", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-      { name: "Llama 3.1 405B", model_id: "Meta-Llama-3.1-405B-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-      { name: "Llama 3.2 90B", model_id: "Llama-3.2-90B-Vision-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
-      { name: "Mistral Large", model_id: "Mistral-large", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+      { name: "gpt-4o", model_id: "gpt-4o", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+      { name: "gpt-4o-mini", model_id: "gpt-4o-mini", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+      { name: "Meta-Llama-3.1-405B-Instruct", model_id: "Meta-Llama-3.1-405B-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+      { name: "Llama-3.2-90B-Vision-Instruct", model_id: "Llama-3.2-90B-Vision-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
+      { name: "Mistral-large", model_id: "Mistral-large", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions" },
     ];
 
     // Verify required elements exist
