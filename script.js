@@ -66,7 +66,7 @@ class NotionEditor {
     this.currentBlock = null;
     this.content = ""; // Store markdown content
     this.isSourceView = false;
-    this.isEditable = false;
+    this.isEditable = true;
     this.autoSaveTimeout = null;
 
     // Ensure white-space is preserved
