@@ -811,7 +811,7 @@ pre code {
 }
 
 .comment-tooltip {
-    height: 28vh;
+    height: 35vh;
     overflow: auto;
     position: fixed;
     top: 70vh;
