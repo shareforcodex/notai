@@ -679,6 +679,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       document.getElementById('askPrompt').value = this.aiSettings.prompts.ask;
       document.getElementById('correctPrompt').value = this.aiSettings.prompts.correct;
       document.getElementById('translatePrompt').value = this.aiSettings.prompts.translate;
+      // Add help text for using {text} in prompt templates
+      document.getElementById('askPrompt').title = "Use {text} where you want the selected text inserted.";
+      document.getElementById('correctPrompt').title = "Use {text} where you want the selected text inserted.";
+      document.getElementById('translatePrompt').title = "Use {text} where you want the selected text inserted.";
+
       this.renderCustomTools();
       this.renderModelSettings();
       modal.style.display = "block";
