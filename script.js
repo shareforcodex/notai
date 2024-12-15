@@ -1153,7 +1153,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           if (response.error) {
             // Handle rate limit or other API errors
             const errorMessage = response.error.code === "RateLimitReached"
-              ? `Rate limit reached for ${modelName}. Please try again later.`
+              ? `Rate limit reached for ${modelName}. Please try again later or select other model.`
               : `Error with ${modelName}: ${response.error.message || 'Unknown error'}`;
             this.showToast(errorMessage);
             return;
@@ -1169,7 +1169,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
             // Add blank line before new block
             const blankLine = document.createElement("div");
-            blankLine.innerHTML = "<br>";
+            blankLine.innerHTML = `
+            `;
 
             // Find the last AI response block for this quick ask
             let lastResponseBlock = currentBlock;
@@ -1187,13 +1188,15 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
             // Insert blank line and block
             if (lastResponseBlock) {
-              nextBlock.after(block);
-              block.after(blankLine);
+              //add new line at end of block
+            
+              currentBlock.after(block);
               block.classList.add('highlight')
               setTimeout(() => {
                 block.classList.remove('highlight')
 
               }, 1500);
+              currentBlock=block;
             } else {
               // Insert at cursor position
               const selection = window.getSelection();
@@ -1213,7 +1216,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
                 this.editor.appendChild(blankLine);
               }
             }
-            currentBlock = nextBlock;
           }
         }).catch(error => {
           console.error(`Error with ${modelName} request:`, error);
