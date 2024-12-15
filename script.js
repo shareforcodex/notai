@@ -936,12 +936,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     toggleBtn.addEventListener('click', () => {
       if (tooltip.dataset.large === 'true') {
         tooltip.dataset.large = 'false';
-        tooltip.style.width = '';
-        tooltip.style.height = '';
+        tooltip.style.maxWidth = '';
+        tooltip.style.top = '';
       } else {
         tooltip.dataset.large = 'true';
-        tooltip.style.width = '90vw';
-        tooltip.style.height = '50vh';
+        tooltip.style.maxWidth = '90vw';
+        tooltip.style.top = '50vh';
       }
     });
 
