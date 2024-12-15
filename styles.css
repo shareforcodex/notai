@@ -52,6 +52,7 @@ body {
     overflow: auto;
     scrollbar-width:thin;
     height: 95vh;
+    width: 95vw;
 
 }
 
