@@ -740,10 +740,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       const div = document.createElement('div');
       div.className = 'model-config';
       div.innerHTML = `
-        <input type="text" class="model-name" placeholder="Model Name" value="${model.name}">
-        <input type="text" class="model-id" placeholder="Model ID" value="${model.model_id}">
-        <input type="text" class="model-url" placeholder="Model URL" value="${model.url}">
-        <input type="text" class="model-api-key" placeholder="API Key" value="${model.api_key}">
+        <input type="text" class="model-name" placeholder="Model Name" value="${model.name}" name="model_name">
+        <input type="text" class="model-id" placeholder="Model ID" value="${model.model_id}" name="model_id">
+        <input type="text" class="model-url" placeholder="Model URL" value="${model.url}" name="model_url">
+        <input type="text" class="model-api-key" placeholder="API Key" value="${model.api_key}" name="model_api_key">
         <button class="remove-model" data-index="${index}"><i class="fas fa-trash"></i></button>
       `;
 
