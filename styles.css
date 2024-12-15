@@ -93,7 +93,8 @@ h3{
 
 .editor-container {
     display: flex;
-    height: 95vh;
+    height: 90vh;
+    width: 90vw;
     position: relative;
     scrollbar-color: lightblue white;
 
@@ -451,7 +452,7 @@ h3{
 }
 
 .note-title {
-    padding: 0px 20px 0 20px;
+    padding: 0px 20px 0 40px;
     font-size: 20px;
     font-weight: bold;
     background-color: rgb(251, 254, 243);
@@ -473,6 +474,7 @@ h3{
     scrollbar-color: rgb(219, 248, 219) white;
     scrollbar-width:thin;
     white-space: pre-wrap; /* Preserve spaces and newlines */
+   
 }
 
 [contenteditable=true]:empty:before {
@@ -488,6 +490,7 @@ h3{
     padding: 5px;
     border-radius: 4px;
     transition: background-color 0.2s;
+    width: 93vw;
 }
 
 .block:hover {
