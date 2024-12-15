@@ -918,6 +918,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       <div class="tooltip-header">
         <div class="comment-actions">
           <button class="edit-comment">Edit</button>
+          <button class="toggle-size-comment">Toggle Size</button>
           <button class="close-tooltip">Close</button>
           </div>
         
@@ -929,6 +930,19 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     tooltip.querySelector('.close-tooltip').addEventListener('click', () => {
       tooltip.style.display = 'none';
       currentCommentElement = null;
+    });
+
+    const toggleBtn = tooltip.querySelector('.toggle-size-comment');
+    toggleBtn.addEventListener('click', () => {
+      if (tooltip.dataset.large === 'true') {
+        tooltip.dataset.large = 'false';
+        tooltip.style.width = '';
+        tooltip.style.height = '';
+      } else {
+        tooltip.dataset.large = 'true';
+        tooltip.style.width = '90vw';
+        tooltip.style.height = '50vh';
+      }
     });
 
     // Position the tooltip
