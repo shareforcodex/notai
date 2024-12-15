@@ -567,7 +567,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
               // Add this response to the comment
               const currentComment = commentedSpan.getAttribute("data-comment") || "";
               const newResponse = `<h4 onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'" 
-                        style="position: sticky; top: 0; background: white; z-index: 100; padding: 8px 0; margin: 0; font-size: small; text-decoration: underline;">${modelName}</h4><div style="display:block"
+                        style="position: sticky; top: 0; background: white; z-index: 100; padding: 0px 0; margin: 0; font-size: small; text-decoration: underline;">${modelName}</h4><div style="display:block"
                         >${marked.parse(aiResponse)}</div>`;
               const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
               commentedSpan.setAttribute("data-comment", updatedComment);
