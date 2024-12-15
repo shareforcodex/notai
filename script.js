@@ -461,7 +461,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       prompt = this.aiSettings.prompts[action].replace('{text}', text);
     } else {
       // Handle custom tools
-      const customTool = this.aiSettings.customTools.find(tool => tool.id === action);
+      customTool = this.aiSettings.customTools.find(tool => tool.id === action);
       if (customTool) {
         prompt = customTool.prompt.replace('{text}', text);
       }
