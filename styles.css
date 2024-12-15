@@ -570,6 +570,7 @@ pre code {
 }
 
 .ai-toolbar {
+    max-width: 90vw;
     position: absolute;
     background: white;
     border: 1px solid #e0e0e0;
