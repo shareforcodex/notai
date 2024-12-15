@@ -676,10 +676,10 @@ pre code {
     padding: 20px;
     border: 1px solid #888;
     border-radius: 8px;
-    width: 80%;
-    max-width: 600px;
+    width: 90%;
     max-height: 80vh;
     overflow-y: auto;
+    scrollbar-width: thin;
 }
 
 .modal-header {
@@ -729,20 +729,17 @@ pre code {
 }
 
 .custom-tool {
-    display: flex;
-    gap: 10px;
-    align-items: center;
     margin-bottom: 10px;
-    padding: 10px;
     border: 1px solid #eee;
     border-radius: 4px;
 }
 
 .custom-tool input {
-    padding: 8px;
+    padding: 5px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
+    width: 85%;
 }
 
 .custom-tool .remove-tool {
@@ -793,6 +790,8 @@ pre code {
   }
 
 .save-settings-btn {
+    position:;
+    bottom: 0;
     padding: 10px 20px;
     background-color: #2ecc71 !important;
     color: white;
@@ -1081,8 +1080,9 @@ pre code {
     padding: 20px;
     border: 1px solid #888;
     border-radius: 8px;
-    width: 80%;
-    max-width: 400px;
+    width: 90%;
+    
+    
 }
 
 #profileModal .modal-header {
