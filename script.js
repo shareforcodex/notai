@@ -455,6 +455,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     // Check if text has less than 3 words
     const useComment = text.length < 20;
 
+    let customTool = null;
     let prompt = "";
     if (this.aiSettings.prompts[action]) {
       prompt = this.aiSettings.prompts[action].replace('{text}', text);
@@ -587,7 +588,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
               // Create a new block for longer responses
               const block = document.createElement("div");
               block.className = "block";
-              block.innerHTML = `<h2> ${action} (${modelName})</h2>${marked.parse(aiResponse)}`;
+              block.innerHTML = customTool ? `<h2> ${customTool.name} (${modelName})</h2>${marked.parse(aiResponse)}` : `<h2> ${action} (${modelName})</h2>${marked.parse(aiResponse)}`;
               block.classList.add('highlight')
               setTimeout(() => {
                 block.classList.remove('highlight')
