@@ -597,10 +597,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
          
 
+              let blankLine = document.createTextNode('\n');
 
               // Insert blank line and block
               if (currentBlock) {
-                let blankLine = document.createTextNode('\n');
                 currentBlock.after(blankLine);
                 // Insert new block after blank line
                 blankLine.after(block);
@@ -1184,10 +1184,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             // }
 
             // Insert blank line and block
+            let blankLine = document.createTextNode('\n');
             if (currentBlock) {
               //add new line at end of block
 
-              let blankLine = document.createTextNode('\n');
               currentBlock.after(blankLine);
               // Insert new block after blank line
               blankLine.after(block);
@@ -1467,14 +1467,17 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     if (selectedText) {
       // Create a new block element
-      const newBlock = document.createElement("div");
-      newBlock.className = "block";
-      newBlock.innerHTML = `${selectedText}`;
-      let block = newBlock;
-      block.classList.add('highlight')
+      let block;
+      if (range.startContainer.closest('.block')) {
+        block = range.startContainer.closest('.block');
+      } else {
+        block = document.createElement("div");
+        block.className = "block";
+        block.innerHTML = `${selectedText}`;
+      }
+      block.classList.add('highlight');
       setTimeout(() => {
-        block.classList.remove('highlight')
-
+        block.classList.remove('highlight');
       }, 1500);
 
       // Get the range of the selected text
