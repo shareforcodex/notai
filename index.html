@@ -49,7 +49,7 @@
                         <div class="dropdown-content">
                             <button id="userProfileBtn"><i class="fas fa-user"></i> Profile</button>
                             <button id="aiSettingsBtn"><i class="fas fa-cog"></i> AI Settings</button>
-                            <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                            <button id="logoutBtn" onclick="window.editor.logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
                         </div>
                     </div>
 
@@ -61,8 +61,17 @@
                                 <span class="close">&times;</span>
                             </div>
                             <div class="modal-body">
+                                <div class="settings-toc">
+                                    <h3>Table of Contents</h3>
+                                    <ul>
+                                        <li><a href="#default-prompts">Default Prompts</a></li>
+                                        <li><a href="#custom-ai-tools">Custom AI Tools</a></li>
+                                        <li><a href="#models">Models</a></li>
+                                    </ul>
+                                </div>
                                 <div class="settings-section">
-                                    <h3>Default Prompts</h3>
+                                    <h3 id="default-prompts">Default Prompts</h3>
+                                    <p class="help-text">Use {text} in your prompt templates where you want the selected text inserted.</p>
                                     <div class="prompt-settings">
                                         <div class="prompt-item">
                                             <label>Ask Button:</label>
@@ -79,11 +88,17 @@
                                     </div>
                                 </div>
                                 <div class="settings-section">
-                                    <h3>Custom AI Tools</h3>
+                                    <h3 id="custom-ai-tools">Custom AI Tools</h3>
                                     <div id="customTools"></div>
                                     <button id="addCustomTool" class="add-tool-btn">
                                         <i class="fas fa-plus"></i> Add Custom Tool
                                     </button>
+                                </div>
+                                <div class="settings-section">
+                                  <h3 id="models">Models</h3>
+                                  <small>Provide a Model Name, a unique Model ID, the Model URL (API endpoint), and optionally an API Key. For consistency, it's recommended to use the same value for Name and ID.</small>
+                                  <div id="modelSettingsContainer"></div>
+                                  <button id="addModelBtn" class="add-tool-btn"><i class="fas fa-plus"></i> Add Model</button>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -132,7 +147,6 @@
                     <!-- Comment tooltip -->
                     <div id="commentTooltip" class="comment-tooltip" style="display: none;">
                         <div class="tooltip-header">
-                            <span>Comment</span>
                             <button class="close-tooltip"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="comment-content"></div>
@@ -141,7 +155,7 @@
                     <button id="addBlockBtn"><i class=""></i>⊞</button>
                     <button id="viewSourceBtn"><i class="fas fa-code"></i> </button>
                     <button id="toggleEditableBtn" title="Toggle Editor Editability">
-                        <i class="fas fa-lock"></i>
+                        <i class="fas fa-lock-open"></i>
                     </button>
                     <button id="topbarPinBtn"><i class="fas fa-thumbtack"></i></button>
                     <button id="saveNoteBtn">
@@ -152,7 +166,7 @@
                 </div>
             </div>
             <div id="noteTitle" class="note-title" contenteditable="true" placeholder="Untitled Note"></div>
-            <div id="editor" class="editor">
+            <div id="editor" class="editor" contenteditable="true">
                 <div class="block">
                     <button class="pin-block-btn"><i class="fas fa-thumbtack"></i></button>
                     <p>Start writing here...</p>
@@ -206,6 +220,7 @@
         <i class="fas fa-paper-plane"></i>
     </button>
     <script src="script.js"></script>
+    <div id="toastContainer" class="toast-container"></div>
 <!-- Profile Modal -->
 <div id="profileModal" class="modal">
     <div class="modal-content">
@@ -221,6 +236,10 @@
         </div>
     </div>
 </div>
+    <div id="loadingSpinner" class="spinner" style="display: none;">
+        <div class="double-bounce1"></div>
+        <div class="double-bounce2"></div>
+    </div>
 </body>
 
 </html>

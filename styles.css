@@ -4,12 +4,55 @@
     box-sizing: border-box;
 }
 
+/* Spinner Styles */
+.spinner {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    z-index: 10000;
+}
+
+.double-bounce1, .double-bounce2 {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.6);
+    opacity: 0.6;
+    position: absolute;
+    top: 0;
+    left: 0;
+  
+    -webkit-animation: bounce 2.0s infinite ease-in-out;
+    animation: bounce 2.0s infinite ease-in-out;
+}
+
+.double-bounce2 {
+    -webkit-animation-delay: -1.0s;
+    animation-delay: -1.0s;
+}
+
+@-webkit-keyframes bounce {
+    0%, 100% { -webkit-transform: scale(0.0); }
+    50% { -webkit-transform: scale(1.0); }
+}
+
+@keyframes bounce {
+    0%, 100% { 
+        transform: scale(0.0);
+    } 50% {
+        transform: scale(1.0);
+    }
+}
+
 body {
+    position: fixed;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     line-height: 1.6;
     scrollbar-color: lightblue white;
-
+    overflow: auto;
     scrollbar-width:thin;
+    height: 95vh;
+    width: 95vw;
 
 }
 
@@ -38,10 +81,11 @@ h3{
 }
 
 .block{
-    position: relative;
-    max-height: 40vh;
+    position: static;
+    max-height: 300px;
     overflow: auto;
     scrollbar-color: lightblue white;
+    background-color: #f5f5f5; /* Light gray */
 
     scrollbar-width:thin;
 }
@@ -49,7 +93,8 @@ h3{
 
 .editor-container {
     display: flex;
-    height: 100vh;
+    height: 90vh;
+    width: 90vw;
     position: relative;
     scrollbar-color: lightblue white;
 
@@ -79,7 +124,7 @@ h3{
 
 .main-content.expanded {
     margin-left: 0;
-    padding-left: 60px;  /* Add padding when sidebar is hidden */
+    padding-left: 50px;  /* Add padding when sidebar is hidden */
 }
 
 .sidebar {
@@ -241,11 +286,13 @@ h3{
 }
 
 .sidebar-section {
-    margin-top: 20px;
+    margin-top: 5px;
     border-top: 1px solid #e0e0e0;
     padding-top: 20px;
     overflow: auto;
     font-size: small;
+    max-height: 50vh;
+    scrollbar-width: none;
 }
 
 .sidebar-btn {
@@ -405,11 +452,12 @@ h3{
 }
 
 .note-title {
-    padding: 0px 20px 0 20px;
+    padding: 0px 20px 0 40px;
     font-size: 20px;
     font-weight: bold;
     background-color: rgb(251, 254, 243);
-
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 }
 
 .note-title[placeholder]:empty:before {
@@ -424,8 +472,9 @@ h3{
     overflow-y: auto;
     background-color: #fff;
     scrollbar-color: rgb(219, 248, 219) white;
-
     scrollbar-width:thin;
+    white-space: pre-wrap; /* Preserve spaces and newlines */
+   
 }
 
 [contenteditable=true]:empty:before {
@@ -441,6 +490,12 @@ h3{
     padding: 5px;
     border-radius: 4px;
     transition: background-color 0.2s;
+    width: 93vw;
+}
+
+.block::after {
+    content: "\A";
+    white-space: pre;
 }
 
 .block:hover {
@@ -448,50 +503,15 @@ h3{
 }
 
 /* Alternating block colors */
-.block:nth-child(odd) {
+/* .block:nth-child(odd) {
     background-color: #f0f8ff; /* Light blue */
-}
+} */
 
-.block:nth-child(even) {
+/* .block:nth-child(even) {
     background-color: #f5f5f5; /* Light gray */
-}
+} */
 
 /* Different block type colors */
-.block h1 {
-    background-color: #fff0f0;  /* Very light red */
-}
-
-.block h2 {
-    background-color: #f0fff0;  /* Very light green */
-}
-
-.block h3 {
-    background-color: #f0f0ff;  /* Very light blue */
-}
-
-.block ul, .block ol {
-    background-color: #fff5e6;  /* Very light orange */
-}
-
-.media-block {
-    background-color: #f5f0ff;  /* Very light purple */
-}
-
-.iframe-block {
-    background-color: #e6fff7;  /* Very light mint */
-}
-
-.block p {
-    background-color: #fafafa;  /* Very light gray */
-}
-
-.media-block {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 20px 0;
-    max-width: 100%;
-}
 
 .image-block img {
     max-width: 100%;
@@ -505,7 +525,8 @@ h3{
 
 .iframe-block {
     position: relative;
-    width: 100%;
+    width: 90%;
+    height: 40%;
     padding: 10px;
     background: #f8f9fa;
     border-radius: 4px;
@@ -515,6 +536,22 @@ h3{
     border: 1px solid #e0e0e0;
     border-radius: 4px;
     background: white;
+}
+
+/* Style for <pre> elements */
+pre {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: monospace;
+    margin: 10px 0;
+}
+
+/* Style for <code> elements within <pre> */
+pre code {
+    font-family: monospace;
+    white-space: pre-wrap; /* Preserve spaces and line breaks */
 }
 
 #headingSelect {
@@ -542,6 +579,7 @@ h3{
 }
 
 .ai-toolbar {
+    max-width: 90vw;
     position: absolute;
     background: white;
     border: 1px solid #e0e0e0;
@@ -647,10 +685,10 @@ h3{
     padding: 20px;
     border: 1px solid #888;
     border-radius: 8px;
-    width: 80%;
-    max-width: 600px;
+    width: 90%;
     max-height: 80vh;
     overflow-y: auto;
+    scrollbar-width: thin;
 }
 
 .modal-header {
@@ -700,20 +738,17 @@ h3{
 }
 
 .custom-tool {
-    display: flex;
-    gap: 10px;
-    align-items: center;
     margin-bottom: 10px;
-    padding: 10px;
     border: 1px solid #eee;
     border-radius: 4px;
 }
 
 .custom-tool input {
-    padding: 8px;
+    padding: 5px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
+    width: 85%;
 }
 
 .custom-tool .remove-tool {
@@ -738,7 +773,34 @@ h3{
     background-color: #e0e0e0;
 }
 
+.model-config {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+.model-config input {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+  .model-config .remove-model {
+    color: #ff4444;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+
 .save-settings-btn {
+    position:;
+    bottom: 0;
     padding: 10px 20px;
     background-color: #2ecc71 !important;
     color: white;
@@ -760,44 +822,30 @@ h3{
 }
 
 .comment-tooltip {
-    max-height: 40vh;
-    overflow: scroll;
+    height: 30vh;
+    overflow: auto;
     position: fixed;
-    bottom: 20px;
-    left: 5%;
+    top: 65vh;
+    left: 5vw;
     background: white;
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     max-width: 400px;
+    width: 90vw;
     z-index: 1000;
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.tooltip-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 10px;
-    border-bottom: 1px solid #ddd;
-    background: #f5f5f5;
-    border-radius: 4px 4px 0 0;
-}
 
-.tooltip-header span {
-    font-weight: bold;
-    color: #555;
-}
+
+
 
 .tooltip-header .close-tooltip {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #888;
-    padding: 2px 6px;
+    
 }
 
 .tooltip-header .close-tooltip:hover {
@@ -805,14 +853,9 @@ h3{
 }
 
 .comment-content {
-    max-width: 400px;
-    width: 90vw;
-    font-size: 14px;
-    color: #666;
-    min-height: 20px;
+   
     padding: 10px;
     white-space: pre-wrap;
-    max-height: 400px;
 }
 
 /* Style for individual model responses */
@@ -822,23 +865,28 @@ h3{
     background-color: #fff9e6;
 }
 
+.tooltip-header {
+    display: flex;
+    background-color: #f0f0f0;
+}
+
 .comment-actions {
     display: flex;
     gap: 8px;
-    justify-content: flex-end;
+    margin-left: 10px; /* Adjust as needed */
 }
 
 .comment-actions button {
     padding: 4px 8px;
-    border: 1px solid #ddd;
+    background-color: #f0f0f0;
+    border: none;
     border-radius: 4px;
-    background: white;
     cursor: pointer;
     font-size: 12px;
 }
 
 .comment-actions button:hover {
-    background: #f0f0f0;
+    background-color: #e0e0e0;
 }
 
 .comment-edit-input {
@@ -857,7 +905,7 @@ h3{
 .quick-ask-btn {
     position: fixed;
     left: 20px;
-    bottom: 20px;
+    bottom: 40px;
     background: #2ecc71;
     color: white;
     padding: 15px;
@@ -865,7 +913,7 @@ h3{
     border-radius: 50%;
     cursor: pointer;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    z-index: 1000;
+    z-index: 99;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -974,6 +1022,7 @@ h3{
     animation: slideIn 0.3s ease-out;
     max-width: 450px;
     min-width: 300px;
+    transition: background-color 0.5s ease;
 }
 
 .toast.success {
@@ -1001,6 +1050,14 @@ h3{
 
 .toast-close:hover {
     color: #333;
+}
+
+.toast.error {
+    background-color: #ff4444; /* Red background for error */
+}
+
+.toast.error.hide {
+    background-color: #ffffff; /* White background after 1 second */
 }
 
 @keyframes slideIn {
@@ -1032,8 +1089,9 @@ h3{
     padding: 20px;
     border: 1px solid #888;
     border-radius: 8px;
-    width: 80%;
-    max-width: 400px;
+    width: 90%;
+    
+    
 }
 
 #profileModal .modal-header {
@@ -1083,6 +1141,12 @@ h3{
 
 /* Pin Block Button Styles */
 
+.highlight {
+    background-color: rgb(233, 255, 233);
+    transition: box-shadow 0.3s ease, border 0.3s ease, background-color 0.3s ease;
+
+}
+
 .pin-block-btn:hover {
     color: #333;
 }
@@ -1104,6 +1168,4 @@ h3{
     z-index: 99;
     box-shadow: 0 16px 16px rgba(0, 0, 0, 0.3);
     border: 2px solid #2ecc71;
-    background-color: #fffbea;
-    transition: box-shadow 0.3s ease, border 0.3s ease, background-color 0.3s ease;
 }

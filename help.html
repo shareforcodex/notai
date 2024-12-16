@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Documentation</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Enhanced syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- Enhanced markdown rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/14.0.0/markdown-it.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it-emoji/2.0.2/markdown-it-emoji.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it-footnote/3.0.3/markdown-it-footnote.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it-task-lists/2.1.1/markdown-it-task-lists.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --text-color: #334155;
+            --bg-color: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            background: var(--bg-color);
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.8;
+            color: var(--text-color);
+            padding: 2rem;
+        }
+
+        .help-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .help-content {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            padding: 4rem;
+            position: relative;
+            margin: 2rem auto;
+        }
+
+        .close-help-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0.75rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-help-btn:hover {
+            color: var(--primary-color);
+            background: var(--bg-color);
+            transform: scale(1.05);
+        }
+
+        #helpMarkdown {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        #helpMarkdown h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 2rem 0;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--border-color);
+            letter-spacing: -0.5px;
+        }
+
+        #helpMarkdown h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #334155;
+            margin: 3rem 0 1.5rem;
+            letter-spacing: -0.3px;
+        }
+
+        #helpMarkdown h3 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #475569;
+            margin: 2rem 0 1rem;
+        }
+
+        #helpMarkdown p {
+            color: #475569;
+            margin: 1.5rem 0;
+            font-size: 1.125rem;
+            line-height: 1.9;
+        }
+
+        #helpMarkdown ul, #helpMarkdown ol {
+            margin: 1.5rem 0;
+            padding-left: 2.5rem;
+            color: #475569;
+        }
+
+        #helpMarkdown li {
+            margin: 0.75rem 0;
+            line-height: 1.8;
+            padding-left: 0.5rem;
+        }
+
+        #helpMarkdown a {
+            color: var(--primary-color);
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            padding: 0.1rem 0.2rem;
+        }
+
+        #helpMarkdown a:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-bottom-color: var(--primary-color);
+        }
+
+        #helpMarkdown img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin: 2.5rem 0;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        #helpMarkdown code {
+            background: #f1f5f9;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.95rem;
+            color: #475569;
+        }
+
+        #helpMarkdown pre {
+            background: #f1f5f9;
+            padding: 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 2rem 0;
+            border: 1px solid var(--border-color);
+        }
+
+        #helpMarkdown pre code {
+            background: none;
+            padding: 0;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        #helpMarkdown blockquote {
+            border-left: 5px solid var(--primary-color);
+            margin: 2rem 0;
+            padding: 1rem 2rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        #helpMarkdown blockquote p {
+            margin: 0.5rem 0;
+            color: #475569;
+            font-style: italic;
+        }
+
+        #helpMarkdown hr {
+            border: none;
+            border-top: 2px solid var(--border-color);
+            margin: 3rem 0;
+        }
+
+        #helpMarkdown table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #helpMarkdown th, #helpMarkdown td {
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        #helpMarkdown th {
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+
+        #helpMarkdown tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .help-container {
+                padding: 0 1rem;
+                margin: 1rem auto;
+            }
+
+            .help-content {
+                padding: 2rem 1rem;
+            }
+
+            #helpMarkdown {
+                padding: 1rem;
+            }
+
+            #helpMarkdown h1 {
+                font-size: 2.25rem;
+            }
+
+            #helpMarkdown h2 {
+                font-size: 1.75rem;
+            }
+
+            #helpMarkdown h3 {
+                font-size: 1.5rem;
+            }
+
+            #helpMarkdown p, #helpMarkdown li {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="help-container">
+        <div class="help-content">
+            <button id="closeHelpBtn" class="close-help-btn"><i class="fas fa-times"></i></button>
+            <div id="helpMarkdown"></div>
+        </div>
+    </div>
+    <script>
+        // Initialize markdown-it with enhanced options and plugins
+        const md = window.markdownit({
+            html: true,
+            linkify: true,
+            typographer: true,
+            breaks: true,
+            highlight: function (str, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    try {
+                        return hljs.highlight(str, { language: lang }).value;
+                    } catch (__) {}
+                }
+                return ''; 
+            }
+        })
+        .use(window.markdownitEmoji)
+        .use(window.markdownitFootnote)
+        .use(window.markdownitTaskLists);
+
+        // Custom container support
+        md.use(function(md) {
+            const defaultRender = md.renderer.rules.fence;
+            md.renderer.rules.fence = function (tokens, idx, options, env, self) {
+                const token = tokens[idx];
+                if (token.info.trim() === 'mermaid') {
+                    return `<div class="mermaid">${token.content}</div>`;
+                }
+                return defaultRender(tokens, idx, options, env, self);
+            };
+        });
+
+        // Fetch and render README.md with enhanced features
+        fetch('./README.md')
+            .then(response => response.text())
+            .then(markdown => {
+                const htmlContent = md.render(markdown);
+                document.getElementById('helpMarkdown').innerHTML = htmlContent;
+                
+                // Initialize syntax highlighting
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading help content:', error);
+                document.getElementById('helpMarkdown').innerHTML = `
+                    <div style="text-align: center; padding: 3rem;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 4rem; color: #ef4444;"></i>
+                        <h2 style="margin: 1.5rem 0; color: #ef4444;">Unable to Load Help Content</h2>
+                        <p style="color: #64748b;">Please try refreshing the page or contact support if the problem persists.</p>
+                    </div>`;
+            });
+
+        // Handle close button with smooth transition
+        document.getElementById('closeHelpBtn').addEventListener('click', () => {
+            document.body.style.opacity = '0';
+            setTimeout(() => window.close(), 300);
+        });
+    </script>
+</body>
+</html>
