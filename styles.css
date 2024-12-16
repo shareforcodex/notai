@@ -493,6 +493,11 @@ h3{
     width: 93vw;
 }
 
+.block::after {
+    content: "\A";
+    white-space: pre;
+}
+
 .block:hover {
     background-color: #f8f9fa;
 }

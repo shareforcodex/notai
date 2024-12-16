@@ -595,14 +595,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
               }, 1500);
 
-              // Add blank line before new block
-              const blankLine = document.createElement("div");
-              blankLine.innerHTML = "<br>";
+         
 
 
               // Insert blank line and block
               if (currentBlock) {
+                let blankLine = document.createTextNode('\n');
                 currentBlock.after(blankLine);
+                // Insert new block after blank line
                 blankLine.after(block);
               } else {
                 // Insert at cursor position
@@ -1167,10 +1167,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             block.className = "block";
             block.innerHTML = `<h2>AI Response (${modelName})</h2>${marked.parse(aiResponse)}`;
 
-            // Add blank line before new block
-            const blankLine = document.createElement("div");
-            blankLine.innerHTML = `
-            `;
+
 
             // Find the last AI response block for this quick ask
             let lastResponseBlock = currentBlock;
@@ -1187,16 +1184,20 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             // }
 
             // Insert blank line and block
-            if (lastResponseBlock) {
+            if (currentBlock) {
               //add new line at end of block
-            
-              currentBlock.after(block);
+
+              let blankLine = document.createTextNode('\n');
+              currentBlock.after(blankLine);
+              // Insert new block after blank line
+              blankLine.after(block);
+
               block.classList.add('highlight')
               setTimeout(() => {
                 block.classList.remove('highlight')
 
               }, 1500);
-              currentBlock=block;
+              currentBlock = block;
             } else {
               // Insert at cursor position
               const selection = window.getSelection();
@@ -1216,6 +1217,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
                 this.editor.appendChild(blankLine);
               }
             }
+
+
           }
         }).catch(error => {
           console.error(`Error with ${modelName} request:`, error);
@@ -1532,8 +1535,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     if (currentBlock) {
       // Add blank line before new block
-      const blankLine = document.createElement("div");
-      blankLine.innerHTML = "<br>";
+      const blankLine = document.createTextNode('\n');
+
       currentBlock.after(blankLine);
       // Insert new block after blank line
       blankLine.after(block);
