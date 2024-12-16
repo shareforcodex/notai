@@ -124,7 +124,7 @@ h3{
 
 .main-content.expanded {
     margin-left: 0;
-    padding-left: 60px;  /* Add padding when sidebar is hidden */
+    padding-left: 80px;  /* Add padding when sidebar is hidden */
 }
 
 .sidebar {
