@@ -789,9 +789,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
         if (parsedConfig.models) {
           // Filter out remote models that already exist in DEFAULT_MODELS
-          const remoteModels = parsedConfig.models.filter(remoteModel =>
-            !this.DEFAULT_MODELS.some(defaultModel => defaultModel.model_id === remoteModel.model_id)
-          );
+          const remoteModels = parsedConfig.models;
 
           // Append remote models to DEFAULT_MODELS
           this.aiSettings.models = [...this.DEFAULT_MODELS, ...remoteModels];
