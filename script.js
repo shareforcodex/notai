@@ -792,7 +792,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           const remoteModels = parsedConfig.models;
 
           // Append remote models to DEFAULT_MODELS
-          this.aiSettings.models = [...this.DEFAULT_MODELS, ...remoteModels];
+          this.aiSettings.models = [ ...remoteModels];
         } else {
           // If no remote models, retain only DEFAULT_MODELS
           this.aiSettings.models = [...this.DEFAULT_MODELS];
