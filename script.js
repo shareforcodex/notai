@@ -4,7 +4,7 @@ let currentUser = {
   credentials: localStorage.getItem("credentials"),
 };
 
-class NotionEditor {
+class HTMLEditor {
   constructor() {
     // Initialize core editor elements with error checking
     const editor = document.getElementById("editor");
@@ -1623,18 +1623,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const url = prompt("Enter webpage URL:");
     if (!url) return;
 
-    const block = document.createElement("div");
-    block.className = "block iframe-block";
 
     const iframe = document.createElement("iframe");
     iframe.src = url;
-    iframe.width = "100%";
-    iframe.height = "400px";
-    iframe.setAttribute("frameborder", "0");
+    iframe.setAttribute("style","width: 95vw; height: 500px; scrollbar-width:none")
     iframe.setAttribute("allowfullscreen", "true");
+    iframe.setAttribute("allow","accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; magnetometer; microphone; midi; payment; speaker; usb; vr");
 
-    block.appendChild(iframe);
-    this.editor.appendChild(block);
+    const range = window.getSelection().getRangeAt(0);
+
+    range.insertNode(iframe);
   }
 
   async register(userId, password, email) {
@@ -2175,7 +2173,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 // Initialize the editor and load folders
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    window.editor = new NotionEditor();
+    window.editor = new HTMLEditor();
     await window.editor.loadFolders();
 
     // Profile Modal functionality
