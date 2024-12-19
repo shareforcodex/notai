@@ -1541,11 +1541,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       currentBlock.after(blankLine);
       // Insert new block after blank line
       blankLine.after(block);
+      block.after(document.createTextNode('\n'));
     } else {
       // If still no block found, insert at cursor position or append to editor
       if (selection.rangeCount > 0) {
         range.deleteContents();
-        range.insertNode(block);
+      const blankLine = document.createTextNode('\n');
+
+        range.insertNode(blankLine);
+        blankLine.after(block);
+        block.after(document.createTextNode('\n'))
       } else {
         this.editor.appendChild(block);
       }
