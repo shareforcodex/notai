@@ -588,7 +588,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
               // Create a new block for longer responses
               const block = document.createElement("div");
               block.className = "block";
-              block.innerHTML = customTool ? `<h2> ${customTool.name} (${modelName})</h2>${marked.parse(aiResponse)}` : `<h2> ${action} (${modelName})</h2>${marked.parse(aiResponse)}`;
+              block.innerHTML = customTool ? `<h2>Answer for ${customTool.name} by ${modelName}</h2>${marked.parse(aiResponse)}` : `<h2>Answer for ${action} by (${modelName})</h2>${marked.parse(aiResponse)}`;
               block.classList.add('highlight')
               setTimeout(() => {
                 block.classList.remove('highlight')
