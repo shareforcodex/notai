@@ -5,6 +5,25 @@
     scrollbar-width: thin;
 }
 
+.code-copy-btn {
+    position: fixed;
+    display: none;
+    background: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.code-copy-btn:hover {
+    background: #27ae60;
+    transform: translateY(-2px);
+}
+
 /* Spinner Styles */
 .spinner {
     position: absolute;

@@ -78,6 +78,43 @@ class HTMLEditor {
 
     this.checkAuthAndLoadNotes();
     this.loadFolders();
+    this.setupCodeCopyButton();
+  }
+
+  setupCodeCopyButton() {
+    const copyBtn = document.getElementById('codeCopyBtn');
+    let activeCodeElement = null;
+
+    document.addEventListener('pointerdown', (e) => {
+      const target = e.target;
+      const codeElement = target.closest('pre, code');
+      
+      if (codeElement) {
+        activeCodeElement = codeElement;
+        // Position the button near the pointer
+        copyBtn.style.left = `${e.clientX + 10}px`;
+        copyBtn.style.top = `${e.clientY + 10}px`;
+        copyBtn.style.display = 'block';
+      } else if (!e.target.closest('#codeCopyBtn')) {
+        copyBtn.style.display = 'none';
+        activeCodeElement = null;
+      }
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      if (activeCodeElement) {
+        try {
+          await navigator.clipboard.writeText(activeCodeElement.innerText);
+          copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+          setTimeout(() => {
+            copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+            copyBtn.style.display = 'none';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy text:', err);
+        }
+      }
+    });
   }
 
   showSpinner() {
