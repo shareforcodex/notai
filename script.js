@@ -95,8 +95,13 @@ class HTMLEditor {
         const buttonRect = copyBtn.getBoundingClientRect();
         
         // Calculate position at top of code element
-        let top = Math.max(0, rect.top + window.scrollY);
-        let left = rect.left;
+        let parentDiv = codeElement;
+        while (parentDiv && parentDiv.nodeName !== 'DIV') {
+          parentDiv = parentDiv.parentElement;
+        }
+        let parentRect = parentDiv.getBoundingClientRect();
+        let top = Math.max( rect.top , parentRect.top);
+        let left = parentRect.left;
 
         // Adjust if scrolled past top
         if (rect.top < 0) {
