@@ -1,5 +1,4 @@
 .aider*
 .env
-.vite/*
 .devsh
-
+.vite\deps\_metadata.json
