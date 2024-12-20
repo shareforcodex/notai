@@ -91,13 +91,44 @@ class HTMLEditor {
       
       if (codeElement) {
         activeCodeElement = codeElement;
-        // Position the button near the pointer
-        copyBtn.style.left = `${e.clientX + 10}px`;
-        copyBtn.style.top = `${e.clientY + 10}px`;
+        const rect = codeElement.getBoundingClientRect();
+        const buttonRect = copyBtn.getBoundingClientRect();
+        
+        // Calculate position at top of code element
+        let top = Math.max(0, rect.top + window.scrollY);
+        let left = rect.left;
+
+        // Adjust if scrolled past top
+        if (rect.top < 0) {
+          top = window.scrollY;
+        }
+
+        copyBtn.style.left = `${left}px`;
+        copyBtn.style.top = `${top}px`;
         copyBtn.style.display = 'block';
       } else if (!e.target.closest('#codeCopyBtn')) {
         copyBtn.style.display = 'none';
         activeCodeElement = null;
+      }
+    });
+
+    // Handle scroll events to keep button visible
+    document.addEventListener('scroll', () => {
+      if (activeCodeElement && copyBtn.style.display !== 'none') {
+        const rect = activeCodeElement.getBoundingClientRect();
+        const buttonRect = copyBtn.getBoundingClientRect();
+        
+        if (rect.top < 0 && rect.bottom > buttonRect.height) {
+          // Element is scrolled but still partially visible
+          copyBtn.style.top = `${window.scrollY}px`;
+        } else if (rect.top >= 0) {
+          // Element is fully visible
+          copyBtn.style.top = `${rect.top + window.scrollY}px`;
+        } else {
+          // Element is scrolled out of view
+          copyBtn.style.display = 'none';
+          activeCodeElement = null;
+        }
       }
     });
 
