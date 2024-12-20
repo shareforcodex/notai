@@ -2168,7 +2168,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
       // Add click handler to scroll to heading
       tocItem.addEventListener('click', () => {
-        heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        heading.scrollIntoView({ behavior: 'instant', block: 'start',inline:'start' });
+        setTimeout(() => {
+          editor.editor.scrollLeft=0;
+        }, 100);
       });
 
       tocList.appendChild(tocItem);
