@@ -17,6 +17,7 @@
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: all 0.3s ease;
+    transform: translateY(-100%);
 }
 
 .code-copy-btn:hover {
