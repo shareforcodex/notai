@@ -78,6 +78,79 @@ class HTMLEditor {
 
     this.checkAuthAndLoadNotes();
     this.loadFolders();
+    this.setupCodeCopyButton();
+  }
+
+  setupCodeCopyButton() {
+    const copyBtn = document.getElementById('codeCopyBtn');
+    let activeCodeElement = null;
+
+    document.addEventListener('pointerdown', (e) => {
+      const target = e.target;
+      const codeElement = target.closest('pre, code');
+      
+      if (codeElement) {
+        activeCodeElement = codeElement;
+        const rect = codeElement.getBoundingClientRect();
+        const buttonRect = copyBtn.getBoundingClientRect();
+        
+        // Calculate position at top of code element
+        let parentDiv = codeElement;
+        while (parentDiv && parentDiv.nodeName !== 'DIV') {
+          parentDiv = parentDiv.parentElement;
+        }
+        let parentRect = parentDiv.getBoundingClientRect();
+        let top = Math.max( rect.top , parentRect.top);
+        let left = parentRect.left;
+
+        // Adjust if scrolled past top
+        if (rect.top < 0) {
+          top = window.scrollY;
+        }
+
+        copyBtn.style.left = `${left}px`;
+        copyBtn.style.top = `${top}px`;
+        copyBtn.style.display = 'block';
+      } else if (!e.target.closest('#codeCopyBtn')) {
+        copyBtn.style.display = 'none';
+        activeCodeElement = null;
+      }
+    });
+
+    // Handle scroll events to keep button visible
+    document.addEventListener('scroll', () => {
+      if (activeCodeElement && copyBtn.style.display !== 'none') {
+        const rect = activeCodeElement.getBoundingClientRect();
+        const buttonRect = copyBtn.getBoundingClientRect();
+        
+        if (rect.top < 0 && rect.bottom > buttonRect.height) {
+          // Element is scrolled but still partially visible
+          copyBtn.style.top = `${window.scrollY}px`;
+        } else if (rect.top >= 0) {
+          // Element is fully visible
+          copyBtn.style.top = `${rect.top + window.scrollY}px`;
+        } else {
+          // Element is scrolled out of view
+          copyBtn.style.display = 'none';
+          activeCodeElement = null;
+        }
+      }
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      if (activeCodeElement) {
+        try {
+          await navigator.clipboard.writeText(activeCodeElement.innerText);
+          copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+          setTimeout(() => {
+            copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+            copyBtn.style.display = 'none';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy text:', err);
+        }
+      }
+    });
   }
 
   showSpinner() {
@@ -2095,7 +2168,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
       // Add click handler to scroll to heading
       tocItem.addEventListener('click', () => {
-        heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        heading.scrollIntoView({ behavior: 'instant', block: 'start',inline:'start' });
+        setTimeout(() => {
+          editor.editor.scrollLeft=0;
+        }, 100);
       });
 
       tocList.appendChild(tocItem);
