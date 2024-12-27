@@ -12,6 +12,9 @@ class HTMLEditor {
     // Initialize last pointer position
     this.lastPointerPosition = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
+    // Load recent notes on startup
+    this.updateRecentNotesUI();
+
     // Listen for pointer down events to update the last position
     document.addEventListener('pointerdown', (e) => {
       this.lastPointerPosition = { x: e.clientX, y: e.clientY };
@@ -1933,11 +1936,64 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       // Update the current note ID
       this.currentNoteId = note_id;
       this.currentNoteTitle = note.title; // Store the title for later use
+      
+      // Add to recent notes
+      this.addToRecentNotes(note_id, note.title);
+      
       // Update table of contents after loading note
       this.updateTableOfContents();
     } else {
       console.error("Failed to load note:", note.error);
     }
+  }
+
+  addToRecentNotes(noteId, noteTitle) {
+    // Get existing recent notes from localStorage
+    let recentNotes = JSON.parse(localStorage.getItem('recentNotes') || '[]');
+    
+    // Remove the note if it already exists
+    recentNotes = recentNotes.filter(note => note.id !== noteId);
+    
+    // Add the new note to the beginning
+    recentNotes.unshift({
+      id: noteId,
+      title: noteTitle,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Keep only the last 5 notes
+    recentNotes = recentNotes.slice(0, 5);
+    
+    // Save back to localStorage
+    localStorage.setItem('recentNotes', JSON.stringify(recentNotes));
+    
+    // Update the UI
+    this.updateRecentNotesUI();
+  }
+
+  updateRecentNotesUI() {
+    // Get recent notes from localStorage
+    const recentNotes = JSON.parse(localStorage.getItem('recentNotes') || '[]');
+    const titleContainer = document.getElementById('noteTitle').parentElement;
+    
+    // Remove existing recent notes
+    const existingRecentNotes = titleContainer.querySelectorAll('.recent-note');
+    existingRecentNotes.forEach(el => el.remove());
+    
+    // Add recent notes after the main title
+    recentNotes.forEach(note => {
+      if (note.id === this.currentNoteId) return; // Skip current note
+      
+      const noteEl = document.createElement('div');
+      noteEl.className = 'recent-note';
+      noteEl.setAttribute('data-note-id', note.id);
+      noteEl.textContent = note.title;
+      noteEl.title = new Date(note.timestamp).toLocaleString();
+      
+      noteEl.addEventListener('click', () => this.loadNote(note.id));
+      
+      titleContainer.appendChild(noteEl);
+    });
   }
 
   async createNewNote(folderId = null) {

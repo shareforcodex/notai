@@ -49,7 +49,12 @@ Welcome to the **Notion Editor WebApp**—your all-in-one solution for creating,
 ## TODO
 when writting code, make sure not break unrelated parts, when remove some code, also remove or modify related code in other place
 
-1. add recent notes function for user quick open notes, when open a note , store the id and name in localstorage, put the name of note as noteTitle just at right of current noteTitle ,we can have many noteTitles and make then editable, when user click these names, load the respected note,like browser tab, make id=noteTitle to show selected note name. also when reload webpage, reopen last active note instead default_note, when finished the task, remove the task in TODO, you can add some suggestion at TODO in README.md
+Suggestions for future improvements:
+1. Add note search functionality
+2. Implement note tags/categories
+3. Add collaborative editing features
+4. Enable note sharing capabilities
+5. Add note export/import functionality
 
 ## Getting Started
 
