@@ -47,9 +47,9 @@
 Welcome to the **Notion Editor WebApp**—your all-in-one solution for creating, organizing, and managing notes with the added power of AI assistance. Whether you're a student, professional, or casual note-taker, our intuitive interface and robust features are designed to enhance your productivity and streamline your workflow.
 
 ## TODO
-when writting code, make sure not break unrelated parts, when remove some code, also remove or modify related code in other place
+when writting code, make sure not break unrelated parts, when remove some code, also remove or modify related code in other place, when finished the task, remove the task in TODO, you can add some suggestion at TODO in README.md
 
-1. add recent notes function for user quick open notes, when open a note , store the id and name in localstorage, put the name of note as noteTitle just at right of current noteTitle ,we can have many noteTitles and make then editable, when user click these names, load the respected note,like browser tab, make id=noteTitle to show selected note name. also when reload webpage, reopen last active note instead default_note, when finished the task, remove the task in TODO, you can add some suggestion at TODO in README.md
+1. Replace the original title display above the note content  with a tab system. The tabs should dynamically show the titles of recent notes, and clicking on a tab should display the content of the corresponding note in the editor, and make the title to leftest and bold, also it should be editable like before so user can rename the tilte. The tabs should be placed in a single horizontal line where the original title was, and the most recent note should be displayed by default when the interface is loaded . you can store recent notes info in localstorage
 
 ## Getting Started
 
