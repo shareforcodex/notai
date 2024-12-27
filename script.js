@@ -1961,8 +1961,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       timestamp: new Date().toISOString()
     });
     
-    // Keep only the last 5 notes, excluding current note
-    recentNotes = recentNotes.filter(note => note.id !== this.currentNoteId).slice(0, 5);
+    // Keep only the last 5 notes
+    recentNotes = recentNotes.slice(0, 5);
     
     // Save back to localStorage
     localStorage.setItem('recentNotes', JSON.stringify(recentNotes));
@@ -1979,17 +1979,25 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     // Clear existing recent notes
     recentContainer.innerHTML = '';
     
-    // Add recent notes below the title
-    recentNotes.forEach(note => {
-      if (note.id === this.currentNoteId) return; // Skip current note
-      
+    // Filter out current note from display
+    const filteredNotes = recentNotes.filter(note => note.id !== this.currentNoteId);
+    
+    // Add recent notes next to the title
+    filteredNotes.forEach(note => {
       const noteEl = document.createElement('span');
       noteEl.className = 'recent-note';
       noteEl.setAttribute('data-note-id', note.id);
       noteEl.textContent = note.title;
       noteEl.title = new Date(note.timestamp).toLocaleString();
       
-      noteEl.addEventListener('click', () => this.loadNote(note.id));
+      noteEl.addEventListener('click', () => {
+        // Store current note before switching
+        if (this.currentNoteId && this.currentNoteTitle) {
+          this.addToRecentNotes(this.currentNoteId, this.currentNoteTitle);
+        }
+        // Load the clicked note
+        this.loadNote(note.id);
+      });
       
       recentContainer.appendChild(noteEl);
     });
