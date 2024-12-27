@@ -3,3 +3,4 @@
 .devsh
 .vite\deps\_metadata.json
 .vite*
+.error
