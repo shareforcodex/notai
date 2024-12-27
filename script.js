@@ -1961,8 +1961,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       timestamp: new Date().toISOString()
     });
     
-    // Keep only the last 5 notes
-    recentNotes = recentNotes.slice(0, 5);
+    // Keep only the last 5 notes, excluding current note
+    recentNotes = recentNotes.filter(note => note.id !== this.currentNoteId).slice(0, 5);
     
     // Save back to localStorage
     localStorage.setItem('recentNotes', JSON.stringify(recentNotes));
