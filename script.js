@@ -1980,7 +1980,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const existingRecentNotes = titleContainer.querySelectorAll('.recent-note');
     existingRecentNotes.forEach(el => el.remove());
     
-    // Add recent notes after the main title
+    // Create a container for recent notes
+    const recentContainer = document.createElement('span');
+    recentContainer.style.marginLeft = '10px';
+    recentContainer.style.display = 'inline-block';
+    recentContainer.style.verticalAlign = 'middle';
+    
+    // Add recent notes inline with the title
     recentNotes.forEach(note => {
       if (note.id === this.currentNoteId) return; // Skip current note
       
@@ -1992,8 +1998,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       
       noteEl.addEventListener('click', () => this.loadNote(note.id));
       
-      titleContainer.appendChild(noteEl);
+      recentContainer.appendChild(noteEl);
     });
+    
+    titleContainer.appendChild(recentContainer);
   }
 
   async createNewNote(folderId = null) {
