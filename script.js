@@ -1974,23 +1974,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   updateRecentNotesUI() {
     // Get recent notes from localStorage
     const recentNotes = JSON.parse(localStorage.getItem('recentNotes') || '[]');
-    const titleContainer = document.getElementById('noteTitle').parentElement;
+    const recentContainer = document.getElementById('recentNotes');
     
-    // Remove existing recent notes
-    const existingRecentNotes = titleContainer.querySelectorAll('.recent-note');
-    existingRecentNotes.forEach(el => el.remove());
+    // Clear existing recent notes
+    recentContainer.innerHTML = '';
     
-    // Create a container for recent notes
-    const recentContainer = document.createElement('span');
-    recentContainer.style.marginLeft = '10px';
-    recentContainer.style.display = 'inline-block';
-    recentContainer.style.verticalAlign = 'middle';
-    
-    // Add recent notes inline with the title
+    // Add recent notes below the title
     recentNotes.forEach(note => {
       if (note.id === this.currentNoteId) return; // Skip current note
       
-      const noteEl = document.createElement('div');
+      const noteEl = document.createElement('span');
       noteEl.className = 'recent-note';
       noteEl.setAttribute('data-note-id', note.id);
       noteEl.textContent = note.title;
@@ -2000,8 +1993,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       
       recentContainer.appendChild(noteEl);
     });
-    
-    titleContainer.appendChild(recentContainer);
   }
 
   async createNewNote(folderId = null) {
