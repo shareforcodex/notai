@@ -1814,12 +1814,15 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   async createFolder() {
     const input = document.getElementById("newFolderInput");
-    const folderName = input.value.trim();
+    let folderName = input.value.trim();
 
     if (!folderName) {
       alert("Please enter a folder name");
       return;
     }
+
+    // Replace spaces with underscores
+    folderName = folderName.replace(/\s+/g, '_');
 
     const result = await this.apiRequest("POST", "/folders", {
       folder_id: Date.now() + folderName + Math.random(),
@@ -2004,8 +2007,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   }
 
   async createNewNote(folderId = null) {
-    const title = prompt("Enter note title:");
+    let title = prompt("Enter note title:");
     if (!title) return;
+
+    // Replace spaces with underscores
+    title = title.replace(/\s+/g, '_');
 
     const noteId = title + "_" + currentUser.userId + "_" + Date.now();
     const result = await this.apiRequest("POST", "/notes", {
