@@ -47,7 +47,7 @@
 Welcome to the **Notion Editor WebApp**—your all-in-one solution for creating, organizing, and managing notes with the added power of AI assistance. Whether you're a student, professional, or casual note-taker, our intuitive interface and robust features are designed to enhance your productivity and streamline your workflow.
 
 ## TODO
-1. add recent notes function for user quick open notes, when open a note , store the id and name in localstorage, put the name of note just at left of current note at top of note, when user click these names, load the respected note. also when reload webpage, reopen last active note instead default_note
+1. add recent notes function for user quick open notes, when open a note , store the id and name in localstorage, put the name of note just at left of current noteTitle ,we can have many noteTitles and make then editable, when user click these names, load the respected note, and focus edit the name. also when reload webpage, reopen last active note instead default_note
 
 ## Getting Started
 
