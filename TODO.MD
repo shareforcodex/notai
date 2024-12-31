@@ -11,7 +11,11 @@ read requirments carefully and implement unfinished task
 commit all change after finish the task with clean and simple commit message
 
 ## tasks:
-2. when fetch note content, you can received like this:
+3. 
+a.remove prompt when save note , just load server version if newer, 
+b.when user click the app body or hit keyboard or paste , try to save first so the note always same version as server, but not for every click or type or paste, give it a cooldown time 20s when trigger the event
+
+2.(finished) when fetch note content, you can received like this:
 ```
 
 {note_id: "test_space_woi_1735308100980", title: "test_space",…}
