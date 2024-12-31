@@ -46,6 +46,7 @@ class HTMLEditor {
     this.aiToolbar = aiToolbar;
     this.currentNoteTitle = "";
     this.lastSavedContent = "";
+    this.lastUpdated = null;
     this.aiSettings = {
       prompts: {
         ask: "Answer this question: {text}",
@@ -1913,6 +1914,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       // Update the current note ID
       this.currentNoteId = note_id;
       this.currentNoteTitle = note.title; // Store the title for later use
+      this.lastUpdated = note.last_updated; // Store last_updated timestamp
       
       // Add to recent notes
       this.addToRecentNotes(note_id, note.title);
@@ -2050,10 +2052,34 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       spinnerIcon.style.display = "inline-block";
       spanText.textContent = " ";
 
+      // Fetch current note from server to check last_updated
+      const currentNote = await this.apiRequest("GET", `/notes/${this.currentNoteId}`, null, false, true);
+      
+      if (currentNote && currentNote.last_updated !== this.lastUpdated) {
+        // Server has a newer version
+        if (confirm("This note has been modified elsewhere. Do you want to:\nOK - Override with your changes\nCancel - Load the server version")) {
+          // User chose to override
+          this.lastUpdated = currentNote.last_updated;
+        } else {
+          // User chose to load server version
+          this.editor.innerHTML = currentNote.content;
+          document.getElementById("noteTitle").textContent = currentNote.title;
+          this.lastUpdated = currentNote.last_updated;
+          this.currentNoteTitle = currentNote.title;
+          
+          // Show saved state
+          spinnerIcon.style.display = "none";
+          saveIcon.style.display = "inline-block";
+          spanText.textContent = "Loaded server version";
+          setTimeout(() => {
+            spanText.textContent = "Save";
+          }, 2000);
+          return;
+        }
+      }
+
       // Get current title from the title element
-      const currentTitle =
-        document.getElementById("noteTitle").textContent.trim() ||
-        "Untitled Note";
+      const currentTitle = document.getElementById("noteTitle").textContent.trim() || "Untitled Note";
       this.currentNoteTitle = currentTitle;
 
       const result = await this.apiRequest("POST", `/notes`, {
@@ -2063,12 +2089,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       }, false, true);
 
       if (result.success) {
+        // Update last_updated timestamp after successful save
+        const updatedNote = await this.apiRequest("GET", `/notes/${this.currentNoteId}`, null, false, true);
+        if (updatedNote) {
+          this.lastUpdated = updatedNote.last_updated;
+        }
+        
         // Show saved state
         spinnerIcon.style.display = "none";
         saveIcon.style.display = "inline-block";
         spanText.textContent = "Saved";
-
-        // Reset button text after 2 seconds
         setTimeout(() => {
           spanText.textContent = "Save";
         }, 2000);
