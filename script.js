@@ -1541,14 +1541,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     if (selectedText) {
       // Create a new block element
-      let block;
-      if (range.startContainer.closest('.block')) {
-        block = range.startContainer.closest('.block');
-      } else {
-        block = document.createElement("div");
-        block.className = "block";
-        block.innerHTML = `${selectedText}`;
-      }
+      const block = document.createElement("div");
+      block.className = "block";
+      block.innerHTML = selectedText;
       block.classList.add('highlight');
       setTimeout(() => {
         block.classList.remove('highlight');
@@ -1559,30 +1554,28 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
       // Replace the selected text with the new block
       range.deleteContents();
-      range.insertNode(newBlock);
+      range.insertNode(block);
 
       // Clear the selection
       selection.removeAllRanges();
 
-      // Optionally, focus the new block's paragraph
-      const textNode = newBlock;
+      // Focus the new block
+      const textNode = block;
       if (textNode) {
         textNode.focus();
-        range.selectNodeContents(textNode);
-        range.collapse(true);
-        selection.addRange(range);
+        const newRange = document.createRange();
+        newRange.selectNodeContents(textNode);
+        newRange.collapse(true);
+        selection.addRange(newRange);
       }
 
-      // Exit the function after wrapping the text
       return;
     }
 
-    // Existing code below...
+    // Create new block for non-selected text case
     const block = document.createElement("div");
     block.className = "block";
-    block.innerHTML = `
- 
-`;
+    block.innerHTML = '\n';
 
     // Add highlight effect
     block.classList.add('highlight');
@@ -1592,54 +1585,35 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     // Get current selection and find closest block
     const range = selection.getRangeAt(0);
-
-    // Try to find current block from selection
     let currentBlock = range.startContainer.nodeType === Node.TEXT_NODE
       ? range.startContainer.parentElement.closest(".block")
       : range.startContainer.closest(".block");
 
-    // If no block found from selection, try to find last block before cursor
-    if (!currentBlock) {
-      const blocks = Array.from(this.editor.querySelectorAll('.block'));
-      for (let i = blocks.length - 1; i >= 0; i--) {
-        const rect = blocks[i].getBoundingClientRect();
-        if (rect.top < range.getBoundingClientRect().top) {
-          currentBlock = blocks[i];
-          break;
-        }
-      }
-    }
-
+    // Insert the block after the cursor position
+    const blankLine = document.createTextNode('\n');
+    
     if (currentBlock) {
-      // Add blank line before new block
-      const blankLine = document.createTextNode('\n');
-
+      // Insert after current block
       currentBlock.after(blankLine);
-      // Insert new block after blank line
       blankLine.after(block);
       block.after(document.createTextNode('\n'));
     } else {
-      // If still no block found, insert at cursor position or append to editor
-      if (selection.rangeCount > 0) {
-        range.deleteContents();
-      const blankLine = document.createTextNode('\n');
-
-        range.insertNode(blankLine);
-        blankLine.after(block);
-        block.after(document.createTextNode('\n'))
-      } else {
-        this.editor.appendChild(block);
-      }
+      // Insert at cursor position
+      range.collapse(false); // Collapse to end
+      range.insertNode(block);
+      range.insertNode(blankLine);
+      block.after(document.createTextNode('\n'));
     }
 
     // Focus the new block and move cursor inside
-    const textNode = block;
-    textNode.focus();
-    range.selectNodeContents(textNode);
-    range.collapse(true);
+    block.focus();
+    const newRange = document.createRange();
+    newRange.selectNodeContents(block);
+    newRange.collapse(true);
     selection.removeAllRanges();
-    selection.addRange(range);
+    selection.addRange(newRange);
   }
+
 
 
 
