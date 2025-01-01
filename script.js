@@ -2077,22 +2077,29 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
         // Fetch current note from server to check last_updated
         const currentNote = await this.apiRequest("GET", `/notes/${this.currentNoteId}`, null, false, true);
-        
-        if (currentNote && currentNote.last_updated !== this.lastUpdated) {
+        //compare content, if same return
+        if(currentNote && currentNote.content === this.editor.innerHTML){
+          // Show saved state
+          spinnerIcon.style.display = "none";
+          saveIcon.style.display = "inline-block";
+          spanText.textContent = "";
+          
+          return;
+        }
         // Server has newer version - load it
-        this.editor.innerHTML = currentNote.content;
-        document.getElementById("noteTitle").textContent = currentNote.title;
-        this.lastUpdated = currentNote.last_updated;
-        this.currentNoteTitle = currentNote.title;
-        
-        // Show saved state
-        spinnerIcon.style.display = "none";
-        saveIcon.style.display = "inline-block";
-        spanText.textContent = "v";
-        setTimeout(() => {
-          spanText.textContent = "Save";
-        }, 2000);
-        return;
+        //need convert last_updated to number to compare, the last_updated is string like 2025-01-01 02:25:51
+        if (currentNote && new Date(currentNote.last_updated).getTime() > new Date(this.lastUpdated).getTime()) {
+          this.editor.innerHTML = currentNote.content;
+          document.getElementById("noteTitle").textContent = currentNote.title;
+          this.lastUpdated = currentNote.last_updated;
+          this.currentNoteTitle = currentNote.title;
+          
+          // Show saved state
+          spinnerIcon.style.display = "none";
+          saveIcon.style.display = "inline-block";
+          spanText.textContent = "⮟";
+          
+          return;
         }
 
 
@@ -2116,7 +2123,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Show saved state
         spinnerIcon.style.display = "none";
         saveIcon.style.display = "inline-block";
-        spanText.textContent = "^";
+        spanText.textContent = "⮝";
         
       } else {
         // Show error state
