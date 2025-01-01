@@ -67,7 +67,7 @@ class HTMLEditor {
 
     // Add title auto-save
     const titleElement = document.getElementById("noteTitle");
-    titleElement.addEventListener("input", () => this.scheduleAutoSave());
+    titleElement.addEventListener("input", () => this.delayedSaveNote());
     this.currentBlock = null;
     this.content = ""; // Store markdown content
     this.isSourceView = false;
@@ -350,7 +350,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       // Add input event listener to sync changes
       sourceView.addEventListener('input', () => {
         editor.innerHTML = sourceView.value;
-        this.scheduleAutoSave();
+        this.delayedSaveNote();
       });
     } else {
       // Switching back to editor view
@@ -358,7 +358,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       editor.style.display = "block";
       sourceView.style.display = "none";
       this.updateContent();  // Update markdown content
-      this.scheduleAutoSave();
+      this.delayedSaveNote();
     }
   }
 
@@ -632,9 +632,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
               : `Error with ${modelName}: ${response.error.message || response.error.toString() || 'Unknown error'}`;
             this.showToast(errorMessage);
             completedResponses++;
-            // if (completedResponses === totalResponses) {
-            //   this.saveNote(true);
-            // }
+            if (completedResponses === totalResponses) {
+              this.delayedSaveNote(true);
+            }
             return;
           }
 
@@ -718,18 +718,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             // Increment completed responses counter
             completedResponses++;
 
-            // // If all responses are complete, save the note
-            // if (completedResponses === totalResponses) {
-            //   this.saveNote(true);
-            // }
+            // If all responses are complete, save the note
+            if (completedResponses === totalResponses) {
+              this.delayedSaveNote(true);
+            }
           }
         }).catch(error => {
           console.error(`Error with ${modelName} request:`, error);
           this.showToast(`Error with ${modelName}: ${error.message || 'Network error'}`);
           completedResponses++;
-          // if (completedResponses === totalResponses) {
-          //   this.saveNote(true);
-          // }
+          if (completedResponses === totalResponses) {
+            this.delayedSaveNote(true);
+          }
         });
       });
     } catch (e) {
@@ -1058,7 +1058,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         }, 1000);
 
         this.showCommentTooltip(element, newComment);
-        this.scheduleAutoSave();
+        this.delayedSaveNote();
       }
     };
 
@@ -1090,7 +1090,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       const text = element.textContent;
       const textNode = document.createTextNode(text);
       element.parentNode.replaceChild(textNode, element);
-      this.scheduleAutoSave();
+      this.delayedSaveNote();
     }
   }
 
@@ -1112,7 +1112,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           span.classList.remove('highlight');
         }, 1000);
 
-        this.scheduleAutoSave();
+        this.delayedSaveNote();
       }
     } else {
       alert('Please select some text to comment on');
@@ -1309,9 +1309,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   setupEventListeners() {
     // Auto-save on user interactions
-    document.body.addEventListener('click', () => this.scheduleAutoSave());
-    document.body.addEventListener('keypress', () => this.scheduleAutoSave());
-    document.body.addEventListener('paste', () => this.scheduleAutoSave());
+    document.body.addEventListener('click', () => this.idleSync());
+    document.body.addEventListener('keypress', () => this.idleSync());
+    document.body.addEventListener('paste', () => this.idleSync());
 
     // Quick Ask button 
     document.querySelectorAll('#quickAskBtn').forEach(btn => {
@@ -1421,12 +1421,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     // Auto-save on content changes
     this.editor.addEventListener("input", () => {
-      this.scheduleAutoSave();
+      this.delayedSaveNote();
       this.updateTableOfContents();
     });
 
     this.editor.addEventListener("paste", () => {
-      this.scheduleAutoSave();
+      this.delayedSaveNote();
     });
 
     // Handle keyboard shortcuts
@@ -2030,7 +2030,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     }
   }
 
-  scheduleAutoSave() {
+  //sync if in idle, not interactive for 30s
+  idleSync() {
 
     let idleTime=Date.now()-this.lastInteractionTime|| 0 ;
     console.log('idelTime ', idleTime,this.lastInteractionTime);
@@ -2042,6 +2043,19 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     this.lastInteractionTime = Date.now();
     
   }
+
+  //save delay for 10s, if called again, reset the timer
+  delayedSaveNote() {
+    console.log('delayedSaveNote start ');
+    
+    clearTimeout(this.autoSaveTimeout);
+    this.autoSaveTimeout = setTimeout(() => {
+      console.log('delayedSaveNote saveNote ');
+      
+      this.saveNote();
+    }, 10000);
+  }
+
 
 
   async saveNote(isAutoSave = false) {
