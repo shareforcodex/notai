@@ -47,6 +47,7 @@ class HTMLEditor {
     this.currentNoteTitle = "";
     this.lastSavedContent = "";
     this.lastUpdated = null;
+    this.lastInteractionTime=0;
     this.aiSettings = {
       prompts: {
         ask: "Answer this question: {text}",
@@ -2032,7 +2033,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   scheduleAutoSave() {
 
     let idleTime=Date.now()-this.lastInteractionTime|| 0 ;
-    console.log('idelTime ', idleTime);
+    console.log('idelTime ', idleTime,this.lastInteractionTime);
     
     if( idleTime>30000){
       this.saveNote();
