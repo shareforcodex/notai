@@ -1310,7 +1310,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   setupEventListeners() {
     // Auto-save on user interactions
-    document.body.addEventListener('click', () => this.idleSync());
+    document.body.addEventListener('pointerdown', () => this.idleSync());
     document.body.addEventListener('keypress', () => this.idleSync());
     document.body.addEventListener('paste', () => this.idleSync());
 
