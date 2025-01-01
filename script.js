@@ -631,9 +631,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
               : `Error with ${modelName}: ${response.error.message || response.error.toString() || 'Unknown error'}`;
             this.showToast(errorMessage);
             completedResponses++;
-            if (completedResponses === totalResponses) {
-              this.saveNote(true);
-            }
+            // if (completedResponses === totalResponses) {
+            //   this.saveNote(true);
+            // }
             return;
           }
 
@@ -717,18 +717,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             // Increment completed responses counter
             completedResponses++;
 
-            // If all responses are complete, save the note
-            if (completedResponses === totalResponses) {
-              this.saveNote(true);
-            }
+            // // If all responses are complete, save the note
+            // if (completedResponses === totalResponses) {
+            //   this.saveNote(true);
+            // }
           }
         }).catch(error => {
           console.error(`Error with ${modelName} request:`, error);
           this.showToast(`Error with ${modelName}: ${error.message || 'Network error'}`);
           completedResponses++;
-          if (completedResponses === totalResponses) {
-            this.saveNote(true);
-          }
+          // if (completedResponses === totalResponses) {
+          //   this.saveNote(true);
+          // }
         });
       });
     } catch (e) {
@@ -1307,6 +1307,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   }
 
   setupEventListeners() {
+    // Auto-save on user interactions
+    document.body.addEventListener('click', () => this.scheduleAutoSave());
+    document.body.addEventListener('keypress', () => this.scheduleAutoSave());
+    document.body.addEventListener('paste', () => this.scheduleAutoSave());
+
     // Quick Ask button 
     document.querySelectorAll('#quickAskBtn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -2025,16 +2030,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   }
 
   scheduleAutoSave() {
-    // Clear any existing timeout
-    if (this.autoSaveTimeout) {
-      clearTimeout(this.autoSaveTimeout);
-    }
 
-    // Schedule a new auto-save
-    this.autoSaveTimeout = setTimeout(() => {
-      this.saveNote(true);
-    }, 10000); // 10 seconds delay
+    let idleTime=Date.now()-this.lastInteractionTime|| 0 ;
+    console.log('idelTime ', idleTime);
+    
+    if( idleTime>30000){
+      this.saveNote();
+    }
+    // Update last interaction time
+    this.lastInteractionTime = Date.now();
+    
   }
+
 
   async saveNote(isAutoSave = false) {
     if (!this.currentNoteId) {
@@ -2052,31 +2059,26 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       spinnerIcon.style.display = "inline-block";
       spanText.textContent = " ";
 
-      // Fetch current note from server to check last_updated
-      const currentNote = await this.apiRequest("GET", `/notes/${this.currentNoteId}`, null, false, true);
-      
-      if (currentNote && currentNote.last_updated !== this.lastUpdated) {
-        // Server has a newer version
-        if (confirm("This note has been modified elsewhere. Do you want to:\nOK - Override with your changes\nCancel - Load the server version")) {
-          // User chose to override
-          this.lastUpdated = currentNote.last_updated;
-        } else {
-          // User chose to load server version
-          this.editor.innerHTML = currentNote.content;
-          document.getElementById("noteTitle").textContent = currentNote.title;
-          this.lastUpdated = currentNote.last_updated;
-          this.currentNoteTitle = currentNote.title;
-          
-          // Show saved state
-          spinnerIcon.style.display = "none";
-          saveIcon.style.display = "inline-block";
-          spanText.textContent = "Loaded server version";
-          setTimeout(() => {
-            spanText.textContent = "Save";
-          }, 2000);
-          return;
+        // Fetch current note from server to check last_updated
+        const currentNote = await this.apiRequest("GET", `/notes/${this.currentNoteId}`, null, false, true);
+        
+        if (currentNote && currentNote.last_updated !== this.lastUpdated) {
+        // Server has newer version - load it
+        this.editor.innerHTML = currentNote.content;
+        document.getElementById("noteTitle").textContent = currentNote.title;
+        this.lastUpdated = currentNote.last_updated;
+        this.currentNoteTitle = currentNote.title;
+        
+        // Show saved state
+        spinnerIcon.style.display = "none";
+        saveIcon.style.display = "inline-block";
+        spanText.textContent = "v";
+        setTimeout(() => {
+          spanText.textContent = "Save";
+        }, 2000);
+        return;
         }
-      }
+
 
       // Get current title from the title element
       const currentTitle = document.getElementById("noteTitle").textContent.trim() || "Untitled Note";
@@ -2098,17 +2100,15 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Show saved state
         spinnerIcon.style.display = "none";
         saveIcon.style.display = "inline-block";
-        spanText.textContent = "Saved";
-        setTimeout(() => {
-          spanText.textContent = "Save";
-        }, 2000);
+        spanText.textContent = "^";
+        
       } else {
         // Show error state
         spinnerIcon.style.display = "none";
         saveIcon.style.display = "inline-block";
         spanText.textContent = "Error saving";
         setTimeout(() => {
-          spanText.textContent = "Save";
+          spanText.textContent = "";
         }, 2000);
       }
     } catch (error) {
@@ -2118,7 +2118,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       saveIcon.style.display = "inline-block";
       spanText.textContent = "Error saving";
       setTimeout(() => {
-        spanText.textContent = "Save";
+        spanText.textContent = "";
       }, 2000);
     }
   }
