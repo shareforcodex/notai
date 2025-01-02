@@ -115,7 +115,6 @@ h3{
 .editor-container {
     display: flex;
     height: 95vh;
-    width: 100vw;
     position: relative;
     scrollbar-color: lightblue white;
 
@@ -507,7 +506,7 @@ h3{
 
 .editor {
     flex: 1;
-    padding: 40px;
+    padding-left: 40px;
     overflow-y: auto;
     background-color: #fff;
     scrollbar-color: rgb(219, 248, 219) white;
@@ -529,7 +528,6 @@ h3{
     padding: 5px;
     border-radius: 4px;
     transition: background-color 0.2s;
-    width: 93vw;
 }
 
 .block::after {
