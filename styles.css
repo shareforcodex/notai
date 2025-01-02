@@ -5,6 +5,11 @@
     scrollbar-width: thin;
 }
 
+body {
+    overscroll-behavior: none; /* Prevent pull-to-refresh and overscroll glow */
+
+}
+
 .code-copy-btn {
     position: fixed;
     display: none;
