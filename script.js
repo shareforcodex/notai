@@ -1254,45 +1254,44 @@ by ${modelName}
   // Get text from current block and all context above it
   getBlockContext() {
     const selection = window.getSelection();
+    if (!selection.rangeCount) return null;
+
     const range = selection.getRangeAt(0);
+    const startContainer = range.startContainer.nodeType === Node.TEXT_NODE 
+      ? range.startContainer.parentElement 
+      : range.startContainer;
 
-    // Handle text nodes by getting their parent element
-    const startElement = range.startContainer.nodeType === Node.TEXT_NODE ?
-      range.startContainer.parentElement :
-      range.startContainer;
+    // Find the current block, prioritizing the block containing the cursor
+    let currentBlock = startContainer.closest('.block');
 
-    let currentBlock = startElement.closest('.block');
-
+    // If no block found, try to find the last block
     if (!currentBlock) {
-      // If no block is selected, get the last block
       const blocks = this.editor.querySelectorAll('.block');
       currentBlock = blocks[blocks.length - 1];
     }
 
-    if (!currentBlock) {
-      return null;
-    }
+    if (!currentBlock) return null;
 
-    // Get all preceding text for context
-    let context = [];
-    let allBlocks = Array.from(this.editor.querySelectorAll('.block'));
-    let currentBlockIndex = allBlocks.indexOf(currentBlock);
+    // Get all blocks before the current block
+    const allBlocks = Array.from(this.editor.querySelectorAll('.block'));
+    const currentBlockIndex = allBlocks.indexOf(currentBlock);
 
-    // Get all blocks up to the current one
-    for (let i = 0; i <= currentBlockIndex; i++) {
-      const block = allBlocks[i];
-      // Skip empty blocks and only include text content
-      const blockText = block.textContent.trim();
-      if (blockText) {
-        context.push(blockText);
-      }
-    }
+    // Collect context from previous blocks
+    const contextBlocks = allBlocks.slice(0, currentBlockIndex + 1);
+    const contextText = contextBlocks
+      .map(block => block.textContent.trim())
+      .filter(text => text)
+      .join('\n\n');
+
+    // Get the current block's text
+    const currentText = currentBlock.textContent.trim();
 
     return {
-      currentText: currentBlock.textContent.trim(),
-      contextText: context.join('\n')
+      currentText: currentText,
+      contextText: contextText
     };
   }
+
 
   async handleQuickAsk() {
     const context = this.getBlockContext();
@@ -1330,7 +1329,7 @@ by ${modelName}
             },
             {
               role: "user",
-              content: `Context:\n${context.contextText}\n\nQuestion/Text:\n${context.currentText}`,
+              content: context.contextText?`this is a chat history, just reply to last message:\n\n ${context.contextText} `:''+`\n\n${context.currentText}`,
             },
             ],
           model: modelName,
