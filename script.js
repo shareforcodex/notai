@@ -1275,7 +1275,7 @@ by ${modelName}
     const currentBlockIndex = allBlocks.indexOf(currentBlock);
 
     // Collect context from previous blocks
-    const contextBlocks = allBlocks.slice(0, currentBlockIndex + 1);
+    const contextBlocks = allBlocks.slice(0, currentBlockIndex );
     const contextText = contextBlocks
       .map(block => block.textContent.trim())
       .filter(text => text)
@@ -1284,6 +1284,7 @@ by ${modelName}
     // Get the current block's text
     const currentText = currentBlock.textContent.trim();
 
+    console.log('Current text:', currentText, '\n Context:', contextText);
     return {
       currentText: currentText,
       contextText: contextText
@@ -1327,7 +1328,11 @@ by ${modelName}
             },
             {
               role: "user",
-              content: context.contextText?`this is a chat history, just reply to last message:\n\n ${context.contextText} `:''+`\n\n${context.currentText}`,
+              content: (context.contextText?
+                `this is our chat history, you need only reply to the last message based on the history:
+                ${context.contextText} `
+                :'') 
+                +`\n\n${context.currentText}`
             },
             ],
           model: modelName,
