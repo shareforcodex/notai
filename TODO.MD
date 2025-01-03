@@ -12,7 +12,11 @@ read requirments carefully and implement unfinished task
 commit all change after finish the task with clean and simple commit message
 
 ## tasks:
-3. 
+
+
+4.(finished) add system prompt support, add item in ai setting to set system prompt before Default Prompts , it's a prompt that will prepend before the message send by ai request, store it in config and save to server when user click save setting
+
+3(finished). 
 a.remove prompt when save note , just load server version if newer, 
 b.when user click the app body or hit keyboard or paste , try to save first so the note always same version as server, but not for every click or type or paste, give it a cooldown time 20s when trigger the event
 

@@ -6,6 +6,9 @@ let currentUser = {
 
 class HTMLEditor {
   constructor() {
+    // Define DEFAULT_SYSTEM_PROMPT as a class property
+    this.DEFAULT_SYSTEM_PROMPT = "you are a assistant to help user write better doc now,  only output html body innerHTML code  to me, don't put it in ```html ```,do not use markdown, you can put a head h2 with 2 to 5 words at start to summary the doc; use inline style to avoid affect parent element, make the html doc looks beautiful, clean and mordern.";
+
     // Initialize core editor elements with error checking
     const editor = document.getElementById("editor");
 
@@ -49,6 +52,8 @@ class HTMLEditor {
     this.lastUpdated = null;
     this.lastInteractionTime=0;
     this.aiSettings = {
+      systemPrompt: this.DEFAULT_SYSTEM_PROMPT,
+
       prompts: {
         ask: "Answer this question: {text}",
         correct: "Correct any grammar or spelling errors in this text: {text}",
@@ -599,12 +604,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           {
             messages: [
               {
-                role: "system",
-                content: "You are a helpful assistant.",
+              role: "system",
+              content: this.aiSettings.systemPrompt,
               },
               {
-                role: "user",
-                content: prompt,
+              role: "user",
+              content: prompt,
               },
             ],
             model: modelName,
@@ -752,9 +757,19 @@ by ${modelName}
     const addCustomToolBtn = document.getElementById('addCustomTool');
 
     // Load current settings
+    document.getElementById('systemPrompt').value = this.aiSettings.systemPrompt;
     document.getElementById('askPrompt').value = this.aiSettings.prompts.ask;
     document.getElementById('correctPrompt').value = this.aiSettings.prompts.correct;
     document.getElementById('translatePrompt').value = this.aiSettings.prompts.translate;
+
+    // Initialize textarea heights
+    document.querySelectorAll('.dynamic-textarea').forEach(textarea => {
+      // Set initial minimum height
+      textarea.style.minHeight = '38px';
+      // Adjust height to content
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.max(38, textarea.scrollHeight) + 'px';
+    });
 
     this.renderCustomTools();
     this.renderModelSettings();
@@ -788,6 +803,54 @@ by ${modelName}
       this.updateAIToolbar();
       this.updateModelDropdowns();
     };
+
+    // Add reset button functionality
+    const resetSystemPromptBtn = document.getElementById('resetSystemPrompt');
+    const editor = this; // Store reference to the class instance
+
+    resetSystemPromptBtn.onclick = () => {
+      if (confirm('Are you sure you want to reset the system prompt to default?')) {
+      const systemPromptInput = document.getElementById('systemPrompt');
+      systemPromptInput.value = editor.DEFAULT_SYSTEM_PROMPT;
+      // Add highlight effect
+      systemPromptInput.style.transition = 'background-color 0.3s';
+      systemPromptInput.style.backgroundColor = '#e3f2fd';
+      setTimeout(() => {
+        systemPromptInput.style.backgroundColor = '';
+      }, 500);
+      }
+    };
+
+
+
+    // Setup dynamic textareas
+    document.querySelectorAll('.dynamic-textarea').forEach(textarea => {
+      // Function to adjust height
+      const adjustHeight = () => {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.max(38, textarea.scrollHeight) + 'px';
+      };
+
+      // Initial height adjustment
+      adjustHeight();
+
+      // Focus event - expand
+      textarea.addEventListener('focus', () => {
+        textarea.style.height = '100px';
+      });
+
+      // Blur event - collapse if not multiline
+      textarea.addEventListener('blur', () => {
+        if (textarea.value.indexOf('\n') === -1) {
+          adjustHeight();
+        } else {
+          adjustHeight();
+        }
+      });
+
+      // Input event - adjust height while typing
+      textarea.addEventListener('input', adjustHeight);
+    });
   }
 
   renderCustomTools() {
@@ -795,20 +858,60 @@ by ${modelName}
     container.innerHTML = '';
 
     this.aiSettings.customTools.forEach((tool, index) => {
-      const toolDiv = document.createElement('div');
-      toolDiv.className = 'custom-tool';
-      toolDiv.innerHTML = `
-        <input type="text" class="tool-name" placeholder="Tool Name" value="${tool.name}">
-        <input type="text" class="tool-prompt" placeholder="Prompt Template" value="${tool.prompt}">
-        <button class="remove-tool" data-index="${index}"><i class="fas fa-trash"></i></button>
-      `;
+        const toolDiv = document.createElement('div');
+        toolDiv.className = 'custom-tool';
+        toolDiv.style.marginBottom = '20px';
+        toolDiv.innerHTML = `
+          <div style="margin-bottom: 10px;">
+            <input type="text" class="tool-name" placeholder="Tool Name" value="${tool.name}" style="width: 300px; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+            <button class="remove-tool" data-index="${index}" style="margin-left: 10px; padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;"><i class="fas fa-trash"></i></button>
+          </div>
+          <div style="position: relative;">
+            <textarea class="tool-prompt dynamic-textarea" placeholder="Prompt Template" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; resize: none; overflow: hidden; height: 38px; transition: all 0.2s; font-family: monospace;">${tool.prompt}</textarea>
+            <small style="display: block; margin-top: 4px; color: #6c757d;">Use {text} where you want the selected text to be inserted</small>
+          </div>
+        `;
 
-      toolDiv.querySelector('.remove-tool').onclick = () => {
-        this.aiSettings.customTools.splice(index, 1);
-        this.renderCustomTools();
-      };
+        toolDiv.querySelector('.remove-tool').onclick = () => {
+        if (confirm('Are you sure you want to delete this custom tool?')) {
+          this.aiSettings.customTools.splice(index, 1);
+          this.renderCustomTools();
+        }
+        };
 
       container.appendChild(toolDiv);
+    });
+
+    // Setup dynamic textareas for the newly added elements
+    container.querySelectorAll('.dynamic-textarea').forEach(textarea => {
+      // Function to adjust height
+      const adjustHeight = () => {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.max(38, textarea.scrollHeight) + 'px';
+      };
+
+      // Set initial minimum height
+      textarea.style.minHeight = '38px';
+      
+      // Initial height adjustment
+      adjustHeight();
+
+      // Focus event - expand
+      textarea.addEventListener('focus', () => {
+      textarea.style.height = '100px';
+      });
+
+      // Blur event - collapse if not multiline
+      textarea.addEventListener('blur', () => {
+      if (textarea.value.indexOf('\n') === -1) {
+        adjustHeight();
+      } else {
+        adjustHeight();
+      }
+      });
+
+      // Input event - adjust height while typing
+      textarea.addEventListener('input', adjustHeight);
     });
   }
 
@@ -819,6 +922,14 @@ by ${modelName}
       prompt: ''
     });
     this.renderCustomTools();
+    
+    // Focus the name input of the newly added tool
+    const tools = document.querySelectorAll('.custom-tool');
+    const newTool = tools[tools.length - 1];
+    if (newTool) {
+        const nameInput = newTool.querySelector('.tool-name');
+        nameInput.focus();
+    }
   }
 
   renderModelSettings() {
@@ -858,37 +969,50 @@ by ${modelName}
 
   async loadUserConfig() {
     try {
-      const config = await this.apiRequest("GET", "/users/config");
-      if (config && !config.error) {
-        // Parse the config if it's a string
-        const parsedConfig = JSON.parse(config.config);
-        // Merge prompts
-        this.aiSettings.prompts = parsedConfig.prompts || {
-          ask: "Answer this question: {text}",
-          correct: "Correct any grammar or spelling errors in this text: {text}",
-          translate: "Translate this text to English: {text}"
-        };
+        const config = await this.apiRequest("GET", "/users/config");
+        if (config && !config.error) {
+            // Parse the config if it's a string
+            const parsedConfig = typeof config.config === 'string' ? JSON.parse(config.config) : config.config;
+            
+            // Load system prompt first
+            if (parsedConfig.systemPrompt) {
+                this.aiSettings.systemPrompt = parsedConfig.systemPrompt;
+                // Update the textarea if it exists
+                const systemPromptInput = document.getElementById('systemPrompt');
+                if (systemPromptInput) {
+                    systemPromptInput.value = parsedConfig.systemPrompt;
+                }
+            } else {
+                this.aiSettings.systemPrompt = this.DEFAULT_SYSTEM_PROMPT;
+                const systemPromptInput = document.getElementById('systemPrompt');
+                if (systemPromptInput) {
+                    systemPromptInput.value = this.DEFAULT_SYSTEM_PROMPT;
+                }
+            }
 
-        // Merge customTools
-        this.aiSettings.customTools = parsedConfig.customTools || [];
+            // Merge prompts
+            this.aiSettings.prompts = parsedConfig.prompts || {
+                ask: "Answer this question: {text}",
+                correct: "Correct any grammar or spelling errors in this text: {text}",
+                translate: "Translate this text to English: {text}"
+            };
 
-        if (parsedConfig.models) {
-          // Filter out remote models that already exist in DEFAULT_MODELS
-          const remoteModels = parsedConfig.models;
+            // Merge customTools
+            this.aiSettings.customTools = parsedConfig.customTools || [];
 
-          // Append remote models to DEFAULT_MODELS
-          this.aiSettings.models = [ ...remoteModels];
-        } else {
-          // If no remote models, retain only DEFAULT_MODELS
-          this.aiSettings.models = [...this.DEFAULT_MODELS];
+            if (parsedConfig.models) {
+                this.aiSettings.models = [...parsedConfig.models];
+            } else {
+                this.aiSettings.models = [...this.DEFAULT_MODELS];
+            }
+            this.updateModelDropdowns();
         }
-        this.updateModelDropdowns();
-      }
-      this.updateAIToolbar();
+        this.updateAIToolbar();
     } catch (error) {
-      console.error("Error loading user config:", error);
+        console.error("Error loading user config:", error);
     }
   }
+
 
   async saveAISettings() {
     // Gather updated model data from the UI
@@ -902,10 +1026,11 @@ by ${modelName}
 
     // Prepare the config object
     const config = {
+      systemPrompt: document.getElementById('systemPrompt').value || "you are a assistant to help user write better doc now,  only output html body innerHTML code  to me, don't put it in ```html ```,do not use markdown, you can put a head h2 with 2 to 5 words at start to summary the doc; use inline style to avoid affect parent element, make the html doc looks beautiful, clean and mordern.",
       prompts: {
-        ask: document.getElementById('askPrompt').value,
-        correct: document.getElementById('correctPrompt').value,
-        translate: document.getElementById('translatePrompt').value
+      ask: document.getElementById('askPrompt').value,
+      correct: document.getElementById('correctPrompt').value,
+      translate: document.getElementById('translatePrompt').value
       },
       customTools: Array.from(document.querySelectorAll('.custom-tool')).map((toolDiv, index) => ({
         id: this.aiSettings.customTools[index]?.id || 'custom_' + Date.now(),
@@ -1198,16 +1323,16 @@ by ${modelName}
         "POST",
         "",
         {
-          messages: [
+            messages: [
             {
               role: "system",
-              content: "You are a helpful assistant. Use the context provided to give relevant answers.",
+              content: this.aiSettings.systemPrompt,
             },
             {
               role: "user",
               content: `Context:\n${context.contextText}\n\nQuestion/Text:\n${context.currentText}`,
             },
-          ],
+            ],
           model: modelName,
           temperature: 0.7,
           max_tokens: 3999,
