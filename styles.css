@@ -109,6 +109,7 @@ h3{
 .block{
     position: static;
     max-height: 300px;
+    min-height: 100px;
     overflow: auto;
     scrollbar-color: lightblue white;
     background-color: #f5f5f5; /* Light gray */
@@ -516,7 +517,6 @@ h3{
     background-color: #fff;
     scrollbar-color: rgb(219, 248, 219) white;
     scrollbar-width:thin;
-    white-space: pre-wrap; /* Preserve spaces and newlines */
    
 }
 
@@ -536,8 +536,8 @@ h3{
 }
 
 .block::after {
-    content: "\A";
-    white-space: pre;
+    /* content: "\A";
+    white-space: pre; */
 }
 
 .block:hover {
@@ -898,7 +898,6 @@ pre code {
 .comment-content {
    
     padding: 10px;
-    white-space: pre-wrap;
 }
 
 /* Style for individual model responses

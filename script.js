@@ -79,9 +79,7 @@ class HTMLEditor {
     this.isEditable = true;
     this.autoSaveTimeout = null;
 
-    // Ensure white-space is preserved
-    this.editor.style.whiteSpace = 'pre-wrap';
-    this.sourceView.style.whiteSpace = 'pre-wrap';
+    
 
     // Initialize content and check auth
     this.updateContent();
@@ -687,7 +685,7 @@ by ${modelName}
 
          
 
-              let blankLine = document.createTextNode('\n');
+              let blankLine = document.createElement('br');
 
               // Insert blank line and block
               if (currentBlock) {
@@ -1391,7 +1389,7 @@ by ${modelName}
             // }
 
             // Insert blank line and block
-            let blankLine = document.createTextNode('\n');
+            let blankLine = document.createElement('br');
             if (currentBlock) {
               //add new line at end of block
 
@@ -1729,7 +1727,7 @@ by ${modelName}
       : range.startContainer.closest(".block");
 
     // Insert the block after the cursor position
-    const blankLine = document.createTextNode('\n');
+    const blankLine = document.createElement('br');
     
     if (currentBlock) {
       // Insert after current block
