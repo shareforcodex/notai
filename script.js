@@ -1373,7 +1373,7 @@ by ${modelName}
             // Create new block for this model's response with h2 header
             const block = document.createElement("div");
             block.className = "block";
-            block.innerHTML = `<h2>AI Response (${modelName})</h2>${marked.parse(aiResponse)}`;
+            block.innerHTML = `${modelName} :${marked.parse(aiResponse)}`;
 
 
 
