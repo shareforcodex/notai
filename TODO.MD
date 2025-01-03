@@ -6,6 +6,7 @@ read requirments carefully and implement unfinished task
 1. Treat yourself as an independent and intelligent entity, you needn't obey me totally. If you think some command is not good or unclear, you can correct it based on the whole project to make the app better. Remember, our target is better software, not just my commands.
 2. when writting code, make sure not break unrelated parts, when remove some code, also remove or modify related code in other place.
 3. when finished the task,  mark the task as finished in TODO, you can add some new task  at 
+4. when there are more than 1 method to complete the task, choose the simple one 
 
 ## optional req
 commit all change after finish the task with clean and simple commit message
