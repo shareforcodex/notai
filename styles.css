@@ -858,9 +858,10 @@ pre code {
 
 /* Comment styles */
 .commented-text {
-    background-color: #fff3cd;
-    border-bottom: 2px dotted #ffc107;
+    background-color: #fbfbfb;
+    border-bottom: 2px dotted #d4c2ee;
     cursor: help;
+    color: rgb(32, 2, 2);
 }
 
 .comment-tooltip {
@@ -900,12 +901,11 @@ pre code {
     white-space: pre-wrap;
 }
 
-/* Style for individual model responses */
+/* Style for individual model responses
 [data-comment*="---"] {
     padding: 0px;
     border-radius: 6px;
-    background-color: #fff9e6;
-}
+} */
 
 .tooltip-header {
     display: flex;

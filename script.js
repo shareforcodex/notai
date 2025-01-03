@@ -644,9 +644,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             if (useComment) {
               // Add this response to the comment
               const currentComment = commentedSpan.getAttribute("data-comment") || "";
-              const newResponse = `<h4 onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'" 
-                        style="position: sticky; top: 0; background: white; z-index: 100; padding: 0px 0; margin: 0; font-size: small; text-decoration: underline;">${modelName}</h4><div style="display:block"
-                        >${marked.parse(aiResponse)}</div>`;
+              const newResponse = `<h4 onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });" style="position: sticky; top: 0; background: white; z-index: 100; padding: 0px 0; margin: 0; font-size: small; text-decoration: underline;">${modelName}</h4>
+<div style="display:block">
+${marked.parse(aiResponse)}</div>`;
               const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
               commentedSpan.setAttribute("data-comment", updatedComment);
 
@@ -666,8 +666,15 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
               // Create a new block for longer responses
               const block = document.createElement("div");
               block.className = "block";
-              block.innerHTML = customTool ? `<h2>Answer for ${customTool.name} by ${modelName}</h2>${marked.parse(aiResponse)}` : `<h2>Answer for ${action} by (${modelName})</h2>${marked.parse(aiResponse)}`;
-              block.classList.add('highlight')
+              block.classList.add('highlight');
+
+              block.innerHTML=aiResponse+ `
+
+by ${modelName}
+`;
+              // block.innerHTML = customTool ? `<h2>Answer for ${customTool.name} by ${modelName}
+              // </h2>${marked.parse(aiResponse)}` : `<h2>Answer for ${action} by (${modelName})</h2>${marked.parse(aiResponse)}`;
+
               setTimeout(() => {
                 block.classList.remove('highlight')
 
