@@ -260,6 +260,12 @@
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
+                <div id="dropZone" style="border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 20px;">
+                    <p>Drag & drop files here or click to select</p>
+                    <input type="file" id="fileInput" style="display: none;" accept="*/*">
+                    <button id="selectFileBtn" style="padding: 10px; margin: 10px;">Select File</button>
+                </div>
+
                 <div class="media-capture-controls">
                     <div class="device-selectors">
                         <select id="videoDevices" class="device-select">
@@ -292,11 +298,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="dropZone" style="border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 20px;">
-                    <p>Drag & drop files here or click to select</p>
-                    <input type="file" id="fileInput" style="display: none;" accept="*/*">
-                    <button id="selectFileBtn" style="padding: 10px; margin: 10px;">Select File</button>
-                </div>
+                
                 <div id="previewArea" style="display: none; margin-top: 20px;">
                     <h3>Preview:</h3>
                     <div id="filePreview" style="max-width: 100%; margin-top: 10px;"></div>
