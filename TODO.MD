@@ -1,5 +1,5 @@
 # TODO
-read requirments carefully and implement unfinished task
+read requirments carefully and implement unfinished task in TODO.MD
 
 ## requirments:
 
@@ -13,6 +13,7 @@ commit all change after finish the task with clean and simple commit message
 
 ## tasks:
 
+5. make it support upload file , remove add audio,add image , add video in dropdown , add a upload file function,when select it, show a upload UI, user can take photos, record audio or video, or just upload it or drop a file to it, when user click upload , calculate the sha code of file, send a put request to sharefile.suisuy.eu.org/shar-code.(file original extension like jpg,mp3), if upload success, it will return the same name , check the type from  the name, append a img/audio/video tag with src set to sharefile.suisuy.eu.org/filename after current cursor location, if it's not media file ,use ifram with src set to the url
 
 4.(finished) add system prompt support, add item in ai setting to set system prompt before Default Prompts , it's a prompt that will prepend before the message send by ai request, store it in config and save to server when user click save setting
 
