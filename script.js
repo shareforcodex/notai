@@ -1523,7 +1523,7 @@ by ${modelName}
                 videoPreview.style.display = 'none';
               }
               document.getElementById('mediaPreview').style.display = 'none';
-              captureVideoBtn.innerHTML = '<i class="fas fa-video"></i> Record Video';
+              captureVideoBtn.innerHTML = '<i class="fas fa-video"></i> ';
               captureVideoBtn.style.backgroundColor = '#2ecc71';
               return;
             }
@@ -1574,7 +1574,7 @@ by ${modelName}
                 document.getElementById('fileInput').files = dataTransfer.files;
 
                 // Reset button state
-                captureVideoBtn.innerHTML = '<i class="fas fa-video"></i> Record Video';
+                captureVideoBtn.innerHTML = '<i class="fas fa-video"></i> ';
                 captureVideoBtn.style.backgroundColor = '#2ecc71';
               };
 
@@ -1584,7 +1584,7 @@ by ${modelName}
               document.getElementById('videoPreview').style.display = 'block';
               
               // Update button to show recording state
-              captureVideoBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Recording';
+              captureVideoBtn.innerHTML = '<i class="fas fa-stop"></i> ';
               captureVideoBtn.style.backgroundColor = '#e74c3c';
             }
           });
@@ -2656,6 +2656,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     previewArea.style.display = 'block';
     filePreview.innerHTML = '';
 
+    // Create and add file info element
+    const fileInfo = document.createElement('div');
+    fileInfo.style.fontSize = '12px';
+    fileInfo.style.color = '#666';
+    fileInfo.style.marginBottom = '8px';
+    fileInfo.innerHTML = `
+      <strong>File:</strong> ${file.name}<br>
+      <strong>Type:</strong> ${file.type || 'Unknown'}<br>
+      <strong>Size:</strong> ${this.formatFileSize(file.size)}
+    `;
+    filePreview.appendChild(fileInfo);
+
     // Handle different file types
     if (file.type.startsWith('image/')) {
       const img = document.createElement('img');
@@ -2675,7 +2687,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       audio.src = URL.createObjectURL(file);
       filePreview.appendChild(audio);
     } else {
-      filePreview.textContent = `Selected file: ${file.name} (${this.formatFileSize(file.size)})`;
+      const fileDetails = document.createElement('div');
+      fileDetails.style.padding = '10px';
+      fileDetails.style.backgroundColor = '#f5f5f5';
+      fileDetails.style.borderRadius = '4px';
+      fileDetails.textContent = `File ready for upload`;
+      filePreview.appendChild(fileDetails);
     }
   }
 
@@ -2715,9 +2732,38 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       });
 
       if (response.ok) {
+        // Get device info if available
+        let deviceInfo = '';
+        if (file.type.startsWith('video/') || file.type.startsWith('image/')) {
+          const videoDevice = document.getElementById('videoDevices')?.selectedOptions[0]?.text;
+          if (videoDevice) {
+            deviceInfo = `<strong>Camera:</strong> ${videoDevice}<br>`;
+          }
+        }
+        if (file.type.startsWith('audio/') || file.type.startsWith('video/')) {
+          const audioDevice = document.getElementById('audioDevices')?.selectedOptions[0]?.text;
+          if (audioDevice) {
+            deviceInfo += `<strong>Microphone:</strong> ${audioDevice}<br>`;
+          }
+        }
+
+        // Create file info div
+        const fileInfoDiv = document.createElement('div');
+        fileInfoDiv.style.fontSize = '12px';
+        fileInfoDiv.style.color = '#666';
+        fileInfoDiv.style.marginBottom = '8px';
+        fileInfoDiv.style.padding = '8px';
+        fileInfoDiv.style.backgroundColor = '#f8f9fa';
+        fileInfoDiv.style.borderRadius = '4px';
+        fileInfoDiv.innerHTML = `
+          <strong>File:</strong> ${file.name}<br>
+          <strong>Type:</strong> ${file.type || 'Unknown'}<br>
+          <strong>Size:</strong> ${this.formatFileSize(file.size)}<br>
+          ${deviceInfo}
+        `;
+
         // Create appropriate element based on file type
         let element;
-
         if (file.type.startsWith('image/')) {
           element = document.createElement('img');
           element.src = uploadUrl;
@@ -2744,6 +2790,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Create a new block for the media
         const block = document.createElement('div');
         block.className = 'block';
+        block.appendChild(fileInfoDiv);
         block.appendChild(element);
 
         // Try to insert at selection, if no selection append to editor
@@ -2846,6 +2893,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const videoPreview = document.getElementById('videoPreview');
     const canvas = document.getElementById('photoCanvas');
     const context = canvas.getContext('2d');
+    const videoDevice = document.getElementById('videoDevices').selectedOptions[0].text;
 
     try {
       // Wait for video metadata to load
@@ -2878,8 +2926,22 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       const img = document.createElement('img');
       img.src = URL.createObjectURL(blob);
       img.style.maxWidth = '100%';
+      
+      // Add file info above preview
+      const fileInfo = document.createElement('div');
+      fileInfo.style.fontSize = '12px';
+      fileInfo.style.color = '#666';
+      fileInfo.style.marginBottom = '8px';
+      fileInfo.innerHTML = `
+        <strong>Captured Photo</strong><br>
+        <strong>Camera:</strong> ${videoDevice}<br>
+        <strong>Resolution:</strong> ${canvas.width}x${canvas.height}<br>
+        <strong>Size:</strong> ${this.formatFileSize(blob.size)}
+      `;
+      
       previewArea.style.display = 'block';
       filePreview.innerHTML = '';
+      filePreview.appendChild(fileInfo);
       filePreview.appendChild(img);
       
       // Create file for upload
@@ -2913,6 +2975,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         audio: audioDeviceId ? { deviceId: { exact: audioDeviceId } } : true
       };
 
+      const audioDevice = document.getElementById('audioDevices').selectedOptions[0].text;
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       const mediaRecorder = new MediaRecorder(stream);
       const chunks = [];
@@ -2931,7 +2994,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         document.getElementById('captureAudioBtn').innerHTML = '<i class="fas fa-microphone"></i>';
         document.getElementById('captureAudioBtn').style.backgroundColor = '#2ecc71';
         
-        // Create preview
+        // Create preview with file info
+        const fileInfo = document.createElement('div');
+        fileInfo.style.fontSize = '12px';
+        fileInfo.style.color = '#666';
+        fileInfo.style.marginBottom = '8px';
+        fileInfo.innerHTML = `
+          <strong>Recorded Audio</strong><br>
+          <strong>Microphone:</strong> ${audioDevice}<br>
+          <strong>Duration:</strong> ${document.getElementById('recordingTime').textContent}<br>
+          <strong>Size:</strong> ${this.formatFileSize(blob.size)}
+        `;
+        
         const audioPreview = document.createElement('audio');
         audioPreview.controls = true;
         audioPreview.src = URL.createObjectURL(blob);
@@ -2939,6 +3013,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         const filePreview = document.getElementById('filePreview');
         previewArea.style.display = 'block';
         filePreview.innerHTML = '';
+        filePreview.appendChild(fileInfo);
         filePreview.appendChild(audioPreview);
         
         // Create file for upload
