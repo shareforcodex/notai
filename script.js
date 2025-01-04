@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://notai.suisuy.workers.dev";
+const API_BASE_URL = "https://notais.suisuy.eu.org";
 let currentUser = {
   userId: localStorage.getItem("userId"),
   credentials: localStorage.getItem("credentials"),
@@ -28,11 +28,11 @@ class HTMLEditor {
 
     // Define DEFAULT_MODELS as a class property
     this.DEFAULT_MODELS = [
-      { name: "gpt-4o", model_id: "gpt-4o", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions", api_key: '' },
-      { name: "gpt-4o-mini", model_id: "gpt-4o-mini", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions", api_key: '' },
-      { name: "Meta-Llama-3.1-405B-Instruct", model_id: "Meta-Llama-3.1-405B-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions", api_key: '' },
-      { name: "Llama-3.2-90B-Vision-Instruct", model_id: "Llama-3.2-90B-Vision-Instruct", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions", api_key: '' },
-      { name: "Mistral-large", model_id: "Mistral-large", url: "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions", api_key: '' },
+      { name: "gpt-4o", model_id: "gpt-4o", url: "https://gmapi.suisuy.eu.org/corsproxy?q=https://models.inference.ai.azure.com/chat/completions", api_key: '' },
+      { name: "gpt-4o-mini", model_id: "gpt-4o-mini", url: "https://gmapi.suisuy.eu.org/corsproxy?q=https://models.inference.ai.azure.com/chat/completions", api_key: '' },
+      { name: "Meta-Llama-3.1-405B-Instruct", model_id: "Meta-Llama-3.1-405B-Instruct", url: "https://gmapi.suisuy.eu.org/corsproxy?q=https://models.inference.ai.azure.com/chat/completions", api_key: '' },
+      { name: "Llama-3.2-90B-Vision-Instruct", model_id: "Llama-3.2-90B-Vision-Instruct", url: "https://gmapi.suisuy.eu.org/corsproxy?q=https://models.inference.ai.azure.com/chat/completions", api_key: '' },
+      { name: "Mistral-large", model_id: "Mistral-large", url: "https://gmapi.suisuy.eu.org/corsproxy?q=https://models.inference.ai.azure.com/chat/completions", api_key: '' },
     ];
 
     // Verify required elements exist
@@ -220,13 +220,13 @@ class HTMLEditor {
 
     try {
       const url = isAIRequest
-        ? "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions"
+        ? "https://gmapi.suisuy.eu.org/corsproxy?q=https://models.inference.ai.azure.com/chat/completions"
         : `${API_BASE_URL}${endpoint}`;
 
       const response = await fetch(
         isAIRequest && body?.model
           ? (this.aiSettings.models.find(m => m.model_id === body.model)?.url ||
-            "https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions")
+            "https://gmapi.suisuy.eu.org/corsproxy?q=https://models.inference.ai.azure.com/chat/completions")
           : url, {
         method,
         headers,
@@ -959,7 +959,7 @@ by ${modelName}
     this.aiSettings.models.push({
       name: '',
       model_id: '',
-      url: 'https://gmapi.suisuy.workers.dev/corsproxy?q=https://models.inference.ai.azure.com/chat/completions',
+      url: 'https://gmapi.suisuy.eu.org/corsproxy?q=https://models.inference.ai.azure.com/chat/completions',
       api_key: ''
     });
     this.renderModelSettings();
