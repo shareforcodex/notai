@@ -13,7 +13,12 @@ commit all change after finish the task with clean and simple commit message
 
 ## tasks:
 
-5. make it support upload file , remove add audio,add image , add video in dropdown , add a upload file function,when select it, show a upload UI, user can take photos, record audio or video, or just upload it or drop a file to it, when user click upload , calculate the sha code of file, send a put request to sharefile.suisuy.eu.org/shar-code.(file original extension like jpg,mp3), if upload success, it will return the same name , check the type from  the name, append a img/audio/video tag with src set to sharefile.suisuy.eu.org/filename after current cursor location, if it's not media file ,use ifram with src set to the url
+6.1  there bugs for task 6, when stop record audio, it not show preview and i can not upload too, same issur for task photo and video. ensure user can stop all devices when click stop button, then preview recoreded file and ready for upload
+and i can not fold the side bar when click fold button 
+
+6.(finished) in Upload File, add camera and microphone support to take photo or record audio and video, user can select different camear and microphone device if there are more devices, upload recorded file to server when click upload
+
+5. (finished by cursor sonnet 3.5) make it support upload file , remove add audio,add image , add video in dropdown , add a upload file function,when select it, show a upload UI, user can take photos, record audio or video, or just upload it or drop a file to it, when user click upload , calculate the sha code of file, send a put request to sharefile.suisuy.eu.org/shar-code.(file original extension like jpg,mp3), if upload success, it will return the same name , check the type from  the name, append a img/audio/video tag with src set to sharefile.suisuy.eu.org/filename after current cursor location, if it's not media file ,use ifram with src set to the url
 
 4.(finished) add system prompt support, add item in ai setting to set system prompt before Default Prompts , it's a prompt that will prepend before the message send by ai request, store it in config and save to server when user click save setting
 

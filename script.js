@@ -1442,79 +1442,299 @@ by ${modelName}
     }
   }
 
-  setupEventListeners() {
+  async setupEventListeners() {
+    try {
     // Auto-save on user interactions
     document.body.addEventListener('pointerdown', () => this.idleSync());
     document.body.addEventListener('keypress', () => this.idleSync());
     document.body.addEventListener('paste', () => this.idleSync());
 
-    // Quick Ask button 
-    document.querySelectorAll('#quickAskBtn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.handleQuickAsk();
-      });
-    });
+      // Get all required elements
+    const uploadModal = document.getElementById('uploadModal');
+    const uploadFileBtn = document.getElementById('uploadFileBtn');
+    const closeUploadBtn = uploadModal?.querySelector('.close');
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const selectFileBtn = document.getElementById('selectFileBtn');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const previewArea = document.getElementById('previewArea');
+    const filePreview = document.getElementById('filePreview');
+    const capturePhotoBtn = document.getElementById('capturePhotoBtn');
+    const captureVideoBtn = document.getElementById('captureVideoBtn');
+    const captureAudioBtn = document.getElementById('captureAudioBtn');
+    const stopRecordingBtn = document.getElementById('stopRecordingBtn');
+    const videoDevices = document.getElementById('videoDevices');
+    const audioDevices = document.getElementById('audioDevices');
+      const quickAskBtn = document.getElementById('quickAskBtn');
+      const addBlockBtn = document.getElementById('addBlockBtn');
+      const viewSourceBtn = document.getElementById('viewSourceBtn');
+      const toggleEditableBtn = document.getElementById('toggleEditableBtn');
+      const saveNoteBtn = document.getElementById('saveNoteBtn');
+      const plainTextBtn = document.getElementById('plainTextBtn');
+      const toggleSidebarBtn = document.getElementById('toggleSidebar');
+      const newPageBtn = document.getElementById('newPageBtn');
+      const newFolderBtn = document.getElementById('newFolderBtn');
+      const createFolderBtn = document.getElementById('createFolderBtn');
+      const cancelFolderBtn = document.getElementById('cancelFolderBtn');
+      const newFolderInput = document.getElementById('newFolderInput');
+      const textColorInput = document.getElementById('textColor');
+      const bgColorInput = document.getElementById('bgColor');
+      const formatButtons = document.querySelectorAll('.formatting-tools button[data-command]');
 
-    // Sidebar toggle
-    document
-      .getElementById("toggleSidebar")
-      .addEventListener("click", () => this.toggleSidebar());
+      // Setup file upload and media capture handlers
+      if (uploadModal && uploadFileBtn && closeUploadBtn && dropZone && 
+          fileInput && selectFileBtn && uploadBtn && previewArea && filePreview) {
 
-    // New page button
-    document
-      .getElementById("newPageBtn")
-      .addEventListener("click", () => this.createNewNote());
+        uploadFileBtn.onclick = () => {
+          uploadModal.style.display = 'block';
+          previewArea.style.display = 'none';
+          filePreview.innerHTML = '';
+          this.setupMediaDevices();
+        };
 
-    // New folder button and related events
-    document
-      .getElementById("newFolderBtn")
-      .addEventListener("click", () => this.showNewFolderInput());
+        closeUploadBtn.onclick = () => {
+          uploadModal.style.display = 'none';
+          // Stop all media tracks when closing modal
+          const videoPreview = document.getElementById('videoPreview');
+          if (videoPreview.srcObject) {
+            videoPreview.srcObject.getTracks().forEach(track => track.stop());
+          }
+        };
 
-    document
-      .getElementById("createFolderBtn")
-      .addEventListener("click", () => this.createFolder());
+        if (captureVideoBtn) {
+          captureVideoBtn.addEventListener('click', async () => {
+            const deviceId = videoDevices.value;
+            const audioDeviceId = audioDevices.value;
+            if (!deviceId) {
+              this.showToast('Please select a camera first');
+              return;
+            }
+            if (!audioDeviceId) {
+              this.showToast('Please select a microphone for video recording');
+              return;
+            }
 
-    document
-      .getElementById("cancelFolderBtn")
-      .addEventListener("click", () => this.hideNewFolderInput());
+            // If already recording, stop it
+            if (this.currentMediaRecorder && this.currentMediaRecorder.state === 'recording') {
+              this.currentMediaRecorder.stop();
+              const videoPreview = document.getElementById('videoPreview');
+              if (videoPreview.srcObject) {
+                videoPreview.srcObject.getTracks().forEach(track => track.stop());
+                videoPreview.style.display = 'none';
+              }
+              document.getElementById('mediaPreview').style.display = 'none';
+              captureVideoBtn.innerHTML = '<i class="fas fa-video"></i> Record Video';
+              captureVideoBtn.style.backgroundColor = '#2ecc71';
+              return;
+            }
 
-    document
-      .getElementById("newFolderInput")
-      .addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-          this.createFolder();
-        } else if (e.key === "Escape") {
-          this.hideNewFolderInput();
+            // Start new recording with audio
+            const stream = await this.startMediaStream(deviceId, true);
+            if (stream) {
+              // Add audio track from selected microphone
+              try {
+                const audioStream = await navigator.mediaDevices.getUserMedia({
+                  audio: { deviceId: { exact: audioDeviceId } }
+                });
+                audioStream.getAudioTracks().forEach(track => {
+                  stream.addTrack(track);
+                });
+              } catch (error) {
+                console.error('Error adding audio track:', error);
+                this.showToast('Error accessing microphone');
+                stream.getTracks().forEach(track => track.stop());
+                return;
+              }
+
+              const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'video/webm;codecs=vp8,opus'
+              });
+              const chunks = [];
+
+              mediaRecorder.ondataavailable = e => chunks.push(e.data);
+              mediaRecorder.onstop = async () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                stream.getTracks().forEach(track => track.stop());
+                
+                // Create preview
+                const videoPreview = document.createElement('video');
+                videoPreview.controls = true;
+                videoPreview.src = URL.createObjectURL(blob);
+                const previewArea = document.getElementById('previewArea');
+                const filePreview = document.getElementById('filePreview');
+                previewArea.style.display = 'block';
+                filePreview.innerHTML = '';
+                filePreview.appendChild(videoPreview);
+                
+                // Create file for upload
+                const file = new File([blob], 'video.webm', { type: 'video/webm' });
+                document.getElementById('fileInput').files = new DataTransfer().files;
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                document.getElementById('fileInput').files = dataTransfer.files;
+
+                // Reset button state
+                captureVideoBtn.innerHTML = '<i class="fas fa-video"></i> Record Video';
+                captureVideoBtn.style.backgroundColor = '#2ecc71';
+              };
+
+              mediaRecorder.start();
+              this.currentMediaRecorder = mediaRecorder;
+              document.getElementById('mediaPreview').style.display = 'block';
+              document.getElementById('videoPreview').style.display = 'block';
+              
+              // Update button to show recording state
+              captureVideoBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Recording';
+              captureVideoBtn.style.backgroundColor = '#e74c3c';
+            }
+          });
         }
-      });
 
-    // Media insert buttons
-    document
-      .getElementById("insertImage")
-      .addEventListener("click", () => this.insertMedia("image"));
-    document
-      .getElementById("insertAudio")
-      .addEventListener("click", () => this.insertMedia("audio"));
-    document
-      .getElementById("insertVideo")
-      .addEventListener("click", () => this.insertMedia("video"));
-    document
-      .getElementById("insertIframe")
-      .addEventListener("click", () => this.insertIframe());
+        if (stopRecordingBtn) {
+          stopRecordingBtn.addEventListener('click', () => {
+            if (this.currentMediaRecorder && this.currentMediaRecorder.state === 'recording') {
+              this.currentMediaRecorder.stop();
+              document.getElementById('stopRecordingBtn').style.display = 'none';
+              document.getElementById('audioRecordingControls').style.display = 'none';
+              document.getElementById('captureAudioBtn').innerHTML = '<i class="fas fa-microphone"></i>';
+              document.getElementById('captureAudioBtn').style.backgroundColor = '#2ecc71';
+            }
+          });
+        }
 
-    // Add comment button handler
-    document
-      .getElementById("addComment")
-      .addEventListener("click", () => this.addComment());
+        selectFileBtn.onclick = () => fileInput.click();
 
-    // Format buttons
-    document
-      .querySelectorAll(".formatting-tools button[data-command]")
-      .forEach((button) => {
-        button.addEventListener("click", () => {
+        // Handle file selection
+        fileInput.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            await this.handleFileSelection(file, previewArea, filePreview);
+          }
+        };
+
+        // Handle drag and drop
+        dropZone.ondragover = (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = '#2ecc71';
+        };
+
+        dropZone.ondragleave = () => {
+          dropZone.style.borderColor = '#ccc';
+        };
+
+        dropZone.ondrop = async (e) => {
+          e.preventDefault();
+          dropZone.style.borderColor = '#ccc';
+          const file = e.dataTransfer.files[0];
+          if (file) {
+            await this.handleFileSelection(file, previewArea, filePreview);
+          }
+        };
+
+        // Handle file upload
+        uploadBtn.onclick = async () => {
+          const file = fileInput.files[0];
+          if (file) {
+            await this.uploadFile(file);
+            uploadModal.style.display = 'none';
+          }
+        };
+
+        // Setup media capture handlers
+        if (capturePhotoBtn) {
+          capturePhotoBtn.addEventListener('click', async () => {
+            const deviceId = videoDevices.value;
+            if (!deviceId) {
+              this.showToast('Please select a camera first');
+              return;
+            }
+            const stream = await this.startMediaStream(deviceId);
+            if (stream) {
+              const videoPreview = document.getElementById('videoPreview');
+              const shootPhotoBtn = document.getElementById('shootPhotoBtn');
+              videoPreview.style.display = 'block';
+              document.getElementById('mediaPreview').style.display = 'block';
+              shootPhotoBtn.style.display = 'block';
+              capturePhotoBtn.style.display = 'none';
+            }
+          });
+        }
+
+        const shootPhotoBtn = document.getElementById('shootPhotoBtn');
+        if (shootPhotoBtn) {
+          shootPhotoBtn.addEventListener('click', async () => {
+            const videoPreview = document.getElementById('videoPreview');
+            if (videoPreview.srcObject) {
+              const blob = await this.capturePhoto(videoPreview.srcObject);
+              if (blob) {
+                const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+                await this.handleFileSelection(file, previewArea, filePreview);
+                shootPhotoBtn.style.display = 'none';
+                capturePhotoBtn.style.display = 'block';
+              }
+            }
+          });
+        }
+
+        if (captureAudioBtn) {
+          captureAudioBtn.addEventListener('click', async () => {
+            const deviceId = audioDevices.value;
+            const mediaRecorder = await this.startRecording(deviceId);
+            if (mediaRecorder) {
+              this.currentMediaRecorder = mediaRecorder;
+            }
+          });
+        }
+
+        if (stopRecordingBtn) {
+          stopRecordingBtn.addEventListener('click', () => {
+            if (this.currentMediaRecorder && this.currentMediaRecorder.state === 'recording') {
+              this.currentMediaRecorder.stop();
+              document.getElementById('stopRecordingBtn').style.display = 'none';
+              document.getElementById('audioRecordingControls').style.display = 'none';
+              document.getElementById('captureAudioBtn').innerHTML = '<i class="fas fa-microphone"></i>';
+              document.getElementById('captureAudioBtn').style.backgroundColor = '#2ecc71';
+            }
+          });
+        }
+      }
+
+    // Quick Ask button 
+      if (quickAskBtn) {
+        quickAskBtn.addEventListener('click', () => {
+        this.handleQuickAsk();
+    });
+      }
+
+      // Sidebar toggle
+      if (toggleSidebarBtn) {
+        toggleSidebarBtn.addEventListener('click', () => this.toggleSidebar());
+      }
+
+      // New page button
+      if (newPageBtn) {
+        newPageBtn.addEventListener('click', () => this.createNewNote());
+      }
+
+      // New folder button and related events
+      if (newFolderBtn && createFolderBtn && cancelFolderBtn && newFolderInput) {
+        newFolderBtn.addEventListener('click', () => this.showNewFolderInput());
+        createFolderBtn.addEventListener('click', () => this.createFolder());
+        cancelFolderBtn.addEventListener('click', () => this.hideNewFolderInput());
+        newFolderInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            this.createFolder();
+          } else if (e.key === 'Escape') {
+            this.hideNewFolderInput();
+          }
+        });
+      }
+
+      // Format buttons
+      formatButtons.forEach((button) => {
+        button.addEventListener('click', () => {
           const command = button.dataset.command;
           if (command.startsWith('h')) {
-            // Handle heading commands
             this.formatBlock(command);
           } else {
             this.executeCommand(command);
@@ -1522,150 +1742,87 @@ by ${modelName}
         });
       });
 
+      // Text color
+      if (textColorInput) {
+        textColorInput.addEventListener('input', (e) => {
+          document.execCommand('foreColor', false, e.target.value);
+        });
+      }
 
-
-    // Text color
-    document.getElementById("textColor").addEventListener("input", (e) => {
-      document.execCommand("foreColor", false, e.target.value);
-    });
-
-    // Background color
-    document.getElementById("bgColor").addEventListener("input", (e) => {
-      document.execCommand("hiliteColor", false, e.target.value);
-    });
+      // Background color
+      if (bgColorInput) {
+        bgColorInput.addEventListener('input', (e) => {
+          document.execCommand('hiliteColor', false, e.target.value);
+        });
+      }
 
     // Add block button
-    document.getElementById("addBlockBtn").addEventListener("click", () => {
+      if (addBlockBtn) {
+        addBlockBtn.addEventListener('click', () => {
       this.addNewBlock();
     });
+      }
 
     // View source button
-    document.getElementById("viewSourceBtn").addEventListener("click", () => {
+      if (viewSourceBtn) {
+        viewSourceBtn.addEventListener('click', () => {
       this.toggleSourceView();
     });
+      }
 
     // Toggle editable button
-    document.getElementById("toggleEditableBtn").addEventListener("click", () => {
+      if (toggleEditableBtn) {
+        toggleEditableBtn.addEventListener('click', () => {
       this.toggleEditable();
     });
+      }
 
     // Save button
-    document.getElementById("saveNoteBtn").addEventListener("click", () => {
+      if (saveNoteBtn) {
+        saveNoteBtn.addEventListener('click', () => {
       this.saveNote();
     });
+      }
+
+      // Plain text button
+      if (plainTextBtn) {
+        plainTextBtn.addEventListener('click', () => this.convertToPlainText());
+      }
 
     // Auto-save on content changes
-    this.editor.addEventListener("input", () => {
+      if (this.editor) {
+        this.editor.addEventListener('input', () => {
       this.delayedSaveNote();
       this.updateTableOfContents();
     });
 
-    this.editor.addEventListener("paste", () => {
+        this.editor.addEventListener('paste', () => {
       this.delayedSaveNote();
     });
 
     // Handle keyboard shortcuts
-    this.editor.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
+        this.editor.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
         if (e.shiftKey) {
-          // Insert a single line break
           document.execCommand('insertLineBreak', false, null);
           e.preventDefault();
         } else {
-          // Insert a line break (instead of a new paragraph)
           document.execCommand('insertLineBreak', false, null);
           e.preventDefault();
         }
       }
-      if (e.key === "/" && !e.shiftKey) {
+          if (e.key === '/' && !e.shiftKey) {
         this.showBlockMenu(e);
       }
-      // Add Ctrl+Enter handler for quick ask
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();  // Prevent default behavior
+          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
         this.handleQuickAsk();
+          }
+        });
       }
-
-      // Detect '# ' to convert to H1
-      if (e.key === " " || e.key === "Enter") {
-        const selection = window.getSelection();
-        if (!selection.rangeCount) return;
-        const range = selection.getRangeAt(0);
-        const node = selection.anchorNode;
-        if (!node) return;
-
-        // Get text before the cursor
-        const textBeforeCursor = node.textContent.slice(0, range.endOffset);
-
-        // Check if the line starts with '# '
-        const hashMatch = textBeforeCursor.match(/^(#)\s$/);
-        if (hashMatch) {
-          e.preventDefault(); // Prevent the space character from being inserted
-
-          // Remove '# ' from the editor
-          node.textContent = node.textContent.slice(0, range.endOffset - 2) + node.textContent.slice(range.endOffset);
-
-          // Create an H1 element
-          const h1 = document.createElement("h1");
-          h1.textContent = ""; // Empty H1 ready for user input
-          h1.setAttribute("contenteditable", "true");
-          h1.setAttribute("placeholder", "Enter heading here...");
-
-          // Insert the H1 element at the cursor position
-          range.insertNode(h1);
-
-          // Move the cursor inside the H1
-          selection.removeAllRanges();
-          const newRange = document.createRange();
-          newRange.setStart(h1, 0);
-          newRange.collapse(true);
-          selection.addRange(newRange);
-        }
-      }
-
-      // Detect '```' to convert to code block
-      if (e.key === "`") {
-        const selection = window.getSelection();
-        if (!selection.rangeCount) return;
-        const range = selection.getRangeAt(0);
-        const node = selection.anchorNode;
-        if (!node) return;
-
-        // Get text before the cursor
-        const textBeforeCursor = node.textContent.slice(0, range.endOffset);
-
-        // Check if the last three characters are '```'
-        const backtickMatch = textBeforeCursor.match(/```$/);
-        if (backtickMatch) {
-          e.preventDefault(); // Prevent the backtick from being inserted
-
-          // Remove '```' from the editor
-          node.textContent = node.textContent.slice(0, range.endOffset - 3) + node.textContent.slice(range.endOffset);
-
-          // Create a code block
-          const pre = document.createElement("pre");
-          const code = document.createElement("code");
-          code.setAttribute("contenteditable", "true");
-          code.setAttribute("placeholder", "Enter code here...");
-          pre.appendChild(code);
-
-          // Insert the code block
-          range.insertNode(pre);
-
-          // Move the cursor inside the code block
-          selection.removeAllRanges();
-          const newRange = document.createRange();
-          newRange.setStart(code, 0);
-          newRange.collapse(true);
-          selection.addRange(newRange);
-        }
-      }
-    });
-
-    // Plain text button
-    document
-      .getElementById("plainTextBtn")
-      .addEventListener("click", () => this.convertToPlainText());
+    } catch (error) {
+      console.error('Error setting up event listeners:', error);
+    }
   }
 
   executeCommand(command, value = null) {
@@ -2288,8 +2445,22 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     const mainContent = document.querySelector(".main-content");
+    const editor = document.querySelector(".editor");
+    
+    if (sidebar && mainContent) {
     sidebar.classList.toggle("hidden");
     mainContent.classList.toggle("expanded");
+      
+      // Adjust editor width when sidebar is hidden/shown
+      if (editor) {
+        if (sidebar.classList.contains("hidden")) {
+          editor.style.paddingLeft = "20px";
+        } else {
+          editor.style.paddingLeft = "10px";
+
+        }
+      }
+    }
   }
 
   async loadFolderContents(folderId, folderElement) {
@@ -2478,6 +2649,327 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       }, 1000); // 1000 milliseconds = 1 second
     }
     // **New Code Ends Here**
+  }
+
+  async handleFileSelection(file, previewArea, filePreview) {
+    // Show preview area
+    previewArea.style.display = 'block';
+    filePreview.innerHTML = '';
+
+    // Handle different file types
+    if (file.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.style.maxWidth = '100%';
+      img.src = URL.createObjectURL(file);
+      filePreview.appendChild(img);
+    } else if (file.type.startsWith('video/')) {
+      const video = document.createElement('video');
+      video.controls = true;
+      video.style.maxWidth = '100%';
+      video.src = URL.createObjectURL(file);
+      filePreview.appendChild(video);
+    } else if (file.type.startsWith('audio/')) {
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.style.width = '100%';
+      audio.src = URL.createObjectURL(file);
+      filePreview.appendChild(audio);
+    } else {
+      filePreview.textContent = `Selected file: ${file.name} (${this.formatFileSize(file.size)})`;
+    }
+  }
+
+  formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  async calculateSHA1(file) {
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-1', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+  }
+
+  async uploadFile(file) {
+    try {
+      // Show loading spinner
+      this.showSpinner();
+
+      // Calculate SHA1 hash
+      const shaCode = await this.calculateSHA1(file);
+      const extension = file.name.split('.').pop().toLowerCase();
+      const uploadUrl = `https://sharefile.suisuy.eu.org/${shaCode}.${extension}`;
+
+      // Upload file
+      const response = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type
+        }
+      });
+
+      if (response.ok) {
+        // Create appropriate element based on file type
+        let element;
+
+        if (file.type.startsWith('image/')) {
+          element = document.createElement('img');
+          element.src = uploadUrl;
+          element.alt = file.name;
+          element.style.maxWidth = '100%';
+        } else if (file.type.startsWith('video/')) {
+          element = document.createElement('video');
+          element.src = uploadUrl;
+          element.controls = true;
+          element.style.maxWidth = '100%';
+        } else if (file.type.startsWith('audio/')) {
+          element = document.createElement('audio');
+          element.src = uploadUrl;
+          element.controls = true;
+          element.style.width = '100%';
+        } else {
+          element = document.createElement('iframe');
+          element.src = uploadUrl;
+          element.style.width = '100%';
+          element.style.height = '500px';
+          element.setAttribute('allowfullscreen', 'true');
+        }
+
+        // Create a new block for the media
+        const block = document.createElement('div');
+        block.className = 'block';
+        block.appendChild(element);
+
+        // Try to insert at selection, if no selection append to editor
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(block);
+        } else {
+          // If no selection, append to the end of editor
+          this.editor.appendChild(document.createElement('br'));
+          this.editor.appendChild(block);
+          // Scroll to the newly added content
+          block.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        this.showToast('File uploaded successfully!', 'success');
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      this.showToast('Failed to upload file: ' + error.message);
+    } finally {
+      this.hideSpinner();
+    }
+  }
+
+  // Add media device handling methods
+  async setupMediaDevices() {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      const audioDevices = devices.filter(device => device.kind === 'audioinput');
+
+      const videoSelect = document.getElementById('videoDevices');
+      const audioSelect = document.getElementById('audioDevices');
+
+      // Clear existing options
+      videoSelect.innerHTML = '<option value="">Select Camera</option>';
+      audioSelect.innerHTML = '<option value="">Select Microphone</option>';
+
+      // Add video devices and select first one by default
+      videoDevices.forEach((device, index) => {
+        const option = document.createElement('option');
+        option.value = device.deviceId;
+        option.text = device.label || `Camera ${videoSelect.length}`;
+        videoSelect.appendChild(option);
+        // Select first device by default
+        if (index === 0) {
+          option.selected = true;
+        }
+      });
+
+      // Add audio devices and select first one by default
+      audioDevices.forEach((device, index) => {
+        const option = document.createElement('option');
+        option.value = device.deviceId;
+        option.text = device.label || `Microphone ${audioSelect.length}`;
+        audioSelect.appendChild(option);
+        // Select first device by default
+        if (index === 0) {
+          option.selected = true;
+        }
+      });
+
+      // Show device selectors if devices are available
+      const deviceSelectors = document.querySelector('.device-selectors');
+      if (videoDevices.length > 0 || audioDevices.length > 0) {
+        deviceSelectors.style.display = 'flex';
+      }
+    } catch (error) {
+      console.error('Error enumerating devices:', error);
+      this.showToast('Error accessing media devices');
+    }
+  }
+
+  async startMediaStream(videoDeviceId = null, includeAudio = false) {
+    try {
+      const constraints = {
+        video: videoDeviceId ? { deviceId: { exact: videoDeviceId } } : true,
+        audio: includeAudio ? { echoCancellation: true, noiseSuppression: true } : false
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const videoPreview = document.getElementById('videoPreview');
+      videoPreview.srcObject = stream;
+      videoPreview.style.display = 'block';
+      document.getElementById('mediaPreview').style.display = 'block';
+      await videoPreview.play(); // Ensure video is playing before returning
+      return stream;
+    } catch (error) {
+      console.error('Error accessing media:', error);
+      this.showToast('Error accessing camera or microphone');
+      return null;
+    }
+  }
+
+  async capturePhoto(stream) {
+    const videoPreview = document.getElementById('videoPreview');
+    const canvas = document.getElementById('photoCanvas');
+    const context = canvas.getContext('2d');
+
+    try {
+      // Wait for video metadata to load
+      await new Promise((resolve) => {
+        if (videoPreview.readyState >= 2) {
+          resolve();
+        } else {
+          videoPreview.onloadeddata = () => resolve();
+        }
+      });
+
+    // Set canvas dimensions to match video
+    canvas.width = videoPreview.videoWidth;
+    canvas.height = videoPreview.videoHeight;
+
+    // Draw video frame to canvas
+    context.drawImage(videoPreview, 0, 0);
+
+    // Convert canvas to blob
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+      
+      // Stop the stream and hide video preview
+      stream.getTracks().forEach(track => track.stop());
+      videoPreview.srcObject = null;
+      videoPreview.style.display = 'none';
+      
+      // Create preview
+      const previewArea = document.getElementById('previewArea');
+      const filePreview = document.getElementById('filePreview');
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(blob);
+      img.style.maxWidth = '100%';
+      previewArea.style.display = 'block';
+      filePreview.innerHTML = '';
+      filePreview.appendChild(img);
+      
+      // Create file for upload
+      const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      document.getElementById('fileInput').files = dataTransfer.files;
+      
+      return blob;
+    } catch (error) {
+      console.error('Error capturing photo:', error);
+      this.showToast('Error capturing photo');
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      return null;
+    }
+  }
+
+  async startRecording(audioDeviceId = null) {
+    try {
+      // If already recording, stop it
+      if (this.currentMediaRecorder && this.currentMediaRecorder.state === 'recording') {
+        this.currentMediaRecorder.stop();
+        document.getElementById('captureAudioBtn').innerHTML = '<i class="fas fa-microphone"></i>';
+        document.getElementById('captureAudioBtn').style.backgroundColor = '#2ecc71';
+        return;
+      }
+
+      const constraints = {
+        audio: audioDeviceId ? { deviceId: { exact: audioDeviceId } } : true
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const mediaRecorder = new MediaRecorder(stream);
+      const chunks = [];
+      let startTime = Date.now();
+      let timerInterval;
+
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+        clearInterval(timerInterval);
+        document.getElementById('recordingTime').textContent = '00:00';
+        document.getElementById('stopRecordingBtn').style.display = 'none';
+        document.getElementById('audioRecordingControls').style.display = 'none';
+        document.getElementById('captureAudioBtn').innerHTML = '<i class="fas fa-microphone"></i>';
+        document.getElementById('captureAudioBtn').style.backgroundColor = '#2ecc71';
+        
+        // Create preview
+        const audioPreview = document.createElement('audio');
+        audioPreview.controls = true;
+        audioPreview.src = URL.createObjectURL(blob);
+        const previewArea = document.getElementById('previewArea');
+        const filePreview = document.getElementById('filePreview');
+        previewArea.style.display = 'block';
+        filePreview.innerHTML = '';
+        filePreview.appendChild(audioPreview);
+        
+        // Create file for upload
+        const file = new File([blob], 'recording.webm', { type: 'audio/webm' });
+        document.getElementById('fileInput').files = new DataTransfer().files;
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        document.getElementById('fileInput').files = dataTransfer.files;
+      };
+
+      // Update recording time
+      timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const seconds = (elapsed % 60).toString().padStart(2, '0');
+        document.getElementById('recordingTime').textContent = `${minutes}:${seconds}`;
+      }, 1000);
+
+      mediaRecorder.start();
+      document.getElementById('audioRecordingControls').style.display = 'flex';
+      document.getElementById('stopRecordingBtn').style.display = 'block';
+      document.getElementById('mediaPreview').style.display = 'block';
+      document.getElementById('captureAudioBtn').innerHTML = '<i class="fas fa-stop"></i>';
+      document.getElementById('captureAudioBtn').style.backgroundColor = '#e74c3c';
+
+      return mediaRecorder;
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      this.showToast('Error accessing microphone');
+      return null;
+    }
   }
 }
 

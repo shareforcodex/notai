@@ -148,10 +148,7 @@
                         <button class="dropbtn"><i class="fas fa-plus"></i> </button>
                         <div class="dropdown-content">
                             <button data-command="createLink"><i class="fas fa-link"></i> Link</button>
-                            <button id="insertImage"><i class="fas fa-image"></i> Image</button>
-                            <button id="insertAudio"><i class="fas fa-music"></i> Audio</button>
-                            <button id="insertVideo"><i class="fas fa-video"></i> Video</button>
-                            <button id="insertIframe"><i class="fas fa-window-maximize"></i> Embed</button>
+                            <button id="uploadFileBtn"><i class="fas fa-upload"></i> Upload File</button>
                             <button id="addComment"><i class="fas fa-comment"></i> Add Comment</button>
                         </div>
                     </div>
@@ -256,6 +253,60 @@
     <button id="codeCopyBtn" class="code-copy-btn" style="display: none;">
         <i class="fas fa-copy"></i>
     </button>
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Upload File</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="media-capture-controls">
+                    <div class="device-selectors">
+                        <select id="videoDevices" class="device-select">
+                            <option value="">Select Camera</option>
+                        </select>
+                        <select id="audioDevices" class="device-select">
+                            <option value="">Select Microphone</option>
+                        </select>
+                    </div>
+                    <div class="capture-buttons">
+                        <button id="capturePhotoBtn" class="capture-btn">
+                            <i class="fas fa-camera"></i> 
+                        </button>
+                        <button id="shootPhotoBtn" class="capture-btn" style="display: none;">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                        <button id="captureVideoBtn" class="capture-btn">
+                            <i class="fas fa-video"></i> 
+                        </button>
+                        <button id="captureAudioBtn" class="capture-btn">
+                            <i class="fas fa-microphone"></i> 
+                        </button>
+                    </div>
+                    <div id="mediaPreview" style="display: none;">
+                        <video id="videoPreview" autoplay playsinline style="display: none;"></video>
+                        <canvas id="photoCanvas" style="display: none;"></canvas>
+                        <div id="audioRecordingControls" style="display: none;">
+                            <span id="recordingTime">00:00</span>
+                            <button id="stopRecordingBtn" style="display: none;">Stop Recording</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="dropZone" style="border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 20px;">
+                    <p>Drag & drop files here or click to select</p>
+                    <input type="file" id="fileInput" style="display: none;" accept="*/*">
+                    <button id="selectFileBtn" style="padding: 10px; margin: 10px;">Select File</button>
+                </div>
+                <div id="previewArea" style="display: none; margin-top: 20px;">
+                    <h3>Preview:</h3>
+                    <div id="filePreview" style="max-width: 100%; margin-top: 10px;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="uploadBtn" class="save-settings-btn">Upload</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

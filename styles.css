@@ -144,20 +144,31 @@ h3{
     background: #e0e0e0;
 }
 
-.sidebar.hidden {
-    margin-left: -250px;
-}
-
-.main-content.expanded {
-    margin-left: 0;
-    padding-left: 50px;  /* Add padding when sidebar is hidden */
-}
-
 .sidebar {
     width: 180px;
     background-color: #f7f7f7;
     border-right: 1px solid #e0e0e0;
     padding: 20px;
+    transition: margin-left 0.3s ease;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.sidebar.hidden {
+    margin-left: -180px;
+}
+
+.main-content {
+    margin-left: 180px;
+    transition: margin-left 0.3s ease;
+    width: calc(100vw - 180px);
+}
+
+.main-content.expanded {
+    margin-left: 0;
+    width: 100vw;
 }
 
 .sidebar-header {
@@ -512,12 +523,13 @@ h3{
 
 .editor {
     flex: 1;
-    padding-left: 40px;
+    padding-left: 20px;
     overflow-y: auto;
     background-color: #fff;
     scrollbar-color: rgb(219, 248, 219) white;
-    scrollbar-width:thin;
-   
+    scrollbar-width: thin;
+    transition: width 0.3s ease;
+    width: 96%;
 }
 
 [contenteditable=true]:empty:before {
@@ -535,23 +547,12 @@ h3{
     transition: background-color 0.2s;
 }
 
-.block::after {
-    /* content: "\A";
-    white-space: pre; */
-}
+
 
 .block:hover {
     background-color: #f8f9fa;
 }
 
-/* Alternating block colors */
-/* .block:nth-child(odd) {
-    background-color: #f0f8ff; /* Light blue */
-} */
-
-/* .block:nth-child(even) {
-    background-color: #f5f5f5; /* Light gray */
-} */
 
 /* Different block type colors */
 
@@ -841,7 +842,7 @@ pre code {
   }
 
 .save-settings-btn {
-    position:;
+    position: relative;
     bottom: 0;
     padding: 10px 20px;
     background-color: #2ecc71 !important;
@@ -887,9 +888,6 @@ pre code {
 
 
 
-.tooltip-header .close-tooltip {
-    
-}
 
 .tooltip-header .close-tooltip:hover {
     color: #333;
@@ -1209,4 +1207,218 @@ pre code {
     z-index: 99;
     box-shadow: 0 16px 16px rgba(0, 0, 0, 0.3);
     border: 2px solid #2ecc71;
+}
+
+/* Upload Modal Styles */
+#uploadModal .modal-content {
+    max-width: 600px;
+}
+
+#dropZone {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+#dropZone:hover {
+    background-color: #f0f0f0;
+    border-color: #2ecc71;
+}
+
+#dropZone.dragover {
+    background-color: #e8f5e9;
+    border-color: #2ecc71;
+}
+
+#selectFileBtn {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+#selectFileBtn:hover {
+    background-color: #27ae60;
+}
+
+#previewArea {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+#filePreview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+    max-height: 300px;
+    overflow: auto;
+}
+
+#filePreview img,
+#filePreview video {
+    max-width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+}
+
+#filePreview audio {
+    width: 100%;
+}
+
+#uploadBtn {
+    margin-top: 20px;
+}
+
+.media-capture-controls {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.capture-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.capture-btn {
+    flex: 1;
+    padding: 10px;
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.capture-btn:hover {
+    background-color: #27ae60;
+}
+
+.capture-btn i {
+    font-size: 16px;
+}
+
+.device-selectors {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.device-select {
+    flex: 1;
+    width: 80px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.capture-buttons {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.capture-btn {
+    flex: 1;
+    padding: 10px;
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.capture-btn:hover {
+    background-color: #27ae60;
+}
+
+.capture-btn i {
+    font-size: 16px;
+}
+
+#mediaPreview {
+    width: 100%;
+    max-width: 100%;
+    margin: 15px 0;
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#videoPreview {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+}
+
+#shootPhotoBtn {
+    background-color: #e74c3c;
+}
+
+#shootPhotoBtn:hover {
+    background-color: #c0392b;
+}
+
+#stopRecordingBtn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#stopRecordingBtn:hover {
+    background-color: #c0392b;
+}
+
+#audioRecordingControls {
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+#recordingTime {
+    font-family: monospace;
+    font-size: 18px;
+    color: #e74c3c;
 }
