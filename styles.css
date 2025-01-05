@@ -730,7 +730,7 @@ pre code {
     border: 1px solid #888;
     border-radius: 8px;
     width: 90%;
-    max-height: 80vh;
+    height: 90vh;
     overflow-y: auto;
     scrollbar-width: thin;
 }
@@ -945,7 +945,7 @@ pre code {
 .quick-ask-btn {
     position: fixed;
     left: 20px;
-    bottom: 40px;
+    bottom: 20px;
     background: #2ecc71;
     color: white;
     padding: 15px;
