@@ -2760,10 +2760,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         const fileInfoDiv = document.createElement('div');
         fileInfoDiv.style.fontSize = '12px';
         fileInfoDiv.style.color = '#666';
-        fileInfoDiv.style.marginBottom = '8px';
-        fileInfoDiv.style.padding = '8px';
-        fileInfoDiv.style.backgroundColor = '#f8f9fa';
-        fileInfoDiv.style.borderRadius = '4px';
+        fileInfoDiv.style.margin = '0px';
+        fileInfoDiv.style.padding = '0px';
         fileInfoDiv.innerHTML = `
           <strong> ${uploadUrl}</strong><br>
           <strong>Type:</strong> ${file.type || 'Unknown'} 
