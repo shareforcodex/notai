@@ -524,7 +524,6 @@ h3{
     scrollbar-color: rgb(219, 248, 219) white;
     scrollbar-width: thin;
     transition: width 0.3s ease;
-    width: 96%;
 }
 
 [contenteditable=true]:empty:before {
