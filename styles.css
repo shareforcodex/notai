@@ -146,7 +146,9 @@ h3{
 }
 
 .sidebar {
-    width: 180px;
+    font-size: small;
+    width: 30vw;
+    max-width: 200px;
     background-color: #f7f7f7;
     border-right: 1px solid #e0e0e0;
     padding: 20px;
@@ -161,7 +163,8 @@ h3{
 }
 
 .main-content {
-    margin-left: 180px;
+    margin-left: 30vw;
+    
     width: calc(100vw - 180px);
 }
 
@@ -332,6 +335,8 @@ h3{
 }
 
 .sidebar-btn {
+    
+    font-size: xx-small;
     width: 100%;
     padding: 8px;
     background: none;
@@ -728,7 +733,6 @@ pre code {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
 }
 
 .close {
@@ -1140,7 +1144,7 @@ pre code {
 }
 
 #profileModal .modal-footer {
-    margin-top: 20px;
+  
     text-align: right;
 }
 
@@ -1207,7 +1211,6 @@ pre code {
 #dropZone {
     border: 2px dashed #ccc;
     border-radius: 8px;
-    padding: 40px 20px;
     text-align: center;
     background-color: #f9f9f9;
     transition: all 0.3s ease;
@@ -1240,8 +1243,8 @@ pre code {
 }
 
 #previewArea {
-    margin-top: 20px;
-    padding: 20px;
+   
+    margin-top: 0px !important;
     background-color: #f9f9f9;
     border-radius: 8px;
 }
@@ -1264,13 +1267,9 @@ pre code {
     width: 100%;
 }
 
-#uploadBtn {
-    margin-top: 20px;
-}
+
 
 .media-capture-controls {
-    margin-bottom: 20px;
-    padding: 15px;
     background-color: #f9f9f9;
     border-radius: 8px;
 }
@@ -1308,7 +1307,6 @@ pre code {
 .device-selectors {
     display: flex;
     gap: 10px;
-    margin-bottom: 15px;
     flex-wrap: wrap;
     background: #f5f5f5;
     border-radius: 8px;

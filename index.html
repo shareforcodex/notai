@@ -265,17 +265,12 @@
                     <p>Drag & drop files here or click to select</p>
                     <input type="file" id="fileInput" style="display: none;" accept="*/*">
                     <button id="selectFileBtn" style="padding: 10px; margin: 10px;">Select File</button>
+                    <button id="uploadBtn" class="save-settings-btn">Upload</button>
+
                 </div>
 
                 <div class="media-capture-controls">
-                    <div class="device-selectors">
-                        <select id="videoDevices" class="device-select">
-                            <option value="">Select Camera</option>
-                        </select>
-                        <select id="audioDevices" class="device-select">
-                            <option value="">Select Microphone</option>
-                        </select>
-                    </div>
+                   
                     <div class="capture-buttons">
                         <button id="capturePhotoBtn" class="capture-btn">
                             <i class="fas fa-camera"></i> 
@@ -289,6 +284,14 @@
                         <button id="captureAudioBtn" class="capture-btn">
                             <i class="fas fa-microphone"></i> 
                         </button>
+                    </div>
+                    <div class="device-selectors">
+                        <select id="videoDevices" class="device-select">
+                            <option value="">Select Camera</option>
+                        </select>
+                        <select id="audioDevices" class="device-select">
+                            <option value="">Select Microphone</option>
+                        </select>
                     </div>
                     <div id="mediaPreview" style="display: none;">
                         <video id="videoPreview" autoplay playsinline style="display: none;"></video>
@@ -306,7 +309,6 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="uploadBtn" class="save-settings-btn">Upload</button>
             </div>
         </div>
     </div>

@@ -2669,7 +2669,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       <strong>Type:</strong> ${file.type || 'Unknown'}<br>
       <strong>Size:</strong> ${this.formatFileSize(file.size)}
     `;
-    filePreview.appendChild(fileInfo);
 
     // Handle different file types
     if (file.type.startsWith('image/')) {
@@ -2677,6 +2676,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       img.style.maxWidth = '100%';
       img.src = URL.createObjectURL(file);
       filePreview.appendChild(img);
+      
     } else if (file.type.startsWith('video/')) {
       const video = document.createElement('video');
       video.controls = true;
@@ -2697,6 +2697,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       fileDetails.textContent = `File ready for upload`;
       filePreview.appendChild(fileDetails);
     }
+    filePreview.appendChild(fileInfo);
+
   }
 
   formatFileSize(bytes) {
@@ -2793,8 +2795,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Create a new block for the media
         const block = document.createElement('div');
         block.className = 'block';
-        block.appendChild(fileInfoDiv);
         block.appendChild(element);
+        block.appendChild(fileInfoDiv);
 
         // Try to insert at selection, if no selection append to editor
         const selection = window.getSelection();
@@ -2944,8 +2946,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       
       previewArea.style.display = 'block';
       filePreview.innerHTML = '';
-      filePreview.appendChild(fileInfo);
       filePreview.appendChild(img);
+      filePreview.appendChild(fileInfo);
       
       // Create file for upload
       const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
@@ -3016,9 +3018,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         const filePreview = document.getElementById('filePreview');
         previewArea.style.display = 'block';
         filePreview.innerHTML = '';
-        filePreview.appendChild(fileInfo);
         filePreview.appendChild(audioPreview);
-        
+        filePreview.appendChild(fileInfo);
+
         // Create file for upload
         const file = new File([blob], 'recording.webm', { type: 'audio/webm' });
         document.getElementById('fileInput').files = new DataTransfer().files;
