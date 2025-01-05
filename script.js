@@ -1874,7 +1874,8 @@ by ${modelName}
     // Create new block for non-selected text case
     const block = document.createElement("div");
     block.className = "block";
-    block.innerHTML = '\n';
+    block.innerHTML = '\n\n';
+    
 
     // Add highlight effect
     block.classList.add('highlight');
@@ -1890,18 +1891,20 @@ by ${modelName}
 
     // Insert the block after the cursor position
     const blankLine = document.createElement('br');
+    const blankLine2 = document.createElement('br');
     
     if (currentBlock) {
       // Insert after current block
       currentBlock.after(blankLine);
       blankLine.after(block);
-      block.after(document.createTextNode('\n'));
+      block.after(document.createElement('br'));
     } else {
       // Insert at cursor position
       range.collapse(false); // Collapse to end
-      range.insertNode(block);
       range.insertNode(blankLine);
-      block.after(document.createTextNode('\n'));
+      blankLine.after(block);
+      block.after(document.createElement('br'));
+
     }
 
     // Focus the new block and move cursor inside

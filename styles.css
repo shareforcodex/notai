@@ -109,7 +109,7 @@ h3{
 
 .block{
     position: static;
-    max-height: 300px;
+    max-height: 60vh;
     min-height: 100px;
     overflow: auto;
     scrollbar-color: lightblue white;
