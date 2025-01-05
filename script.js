@@ -2659,24 +2659,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     previewArea.style.display = 'block';
     filePreview.innerHTML = '';
 
-    // Create and add file info element
-    const fileInfo = document.createElement('div');
-    fileInfo.style.fontSize = '12px';
-    fileInfo.style.color = '#666';
-    fileInfo.style.marginBottom = '8px';
-    fileInfo.innerHTML = `
-      <strong>File:</strong> ${file.name}<br>
-      <strong>Type:</strong> ${file.type || 'Unknown'}<br>
-      <strong>Size:</strong> ${this.formatFileSize(file.size)}
-    `;
-
     // Handle different file types
     if (file.type.startsWith('image/')) {
       const img = document.createElement('img');
       img.style.maxWidth = '100%';
       img.src = URL.createObjectURL(file);
       filePreview.appendChild(img);
-      
     } else if (file.type.startsWith('video/')) {
       const video = document.createElement('video');
       video.controls = true;
@@ -2697,8 +2685,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       fileDetails.textContent = `File ready for upload`;
       filePreview.appendChild(fileDetails);
     }
-    filePreview.appendChild(fileInfo);
 
+    // Add simple file info for preview only
+    const previewInfo = document.createElement('div');
+    previewInfo.style.fontSize = '12px';
+    previewInfo.style.color = '#666';
+    previewInfo.style.marginTop = '8px';
+    previewInfo.textContent = `${file.name} (${this.formatFileSize(file.size)})`;
+    filePreview.appendChild(previewInfo);
   }
 
   formatFileSize(bytes) {
@@ -2719,15 +2713,15 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   async uploadFile(file) {
     try {
-      // Show loading spinner
       this.showSpinner();
-
-      // Calculate SHA1 hash
-      const shaCode = await this.calculateSHA1(file);
-      const extension = file.name.split('.').pop().toLowerCase();
-      const uploadUrl = `https://sharefile.suisuy.eu.org/${shaCode}.${extension}`;
+      const sha1Hash = await this.calculateSHA1(file);
+      const extension = file.name.split('.').pop();
+      const uploadUrl = `https://sharefile.suisuy.eu.org/${sha1Hash}.${extension}`;
 
       // Upload file
+      const formData = new FormData();
+      formData.append('file', file);
+
       const response = await fetch(uploadUrl, {
         method: 'PUT',
         body: file,
@@ -2752,19 +2746,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           }
         }
 
-        // Create file info div
+        // Create detailed file info for note insertion
         const fileInfoDiv = document.createElement('div');
         fileInfoDiv.style.fontSize = '12px';
         fileInfoDiv.style.color = '#666';
-        fileInfoDiv.style.marginBottom = '8px';
-        fileInfoDiv.style.padding = '8px';
-        fileInfoDiv.style.backgroundColor = '#f8f9fa';
-        fileInfoDiv.style.borderRadius = '4px';
+        fileInfoDiv.style.marginTop = '8px';
         fileInfoDiv.innerHTML = `
           <strong>File:</strong> ${file.name}<br>
           <strong>Type:</strong> ${file.type || 'Unknown'}<br>
-          <strong>Size:</strong> ${this.formatFileSize(file.size)}<br>
-          ${deviceInfo}
+          <strong>Size:</strong> ${this.formatFileSize(file.size)}
+          ${deviceInfo ? '<br>' + deviceInfo : ''}
         `;
 
         // Create appropriate element based on file type
@@ -2798,21 +2789,50 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         block.appendChild(element);
         block.appendChild(fileInfoDiv);
 
-        // Try to insert at selection, if no selection append to editor
+        // Try to insert at selection, if no selection insert at top
         const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
+        if (selection.rangeCount > 0 && this.editor.contains(selection.getRangeAt(0).commonAncestorContainer)) {
           const range = selection.getRangeAt(0);
-        range.deleteContents();
-        range.insertNode(block);
+          range.deleteContents();
+          range.insertNode(block);
         } else {
-          // If no selection, append to the end of editor
-          this.editor.appendChild(document.createElement('br'));
-          this.editor.appendChild(block);
-          // Scroll to the newly added content
-          block.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          // If no selection or selection outside editor, insert at top
+          const firstBlock = this.editor.firstChild;
+          if (firstBlock) {
+            this.editor.insertBefore(block, firstBlock);
+            this.editor.insertBefore(document.createElement('br'), firstBlock);
+          } else {
+            this.editor.appendChild(block);
+            this.editor.appendChild(document.createElement('br'));
+          }
+          block.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
+        // Hide upload modal and reset its state
+        const uploadModal = document.getElementById('uploadModal');
+        const previewArea = document.getElementById('previewArea');
+        const filePreview = document.getElementById('filePreview');
+        const fileInput = document.getElementById('fileInput');
+        
+        uploadModal.style.display = 'none';
+        previewArea.style.display = 'none';
+        filePreview.innerHTML = '';
+        fileInput.value = '';
+        
+        // Reset media preview elements
+        const mediaPreview = document.getElementById('mediaPreview');
+        const videoPreview = document.getElementById('videoPreview');
+        const audioRecordingControls = document.getElementById('audioRecordingControls');
+        
+        mediaPreview.style.display = 'none';
+        videoPreview.style.display = 'none';
+        videoPreview.srcObject = null;
+        audioRecordingControls.style.display = 'none';
+
         this.showToast('File uploaded successfully!', 'success');
+        
+        // Save note after successful upload
+        await this.saveNote();
       } else {
         throw new Error('Upload failed');
       }
@@ -2910,14 +2930,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         }
       });
 
-    // Set canvas dimensions to match video
-    canvas.width = videoPreview.videoWidth;
-    canvas.height = videoPreview.videoHeight;
+      // Set canvas dimensions to match video
+      canvas.width = videoPreview.videoWidth;
+      canvas.height = videoPreview.videoHeight;
 
-    // Draw video frame to canvas
-    context.drawImage(videoPreview, 0, 0);
+      // Draw video frame to canvas
+      context.drawImage(videoPreview, 0, 0);
 
-    // Convert canvas to blob
+      // Convert canvas to blob
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
       
       // Stop the stream and hide video preview
@@ -2954,6 +2974,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(file);
       document.getElementById('fileInput').files = dataTransfer.files;
+
+      // Save note after successful capture
+      await this.saveNote();
       
       return blob;
     } catch (error) {
@@ -3027,6 +3050,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
         document.getElementById('fileInput').files = dataTransfer.files;
+
+        // Save note after successful recording
+        await this.saveNote();
       };
 
       // Update recording time
