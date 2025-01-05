@@ -2461,9 +2461,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       // Adjust editor width when sidebar is hidden/shown
       if (editor) {
         if (sidebar.classList.contains("hidden")) {
-          editor.style.paddingLeft = "20px";
+          editor.style.paddingLeft = "15px";
         } else {
-          editor.style.paddingLeft = "0px";
+          editor.style.paddingLeft = "5px";
 
         }
       }
