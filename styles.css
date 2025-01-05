@@ -165,12 +165,10 @@ h3{
 .main-content {
     margin-left: 30vw;
     
-    width: calc(100vw - 180px);
 }
 
 .main-content.expanded {
     margin-left: 0;
-    width: 100vw;
 }
 
 .sidebar-header {

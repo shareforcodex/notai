@@ -2805,17 +2805,17 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         range.deleteContents();
         range.insertNode(block);
         block.after(document.createElement('br'));
-        block.scrollIntoView({ behavior: 'smooth' });
         } else {
           // If no selection, append to the end of editor
           this.editor.prepend(block);
           this.editor.prepend(document.createElement('br'));
 
           // Scroll to the newly added content
-          block.scrollIntoView({ behavior: 'smooth' });
         }
+        block.scrollIntoView(true,{ behavior: 'smooth' });
 
         this.showToast('File uploaded successfully!', 'success');
+        this.saveNote();
       } else {
         throw new Error('Upload failed');
       }
