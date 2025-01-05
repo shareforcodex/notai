@@ -130,7 +130,7 @@ h3{
 
 .toggle-sidebar-btn {
     position: absolute;
-    left: 10px;
+    left: 0;
     top: 10px;
     z-index: 1000;
     background: #f7f7f7;
