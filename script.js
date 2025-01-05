@@ -2463,7 +2463,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         if (sidebar.classList.contains("hidden")) {
           editor.style.paddingLeft = "20px";
         } else {
-          editor.style.paddingLeft = "10px";
+          editor.style.paddingLeft = "0px";
 
         }
       }
