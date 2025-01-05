@@ -2202,7 +2202,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         if (note.folder_id === folderId) {
           const noteElement = document.createElement("div");
           noteElement.className = "page-item";
-          noteElement.textContent = note.title || "Untitled Note";
+          noteElement.textContent = note.title || "Untitled";
           noteElement.onclick = () => this.loadNote(note.note_id);
           pagesList.appendChild(noteElement);
         }
@@ -2402,7 +2402,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
 
       // Get current title from the title element
-      const currentTitle = document.getElementById("noteTitle").textContent.trim() || "Untitled Note";
+      const currentTitle = document.getElementById("noteTitle").textContent.trim() || "Untitled";
       this.currentNoteTitle = currentTitle;
 
       const result = await this.apiRequest("POST", `/notes`, {
@@ -2497,7 +2497,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         noteElement.className = "page-item folder-note";
         noteElement.innerHTML = `
                     <i class="fas fa-file-alt"></i>
-                    <span>${note.title || "Untitled Note"}</span>
+                    <span>${note.title || "Untitled"}</span>
                 `;
         noteElement.onclick = () => this.loadNote(note.note_id);
         contentContainer.appendChild(noteElement);
