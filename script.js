@@ -1900,10 +1900,14 @@ by ${modelName}
       block.after(document.createElement('br'));
     } else {
       // Insert at cursor position
-      range.collapse(false); // Collapse to end
-      range.insertNode(blankLine);
-      blankLine.after(block);
-      block.after(document.createElement('br'));
+      if(this.editor.contains(range.commonAncestorContainer)){
+          range.collapse(false); // Collapse to end
+          range.insertNode(blankLine);
+          blankLine.after(block);
+          block.after(document.createElement('br'));
+
+      }
+      
 
     }
 
