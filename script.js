@@ -2761,10 +2761,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         fileInfoDiv.style.backgroundColor = '#f8f9fa';
         fileInfoDiv.style.borderRadius = '4px';
         fileInfoDiv.innerHTML = `
-          <strong>File:</strong> ${file.name}<br>
-          <strong>Type:</strong> ${file.type || 'Unknown'}<br>
-          <strong>Size:</strong> ${this.formatFileSize(file.size)}<br>
-          ${deviceInfo}
+          <strong> ${uploadUrl}</strong><br>
+          <strong>Type:</strong> ${file.type || 'Unknown'} 
+          <strong>Size:</strong> ${this.formatFileSize(file.size)} 
+          ${deviceInfo} <br>
+          ${new Date().toLocaleString()}
         `;
 
         // Create appropriate element based on file type
@@ -2793,6 +2794,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         }
 
         // Create a new block for the media
+        let brelement = document.createElement('br');
         const block = document.createElement('div');
         block.className = 'block';
         block.appendChild(element);
@@ -2800,13 +2802,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
         // Try to insert at selection, if no selection append to editor
         const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
+          //check range inside editor
+        if (selection.rangeCount > 0 && this.editor.contains(selection.getRangeAt(0)?.commonAncestorContainer) ) {
           const range = selection.getRangeAt(0);
-        range.deleteContents();
-        range.insertNode(block);
+          
+        range.insertNode(brelement);
+        brelement.after(block);
         block.after(document.createElement('br'));
         } else {
           // If no selection, append to the end of editor
+          this.editor.prepend(brelement);
           this.editor.prepend(block);
           this.editor.prepend(document.createElement('br'));
 
