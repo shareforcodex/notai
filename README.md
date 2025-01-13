@@ -44,8 +44,7 @@
 
 ## Introduction
 
-Welcome to the **Notion Editor WebApp**—your all-in-one solution for creating, organizing, and managing notes with the added power of AI assistance. Whether you're a student, professional, or casual note-taker, our intuitive interface and robust features are designed to enhance your productivity and streamline your workflow.
-
+Welcome to the **Notaiui WebApp** , this is all new UI for interaction with AI LLM models.
 
 
 ## Getting Started

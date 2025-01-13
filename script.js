@@ -295,8 +295,8 @@ class HTMLEditor {
       return await marked(response.text());
     } catch (error) {
       console.error("Failed to fetch README.md:", error);
-      return `Welcome to your default note! 
-go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#introduction"> Help </a>  to see how to use the Notetaking app powered by LLM
+      return `Welcome ! this is all new UI to interact with ai models,  you can write your note here, select some text and use the AI toolbar to generate content based on your text. 
+go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#introduction"> Help </a>  to see how to use the Notetaking app powered by LLM
 
 `; // Fallback content
     }
