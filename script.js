@@ -7,7 +7,7 @@ let currentUser = {
 class HTMLEditor {
   constructor() {
     // Define DEFAULT_SYSTEM_PROMPT as a class property
-    this.DEFAULT_SYSTEM_PROMPT = "you are a assistant to help user write better doc now,  only output html body innerHTML code  to me, don't put it in ```html ```,do not use markdown, you can put a head h2 with 2 to 5 words at start to summary the doc; use inline style to avoid affect parent element, make the html doc looks beautiful, clean and mordern.";
+    this.DEFAULT_SYSTEM_PROMPT = "you are a assistant to help user write better doc now,  only output html body innerHTML code  to me, don't put it in ```html ```,do not use markdown, you can put a head h2 with 2 to 5 words at start to summary the doc; use inline style to avoid affect parent element, make the html doc looks beautiful, clean and mordern.  \n you can use image to show the concept when needed, like show a word definition via image, the img get api is simple, put the prompt after https://getsananimg.suisuy.eu.org/(you prompt for image here) , so you can just put it in a img tag, set img height to 300px";
 
     // Initialize core editor elements with error checking
     const editor = document.getElementById("editor");
