@@ -13,6 +13,57 @@ commit all change after finish the task with clean and simple commit message
 
 ## tasks:
 
+7. support gpt4o audio, this is gpt4o audio example
+```
+curl "https://***/chatCompletions/chat/"
+    -H "Content-Type: application/json"
+    -H "Authorization: Bearer $API_KEY"
+    -d '{
+      "model": "gpt-4o-audio-preview",
+      "modalities": ["text", "audio"],
+      "audio": { "voice": "alloy", "format": "wav" },
+      "messages": [
+        {
+          "role": "user",
+          "content": [
+            { "type": "text", "text": "What is in this recording?" },
+            { 
+              "type": "input_audio", 
+              "input_audio": { 
+                "data": "<base64 bytes here>", 
+                "format": "wav" 
+              }
+            }
+          ]
+        }
+      ]
+    }'
+
+
+//it return:
+{
+  "index": 0,
+  "message": {
+    "role": "assistant",
+    "content": 'some message',
+    "refusal": null,
+    "audio": {
+      "id": "audio_abc123",
+      "expires_at": 1729018505,
+      "data": "<base64str for audio>",
+      "transcript": "Yes, golden retrievers are known to be ..."
+    }
+  },
+  "finish_reason": "stop"
+}
+
+```
+first add a new input item called 'else' in ai setting/models , let user input more config like "modalities": ["text", "audio"],
+      "audio": { "voice": "alloy", "format": "wav" }, it will append raw string to request body 
+when get response, you should append content and audio/data base64str to a audio tag to the block if they are not null
+
+
+
 6.1  there bugs for task 6, when stop record audio, it not show preview and i can not upload too, same issur for task photo and video. ensure user can stop all devices when click stop button, then preview recoreded file and ready for upload
 and i can not fold the side bar when click fold button 
 

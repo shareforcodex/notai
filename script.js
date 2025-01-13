@@ -223,6 +223,16 @@ class HTMLEditor {
         ? "https://gmapi.suisuy.eu.org/corsproxy?q=https://models.inference.ai.azure.com/chat/completions"
         : `${API_BASE_URL}${endpoint}`;
 
+       //get else from config and combine it to body
+    let elseconfig={}
+    try {
+    
+    elseconfig=JSON.parse(this.aiSettings.models.find(m => m.model_id === body.model).else || '{}');
+    console.log('else config',elseconfig);      
+    } catch (error) {
+      console.log('error when parse else config',error)
+    }
+    body = { ...body, ...elseconfig };
       const response = await fetch(
         isAIRequest && body?.model
           ? (this.aiSettings.models.find(m => m.model_id === body.model)?.url ||
@@ -230,7 +240,7 @@ class HTMLEditor {
           : url, {
         method,
         headers,
-        body: body ? JSON.stringify(body) : null,
+        body: method==='GET'? null: body ? JSON.stringify(body) : null,
       });
 
       const data = await response.json();
@@ -583,47 +593,53 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           range.surroundContents(commentedSpan);
         } catch (e) {
           // Fallback method for complex selections
-          // 1. Extract the range contents
           const contents = range.extractContents();
-
-          // 2. Append the contents to the commented span
           commentedSpan.appendChild(contents);
-
-          // 3. Insert the commented span at the range start
           range.insertNode(commentedSpan);
         }
       }
 
       // Make parallel requests to selected models
-      const requests = selectedModels.map(modelName =>
-        this.apiRequest(
-          "POST",
-          "",
-          {
-            messages: [
-              {
+      const requests = selectedModels.map(modelName => {
+        const modelConfig = this.aiSettings.models.find(m => m.model_id === modelName);
+        let requestBody = {
+          messages: [
+            {
               role: "system",
               content: this.aiSettings.systemPrompt,
-              },
-              {
+            },
+            {
               role: "user",
               content: prompt,
-              },
-            ],
-            model: modelName,
-            temperature: 0.7,
-            max_tokens: 3999,
-            top_p: 1,
-          },
+            },
+          ],
+          model: modelName,
+          temperature: 0.7,
+          max_tokens: 3999,
+          top_p: 1,
+        };
+
+        // If model has additional configuration in 'else' field, parse and merge it
+        if (modelConfig && modelConfig.else) {
+          try {
+            const additionalConfig = JSON.parse(modelConfig.else);
+            requestBody = { ...requestBody, ...additionalConfig };
+          } catch (e) {
+            console.warn(`Failed to parse additional configuration for model ${modelName}:`, e);
+          }
+        }
+
+        return this.apiRequest(
+          "POST",
+          "",
+          requestBody,
           true
-        )
-      );
+        );
+      });
 
-      // Keep track of completed responses
       let completedResponses = 0;
-      const totalResponses = selectedModels.length;
+      const totalResponses = requests.length;
 
-      // Process each request as it completes
       requests.forEach((request, index) => {
         const modelName = selectedModels[index];
 
@@ -643,16 +659,26 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
           if (response.choices && response.choices[0]) {
             const aiResponse = response.choices[0].message.content;
+            let audioResponse = response.choices[0].message.audio;
 
             if (useComment) {
               // Add this response to the comment
               const currentComment = commentedSpan.getAttribute("data-comment") || "";
-              const newResponse = `<h4 onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });" style="position: sticky; top: 0; background: white; z-index: 100; padding: 0px 0; margin: 0; font-size: small; text-decoration: underline;">${modelName}</h4>
+              let newResponse = `<h4 onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });" style="position: sticky; top: 0; background: white; z-index: 100; padding: 0px 0; margin: 0; font-size: small; text-decoration: underline;">${modelName}</h4>
 <div style="display:block">
-${marked.parse(aiResponse)}</div>`;
+${marked.parse(aiResponse)}`;
+
+              // Add audio player if audio response is available
+              if (audioResponse && audioResponse.data) {
+                newResponse += `<audio controls style="width: 100%; margin-top: 10px;">
+  <source src="data:audio/wav;base64,${audioResponse.data}" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>`;
+              }
+
+              newResponse += '</div>';
               const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
               commentedSpan.setAttribute("data-comment", updatedComment);
-
 
               // Show or update tooltip for all responses
               const tooltip = document.getElementById('commentTooltip');
@@ -663,66 +689,7 @@ ${marked.parse(aiResponse)}</div>`;
                 setTimeout(() => {
                   document.querySelector('.comment-tooltip').classList.remove('highlight');
                 }, 1000);
-
               }
-            } else {
-              // Create a new block for longer responses
-              const block = document.createElement("div");
-              block.className = "block";
-              block.classList.add('highlight');
-
-              block.innerHTML=aiResponse+ `
-
-by ${modelName}
-`;
-              // block.innerHTML = customTool ? `<h2>Answer for ${customTool.name} by ${modelName}
-              // </h2>${marked.parse(aiResponse)}` : `<h2>Answer for ${action} by (${modelName})</h2>${marked.parse(aiResponse)}`;
-
-              setTimeout(() => {
-                block.classList.remove('highlight')
-
-              }, 1500);
-
-         
-
-              let blankLine = document.createElement('br');
-
-              // Insert blank line and block
-              if (currentBlock) {
-                currentBlock.after(blankLine);
-                // Insert new block after blank line
-                blankLine.after(block);
-              } else {
-                // Insert at cursor position
-                const selection = window.getSelection();
-                if (selection.rangeCount > 0) {
-                  const range = selection.getRangeAt(0);
-                  range.collapse(false); // Collapse the range to the end point
-
-                  // Insert the blank line
-                  range.insertNode(blankLine);
-
-                  // Insert the new block
-                  range.insertNode(block);
-
-                  // Add highlight effect
-                  block.classList.add('highlight');
-                  setTimeout(() => {
-                    block.classList.remove('highlight');
-                  }, 1000);
-
-                  // Move the cursor after the inserted block
-                  range.setStartAfter(block);
-                  range.collapse(true);
-                  selection.removeAllRanges();
-                  selection.addRange(range);
-                } else {
-                  // Fallback to appending at the end if no selection range is available
-                  this.editor.appendChild(blankLine);
-                  this.editor.appendChild(block);
-                }
-              }
-              currentBlock = block;
             }
 
             // Increment completed responses counter
@@ -944,6 +911,7 @@ by ${modelName}
         <input type="text" class="model-id" placeholder="Model ID" value="${model.model_id}" name="model_id">
         <input type="text" class="model-url" placeholder="Model URL" value="${model.url}" name="model_url">
         <input type="text" class="model-api-key" placeholder="API Key" value="${model.api_key}" name="model_api_key">
+        <textarea class="model-else" placeholder="Additional configuration (e.g. modalities, audio settings)" name="model_else">${model.else || ''}</textarea>
         <button class="remove-model" data-index="${index}"><i class="fas fa-trash"></i></button>
       `;
 
@@ -960,7 +928,8 @@ by ${modelName}
       name: '',
       model_id: '',
       url: 'https://gmapi.suisuy.eu.org/corsproxy?q=https://models.inference.ai.azure.com/chat/completions',
-      api_key: ''
+      api_key: '',
+      else: ''
     });
     this.renderModelSettings();
   }
@@ -1019,23 +988,24 @@ by ${modelName}
       name: mc.querySelector('.model-name').value,
       model_id: mc.querySelector('.model-id').value,
       url: mc.querySelector('.model-url').value,
-      api_key: mc.querySelector('.model-api-key').value
+      api_key: mc.querySelector('.model-api-key').value,
+      else: mc.querySelector('.model-else').value
     }));
 
     // Prepare the config object
     const config = {
       systemPrompt: document.getElementById('systemPrompt').value || "you are a assistant to help user write better doc now,  only output html body innerHTML code  to me, don't put it in ```html ```,do not use markdown, you can put a head h2 with 2 to 5 words at start to summary the doc; use inline style to avoid affect parent element, make the html doc looks beautiful, clean and mordern.",
       prompts: {
-      ask: document.getElementById('askPrompt').value,
-      correct: document.getElementById('correctPrompt').value,
-      translate: document.getElementById('translatePrompt').value
+        ask: document.getElementById('askPrompt').value,
+        correct: document.getElementById('correctPrompt').value,
+        translate: document.getElementById('translatePrompt').value
       },
       customTools: Array.from(document.querySelectorAll('.custom-tool')).map((toolDiv, index) => ({
         id: this.aiSettings.customTools[index]?.id || 'custom_' + Date.now(),
         name: toolDiv.querySelector('.tool-name').value,
         prompt: toolDiv.querySelector('.tool-prompt').value
       })),
-      models: updatedModels // Use the updated models from the UI
+      models: updatedModels
     };
 
     try {
@@ -1316,6 +1286,8 @@ by ${modelName}
     }
 
     // Make parallel requests to selected models
+   
+
     const requests = selectedModels.map(modelName =>
       this.apiRequest(
         "POST",
@@ -1370,12 +1342,16 @@ by ${modelName}
           }
 
           if (response.choices && response.choices[0]) {
-            const aiResponse = response.choices[0].message.content;
+            let aiResponse = response.choices[0].message.content|| " " + `<br>
+<audio src="data:audio/wav;base64,${response.choices[0].message.audio.data}" controls></audio> <br>
+${response.choices[0].message.audio.transcript} <br>
+`;  
+           
 
             // Create new block for this model's response with h2 header
             const block = document.createElement("div");
             block.className = "block";
-            block.innerHTML = `${modelName} :${marked.parse(aiResponse)}`;
+            block.innerHTML = `${modelName} :${(aiResponse)}`;
 
 
 
