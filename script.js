@@ -658,7 +658,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           }
 
           if (response.choices && response.choices[0]) {
-            const aiResponse = response.choices[0].message.content;
+            const aiResponse = response.choices[0].message.content || '';
             let audioResponse = response.choices[0].message.audio;
 
             if (useComment) {
@@ -666,7 +666,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
               const currentComment = commentedSpan.getAttribute("data-comment") || "";
               let newResponse = `<h4 onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });" style="position: sticky; top: 0; background: white; z-index: 100; padding: 0px 0; margin: 0; font-size: small; text-decoration: underline;">${modelName}</h4>
 <div style="display:block">
-${marked.parse(aiResponse)}`;
+${(aiResponse)}`;
 
               // Add audio player if audio response is available
               if (audioResponse && audioResponse.data) {
@@ -689,6 +689,69 @@ ${marked.parse(aiResponse)}`;
                 setTimeout(() => {
                   document.querySelector('.comment-tooltip').classList.remove('highlight');
                 }, 1000);
+              }
+            } else {
+              // Create a new block for longer responses
+              const block = document.createElement("div");
+              block.className = "block";
+              block.classList.add('highlight');
+
+              let blockContent = `<h4 style="margin: 0; padding: 5px 0;">${modelName}'s Response:</h4>${(aiResponse)}`;
+
+              // Add audio player if audio response is available
+              if (audioResponse && audioResponse.data) {
+                blockContent += `<audio controls style="width: 100%; margin-top: 10px;">
+  <source src="data:audio/wav;base64,${audioResponse.data}" type="audio/wav">
+  Your browser does not support the audio element.
+</audio> <br>
+${audioResponse.transcript || ''}
+`;
+              }
+
+              block.innerHTML = blockContent;
+
+              setTimeout(() => {
+                block.classList.remove('highlight');
+              }, 1500);
+
+              let blankLine = document.createElement('br');
+
+              // Insert blank line and block
+              if (currentBlock) {
+                currentBlock.after(blankLine);
+                // Insert new block after blank line
+                blankLine.after(block);
+                // Update currentBlock for next iteration
+                currentBlock = block;
+              } else {
+                // Insert at cursor position
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                  const range = selection.getRangeAt(0);
+                  range.collapse(false); // Collapse the range to the end point
+
+                  // Insert the blank line
+                  range.insertNode(blankLine);
+
+                  // Insert the new block
+                  range.insertNode(block);
+
+                  // Add highlight effect
+                  block.classList.add('highlight');
+                  setTimeout(() => {
+                    block.classList.remove('highlight');
+                  }, 1000);
+
+                  // Move the cursor after the inserted block
+                  range.setStartAfter(block);
+                  range.collapse(true);
+                  selection.removeAllRanges();
+                  selection.addRange(range);
+                } else {
+                  // Fallback to appending at the end if no selection range is available
+                  this.editor.appendChild(blankLine);
+                  this.editor.appendChild(block);
+                }
               }
             }
 
