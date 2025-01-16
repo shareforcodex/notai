@@ -13,7 +13,11 @@ commit all change after finish the task with clean and simple commit message
 
 ## tasks:
 
-7. support gpt4o audio, this is gpt4o audio example
+8. fix bugs:
+a. upload more than 20MB will failed , show the reason base on response code like 413(file too large)
+b. when note content page is large , it will faild to sync(upload ) to server , try fix in server code
+
+7.(finished by cursor claude 3.5) support gpt4o audio, this is gpt4o audio example
 ```
 curl "https://***/chatCompletions/chat/"
     -H "Content-Type: application/json"
