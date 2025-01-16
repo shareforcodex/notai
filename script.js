@@ -7,7 +7,10 @@ let currentUser = {
 class HTMLEditor {
   constructor() {
     // Define DEFAULT_SYSTEM_PROMPT as a class property
-    this.DEFAULT_SYSTEM_PROMPT = "you are a assistant to help user write better doc now,  only output html body innerHTML code  to me, don't put it in ```html ```,do not use markdown, you can put a head h2 with 2 to 5 words at start to summary the doc; use inline style to avoid affect parent element, make the html doc looks beautiful, clean and mordern.  \n you can use image to show the concept when needed, like show a word definition via image, the img get api is simple, put the prompt after https://getsananimg.suisuy.eu.org/(you prompt for image here) , so you can just put it in a img tag, set img height to 300px";
+    this.DEFAULT_SYSTEM_PROMPT = `you are a assistant to help user write better doc now,  only output html body innerHTML code  to me, don't put it in codeblock do not use markdown;
+    you can put a head h2 with 2 to 5 words at start to summary the doc, aligned at left; 
+    use inline style to avoid affect parent element, make the html doc looks beautiful, clean and mordern, make style like MDN site.  
+    you can use image to show the concept when needed, like show a word definition via image, the img get api is simple, put the prompt after https://getsananimg.suisuy.eu.org/(you prompt for image here) , so you can just put it in a img tag, set img height to 300px`;
 
     // Initialize core editor elements with error checking
     const editor = document.getElementById("editor");
@@ -615,7 +618,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           ],
           model: modelName,
           temperature: 0.7,
-          max_tokens: 3999,
           top_p: 1,
         };
 
@@ -696,7 +698,10 @@ ${(aiResponse)}`;
               block.className = "block";
               block.classList.add('highlight');
 
-              let blockContent = `<h4 style="margin: 0; padding: 5px 0;">${modelName}'s Response:</h4>${(aiResponse)}`;
+              let blockContent = `<h4 style="margin: 0; padding: 5px 0;"></h4>${(aiResponse)}
+              <br>
+              <br>
+by ${modelName}`;
 
               // Add audio player if audio response is available
               if (audioResponse && audioResponse.data) {
@@ -1372,7 +1377,7 @@ ${audioResponse.transcript || ''}
             ],
           model: modelName,
           temperature: 0.7,
-          max_tokens: 3999,
+
           top_p: 1,
         },
         true
@@ -1414,7 +1419,10 @@ ${response.choices[0].message.audio.transcript} <br>
             // Create new block for this model's response with h2 header
             const block = document.createElement("div");
             block.className = "block";
-            block.innerHTML = `${modelName} :${(aiResponse)}`;
+            block.innerHTML = `${(aiResponse)}
+<br>
+<br>
+by ${modelName}`;
 
 
 
