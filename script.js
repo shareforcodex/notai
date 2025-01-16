@@ -1532,11 +1532,10 @@ by ${modelName}`;
       if (uploadModal && uploadFileBtn && closeUploadBtn && dropZone && 
           fileInput && selectFileBtn && uploadBtn && previewArea && filePreview) {
 
-        uploadFileBtn.onclick = () => {
+        uploadFileBtn.onclick = async () => {
           uploadModal.style.display = 'block';
-          previewArea.style.display = 'none';
-          filePreview.innerHTML = '';
-          this.setupMediaDevices();
+          // Initialize media devices when modal opens
+          await this.setupMediaDevices();
         };
 
         closeUploadBtn.onclick = () => {
@@ -1550,14 +1549,25 @@ by ${modelName}`;
 
         if (captureVideoBtn) {
           captureVideoBtn.addEventListener('click', async () => {
-            const deviceId = videoDevices.value;
-            const audioDeviceId = audioDevices.value;
-            if (!deviceId) {
-              this.showToast('Please select a camera first');
+            const videoDevices = document.getElementById('videoDevices');
+            const audioDevices = document.getElementById('audioDevices');
+            
+            // If no devices are selected but available, select the first ones
+            if (!videoDevices.value && videoDevices.options.length > 1) {
+              videoDevices.selectedIndex = 1;
+              videoDevices.dispatchEvent(new Event('change'));
+            }
+            if (!audioDevices.value && audioDevices.options.length > 1) {
+              audioDevices.selectedIndex = 1;
+              audioDevices.dispatchEvent(new Event('change'));
+            }
+            
+            if (!videoDevices.value) {
+              this.showToast('No camera available');
               return;
             }
-            if (!audioDeviceId) {
-              this.showToast('Please select a microphone for video recording');
+            if (!audioDevices.value) {
+              this.showToast('No microphone available for video recording');
               return;
             }
 
@@ -1576,12 +1586,12 @@ by ${modelName}`;
             }
 
             // Start new recording with audio
-            const stream = await this.startMediaStream(deviceId, true);
+            const stream = await this.startMediaStream(videoDevices.value, true);
             if (stream) {
               // Add audio track from selected microphone
               try {
                 const audioStream = await navigator.mediaDevices.getUserMedia({
-                  audio: { deviceId: { exact: audioDeviceId } }
+                  audio: { deviceId: { exact: audioDevices.value } }
                 });
                 audioStream.getAudioTracks().forEach(track => {
                   stream.addTrack(track);
@@ -1615,7 +1625,6 @@ by ${modelName}`;
                 
                 // Create file for upload
                 const file = new File([blob], 'video.webm', { type: 'video/webm' });
-                document.getElementById('fileInput').files = new DataTransfer().files;
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 document.getElementById('fileInput').files = dataTransfer.files;
@@ -1690,11 +1699,14 @@ by ${modelName}`;
         // Setup media capture handlers
         if (capturePhotoBtn) {
           capturePhotoBtn.addEventListener('click', async () => {
+            const videoDevices = document.getElementById('videoDevices');
             const deviceId = videoDevices.value;
+            
             if (!deviceId) {
-              this.showToast('Please select a camera first');
+              this.showToast('No camera available. Please check your camera connection.');
               return;
             }
+
             const stream = await this.startMediaStream(deviceId);
             if (stream) {
               const videoPreview = document.getElementById('videoPreview');
@@ -2884,6 +2896,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   // Add media device handling methods
   async setupMediaDevices() {
     try {
+      // Request permission first to ensure labels are available
+      await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then(stream => {
+          stream.getTracks().forEach(track => track.stop());
+        })
+        .catch(err => console.log('Permission denied or no devices available'));
+
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
       const audioDevices = devices.filter(device => device.kind === 'audioinput');
@@ -2892,32 +2911,42 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       const audioSelect = document.getElementById('audioDevices');
 
       // Clear existing options
-      videoSelect.innerHTML = '<option value="">Select Camera</option>';
-      audioSelect.innerHTML = '<option value="">Select Microphone</option>';
+      videoSelect.innerHTML = '';
+      audioSelect.innerHTML = '';
 
-      // Add video devices and select first one by default
+      // Add video devices
+      if (videoDevices.length > 0) {
       videoDevices.forEach((device, index) => {
         const option = document.createElement('option');
         option.value = device.deviceId;
-        option.text = device.label || `Camera ${videoSelect.length}`;
+        option.text = device.label || `Camera ${index + 1}`;
         videoSelect.appendChild(option);
+        });
         // Select first device by default
-        if (index === 0) {
-          option.selected = true;
-        }
-      });
+        videoSelect.value = videoDevices[0].deviceId;
+      } else {
+        const option = document.createElement('option');
+        option.value = "";
+        option.text = "No cameras found";
+        videoSelect.appendChild(option);
+      }
 
-      // Add audio devices and select first one by default
+      // Add audio devices
+      if (audioDevices.length > 0) {
       audioDevices.forEach((device, index) => {
         const option = document.createElement('option');
         option.value = device.deviceId;
-        option.text = device.label || `Microphone ${audioSelect.length}`;
+        option.text = device.label || `Microphone ${index + 1}`;
         audioSelect.appendChild(option);
+        });
         // Select first device by default
-        if (index === 0) {
-          option.selected = true;
-        }
-      });
+        audioSelect.value = audioDevices[0].deviceId;
+      } else {
+        const option = document.createElement('option');
+        option.value = "";
+        option.text = "No microphones found";
+        audioSelect.appendChild(option);
+      }
 
       // Show device selectors if devices are available
       const deviceSelectors = document.querySelector('.device-selectors');

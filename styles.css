@@ -690,7 +690,7 @@ pre code {
 .modal {
     display: none;
     position: fixed;
-    z-index: 1001;
+    z-index: 999;
     left: 0;
     top: 0;
     width: 100%;
@@ -700,11 +700,12 @@ pre code {
 
 .modal-content {
     background-color: #fefefe;
-    margin: 5% auto;
+    margin:  0;
+    margin-left: 5vw;
     padding: 20px;
     border: 1px solid #888;
     border-radius: 8px;
-    width: 90%;
+    width: 90vw;
     height: 90vh;
     overflow-y: auto;
     scrollbar-width: thin;
