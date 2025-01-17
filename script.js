@@ -1370,48 +1370,74 @@ ${audioResponse.transcript || ''}
       return;
     }
 
+    // Check for image in current block
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+    let currentBlock;
+    if (range.startContainer.nodeType === Node.TEXT_NODE) {
+      currentBlock = range.startContainer.parentElement.closest('.block');
+    } else {
+      currentBlock = range.startContainer.closest('.block');
+    }
+
+    // Get image URL if present
+    let imageUrl = null;
+    if (currentBlock) {
+      const imgElement = currentBlock.querySelector('img');
+      if (imgElement && imgElement.src) {
+        imageUrl = imgElement.src;
+      }
+    }
+
     // Make parallel requests to selected models
-   
+    const requests = selectedModels.map(modelName => {
+      const modelConfig = this.aiSettings.models.find(m => m.model_id === modelName);
+      let requestBody = {
+        messages: [
+          {
+            role: "system",
+            content: this.aiSettings.systemPrompt,
+          },
+          {
+            role: "user",
+            content: imageUrl ? [
+              { 
+                type: "text", 
+                text: (context.contextText ? 
+                  `this is our chat history, you need only reply to the last message based on the history:\n${context.contextText}\n\n` : '') 
+                  + context.currentText
+              },
+              { 
+                type: "image_url", 
+                image_url: {
+                  url: imageUrl,
+                  detail: "low"
+                }
+              }
+            ] : (context.contextText ? 
+              `this is our chat history, you need only reply to the last message based on the history:\n${context.contextText}\n\n` : '') 
+              + context.currentText
+          },
+        ],
+        model: modelName,
+        temperature: 0.7,
+        top_p: 1,
+      };
 
-    const requests = selectedModels.map(modelName =>
-      this.apiRequest(
-        "POST",
-        "",
-        {
-            messages: [
-            {
-              role: "system",
-              content: this.aiSettings.systemPrompt,
-            },
-            {
-              role: "user",
-              content: (context.contextText?
-                `this is our chat history, you need only reply to the last message based on the history:
-                ${context.contextText} `
-                :'') 
-                +`\n\n${context.currentText}`
-            },
-            ],
-          model: modelName,
-          temperature: 0.7,
-
-          top_p: 1,
-        },
-        true
-      )
-    );
-
-    try {
-      // Get the current block where selection is
-      const selection = window.getSelection();
-      const range = selection.getRangeAt(0);
-      let currentBlock;
-      if (range.startContainer.nodeType === Node.TEXT_NODE) {
-        currentBlock = range.startContainer.parentElement.closest('.block');
-      } else {
-        currentBlock = range.startContainer.closest('.block');
+      // If model has additional configuration in 'else' field, parse and merge it
+      if (modelConfig && modelConfig.else) {
+        try {
+          const additionalConfig = JSON.parse(modelConfig.else);
+          requestBody = { ...requestBody, ...additionalConfig };
+        } catch (error) {
+          console.error('Error parsing additional config:', error);
+        }
       }
 
+      return this.apiRequest('POST', '', requestBody, true);
+    });
+
+    try {
       // Process each request
       requests.forEach((request, index) => {
         const modelName = selectedModels[index];
