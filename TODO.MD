@@ -13,6 +13,34 @@ commit all change after finish the task with clean and simple commit message
 
 ## tasks:
 
+9. support image in api request, this is openai api curl example:
+```
+curl https://api.openai.com/v1/chat/completions \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer YOUR_OPENAI_API_KEY" \
+-d '{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an assistant that analyzes images and text."
+    },
+    {
+      "role": "user",
+      "content": [
+        {"type": "text", "text": "Describe this image:"},
+        {"type": "image_url", "image_url": {
+          "url": "https://images.pexels.com/photos/9729585/pexels-photo-9729585.jpeg",
+          "detail": "low"
+        }}
+      ]
+    }
+  ]
+}'
+
+```
+as you can see you need a new item with image url, you can get image url from selection(when select to ask, get image url from img tag src in the selection) or current block (when current block contain a image tag then use quick ask)
+
 8. fix bugs:
 a. upload more than 20MB will failed , show the reason base on response code like 413(file too large)
 b. when note content page is large , it will faild to sync(upload ) to server , try fix in server code
