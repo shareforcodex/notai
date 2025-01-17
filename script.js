@@ -1532,10 +1532,11 @@ by ${modelName}`;
       if (uploadModal && uploadFileBtn && closeUploadBtn && dropZone && 
           fileInput && selectFileBtn && uploadBtn && previewArea && filePreview) {
 
-        uploadFileBtn.onclick = async () => {
+        uploadFileBtn.onclick = () => {
           uploadModal.style.display = 'block';
-          // Initialize media devices when modal opens
-          await this.setupMediaDevices();
+          previewArea.style.display = 'none';
+          filePreview.innerHTML = '';
+          this.setupMediaDevices();
         };
 
         closeUploadBtn.onclick = () => {
@@ -1549,25 +1550,14 @@ by ${modelName}`;
 
         if (captureVideoBtn) {
           captureVideoBtn.addEventListener('click', async () => {
-            const videoDevices = document.getElementById('videoDevices');
-            const audioDevices = document.getElementById('audioDevices');
-            
-            // If no devices are selected but available, select the first ones
-            if (!videoDevices.value && videoDevices.options.length > 1) {
-              videoDevices.selectedIndex = 1;
-              videoDevices.dispatchEvent(new Event('change'));
-            }
-            if (!audioDevices.value && audioDevices.options.length > 1) {
-              audioDevices.selectedIndex = 1;
-              audioDevices.dispatchEvent(new Event('change'));
-            }
-            
-            if (!videoDevices.value) {
-              this.showToast('No camera available');
+            const deviceId = videoDevices.value;
+            const audioDeviceId = audioDevices.value;
+            if (!deviceId) {
+              this.showToast('Please select a camera first');
               return;
             }
-            if (!audioDevices.value) {
-              this.showToast('No microphone available for video recording');
+            if (!audioDeviceId) {
+              this.showToast('Please select a microphone for video recording');
               return;
             }
 
@@ -1586,12 +1576,12 @@ by ${modelName}`;
             }
 
             // Start new recording with audio
-            const stream = await this.startMediaStream(videoDevices.value, true);
+            const stream = await this.startMediaStream(deviceId, true);
             if (stream) {
               // Add audio track from selected microphone
               try {
                 const audioStream = await navigator.mediaDevices.getUserMedia({
-                  audio: { deviceId: { exact: audioDevices.value } }
+                  audio: { deviceId: { exact: audioDeviceId } }
                 });
                 audioStream.getAudioTracks().forEach(track => {
                   stream.addTrack(track);
@@ -1625,6 +1615,7 @@ by ${modelName}`;
                 
                 // Create file for upload
                 const file = new File([blob], 'video.webm', { type: 'video/webm' });
+                document.getElementById('fileInput').files = new DataTransfer().files;
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 document.getElementById('fileInput').files = dataTransfer.files;
@@ -1699,14 +1690,11 @@ by ${modelName}`;
         // Setup media capture handlers
         if (capturePhotoBtn) {
           capturePhotoBtn.addEventListener('click', async () => {
-            const videoDevices = document.getElementById('videoDevices');
             const deviceId = videoDevices.value;
-            
             if (!deviceId) {
-              this.showToast('No camera available. Please check your camera connection.');
+              this.showToast('Please select a camera first');
               return;
             }
-
             const stream = await this.startMediaStream(deviceId);
             if (stream) {
               const videoPreview = document.getElementById('videoPreview');
@@ -2896,13 +2884,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   // Add media device handling methods
   async setupMediaDevices() {
     try {
-      // Request permission first to ensure labels are available
-      await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-        .then(stream => {
-          stream.getTracks().forEach(track => track.stop());
-        })
-        .catch(err => console.log('Permission denied or no devices available'));
-
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
       const audioDevices = devices.filter(device => device.kind === 'audioinput');
@@ -2911,42 +2892,32 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       const audioSelect = document.getElementById('audioDevices');
 
       // Clear existing options
-      videoSelect.innerHTML = '';
-      audioSelect.innerHTML = '';
+      videoSelect.innerHTML = '<option value="">Select Camera</option>';
+      audioSelect.innerHTML = '<option value="">Select Microphone</option>';
 
-      // Add video devices
-      if (videoDevices.length > 0) {
+      // Add video devices and select first one by default
       videoDevices.forEach((device, index) => {
         const option = document.createElement('option');
         option.value = device.deviceId;
-        option.text = device.label || `Camera ${index + 1}`;
+        option.text = device.label || `Camera ${videoSelect.length}`;
         videoSelect.appendChild(option);
-        });
         // Select first device by default
-        videoSelect.value = videoDevices[0].deviceId;
-      } else {
-        const option = document.createElement('option');
-        option.value = "";
-        option.text = "No cameras found";
-        videoSelect.appendChild(option);
-      }
+        if (index === 0) {
+          option.selected = true;
+        }
+      });
 
-      // Add audio devices
-      if (audioDevices.length > 0) {
+      // Add audio devices and select first one by default
       audioDevices.forEach((device, index) => {
         const option = document.createElement('option');
         option.value = device.deviceId;
-        option.text = device.label || `Microphone ${index + 1}`;
+        option.text = device.label || `Microphone ${audioSelect.length}`;
         audioSelect.appendChild(option);
-        });
         // Select first device by default
-        audioSelect.value = audioDevices[0].deviceId;
-      } else {
-        const option = document.createElement('option');
-        option.value = "";
-        option.text = "No microphones found";
-        audioSelect.appendChild(option);
-      }
+        if (index === 0) {
+          option.selected = true;
+        }
+      });
 
       // Show device selectors if devices are available
       const deviceSelectors = document.querySelector('.device-selectors');
@@ -3173,6 +3144,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Redirect to auth page if initialization fails
     //window.location.href = 'auth.html';
   }
+  // Delegate click event to parent element
+  document.body.addEventListener('click', (event) => {
+    const target = event.target;
+    if (target.tagName === 'IMG' || target.tagName === 'VIDEO' || target.tagName === 'AUDIO') {
+        event.preventDefault(); // Prevent default behavior
+        document.activeElement.blur(); // Unfocus the contenteditable area
+    }
+});
 });
 // Add event listener for topbar pin button
 document.getElementById('topbarPinBtn').addEventListener('click', () => {
