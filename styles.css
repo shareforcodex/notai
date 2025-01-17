@@ -1398,6 +1398,7 @@ pre code {
 }
 
 #newFolderBtn{
+    margin-left: 5px;
     padding: 5px 10px;
     background: none;
     border: 1px solid #e0e0e0;
