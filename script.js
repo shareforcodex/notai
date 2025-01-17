@@ -588,6 +588,19 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       const range = selection.getRangeAt(0);
       let commentedSpan = null;
 
+      // Check for image in selection or current block
+      let imageUrl = null;
+      let selectedContent = range.cloneContents();
+      let imgElement = selectedContent.querySelector('img');
+      
+      if (!imgElement && currentBlock) {
+        imgElement = currentBlock.querySelector('img');
+      }
+
+      if (imgElement && imgElement.src) {
+        imageUrl = imgElement.src;
+      }
+
       if (useComment) {
         // Create span for the selected text
         commentedSpan = document.createElement("span");
@@ -613,7 +626,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
             },
             {
               role: "user",
-              content: prompt,
+              content: imageUrl ? [
+                { type: "text", text: prompt },
+                { 
+                  type: "image_url", 
+                  image_url: {
+                    url: imageUrl,
+                    detail: "low"
+                  }
+                }
+              ] : prompt
             },
           ],
           model: modelName,
@@ -626,17 +648,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           try {
             const additionalConfig = JSON.parse(modelConfig.else);
             requestBody = { ...requestBody, ...additionalConfig };
-          } catch (e) {
-            console.warn(`Failed to parse additional configuration for model ${modelName}:`, e);
+          } catch (error) {
+            console.error('Error parsing additional config:', error);
           }
         }
 
-        return this.apiRequest(
-          "POST",
-          "",
-          requestBody,
-          true
-        );
+        return this.apiRequest('POST', '', requestBody, true);
       });
 
       let completedResponses = 0;
