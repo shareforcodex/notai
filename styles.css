@@ -111,7 +111,7 @@ h3 {
     font-family: Georgia, 'Times New Roman', Times, serif;
 }
 
-image {
+image,video {
     width: 500px;
     max-width: 70vw;
 }

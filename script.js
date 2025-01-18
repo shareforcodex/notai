@@ -688,7 +688,7 @@ ${(aiResponse)}`;
 
               // Add audio player if audio response is available
               if (audioResponse && audioResponse.data) {
-                newResponse += `<audio controls style="width: 100%; margin-top: 10px;">
+                newResponse += `<audio controls style="width: 90%; margin-top: 10px;">
   <source src="data:audio/wav;base64,${audioResponse.data}" type="audio/wav">
   Your browser does not support the audio element.
 </audio>`;
@@ -721,7 +721,7 @@ by ${modelName}`;
 
               // Add audio player if audio response is available
               if (audioResponse && audioResponse.data) {
-                blockContent += `<audio controls style="width: 100%; margin-top: 10px;">
+                blockContent += `<audio controls style="width: 90%; margin-top: 10px;">
   <source src="data:audio/wav;base64,${audioResponse.data}" type="audio/wav">
   Your browser does not support the audio element.
 </audio> <br>
@@ -2702,20 +2702,17 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     // Handle different file types
     if (file.type.startsWith('image/')) {
       const img = document.createElement('img');
-      img.style.maxWidth = '100%';
       img.src = URL.createObjectURL(file);
       filePreview.appendChild(img);
       
     } else if (file.type.startsWith('video/')) {
       const video = document.createElement('video');
       video.controls = true;
-      video.style.maxWidth = '100%';
       video.src = URL.createObjectURL(file);
       filePreview.appendChild(video);
     } else if (file.type.startsWith('audio/')) {
       const audio = document.createElement('audio');
       audio.controls = true;
-      audio.style.width = '100%';
       audio.src = URL.createObjectURL(file);
       filePreview.appendChild(audio);
     } else {
@@ -2801,21 +2798,17 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           element = document.createElement('img');
           element.src = uploadUrl;
           element.alt = file.name;
-          element.style.maxWidth = '100%';
         } else if (file.type.startsWith('video/')) {
           element = document.createElement('video');
           element.src = uploadUrl;
           element.controls = true;
-          element.style.maxWidth = '100%';
         } else if (file.type.startsWith('audio/')) {
           element = document.createElement('audio');
           element.src = uploadUrl;
           element.controls = true;
-          element.style.width = '100%';
         } else {
           element = document.createElement('iframe');
           element.src = uploadUrl;
-          element.style.width = '100%';
           element.style.height = '500px';
           element.setAttribute('allowfullscreen', 'true');
         }
