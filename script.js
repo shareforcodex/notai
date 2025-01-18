@@ -632,7 +632,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
                   type: "image_url", 
                   image_url: {
                     url: imageUrl,
-                    detail: "low"
                   }
                 }
               ] : prompt
@@ -812,14 +811,7 @@ ${audioResponse.transcript || ''}
     document.getElementById('correctPrompt').value = this.aiSettings.prompts.correct;
     document.getElementById('translatePrompt').value = this.aiSettings.prompts.translate;
 
-    // Initialize textarea heights
-    document.querySelectorAll('.dynamic-textarea').forEach(textarea => {
-      // Set initial minimum height
-      textarea.style.minHeight = '38px';
-      // Adjust height to content
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.max(38, textarea.scrollHeight) + 'px';
-    });
+    
 
     this.renderCustomTools();
     this.renderModelSettings();
@@ -873,34 +865,8 @@ ${audioResponse.transcript || ''}
 
 
 
-    // Setup dynamic textareas
-    document.querySelectorAll('.dynamic-textarea').forEach(textarea => {
-      // Function to adjust height
-      const adjustHeight = () => {
-        textarea.style.height = 'auto';
-        textarea.style.height = Math.max(38, textarea.scrollHeight) + 'px';
-      };
-
-      // Initial height adjustment
-      adjustHeight();
-
-      // Focus event - expand
-      textarea.addEventListener('focus', () => {
-        textarea.style.height = '100px';
-      });
-
-      // Blur event - collapse if not multiline
-      textarea.addEventListener('blur', () => {
-        if (textarea.value.indexOf('\n') === -1) {
-          adjustHeight();
-        } else {
-          adjustHeight();
-        }
-      });
-
-      // Input event - adjust height while typing
-      textarea.addEventListener('input', adjustHeight);
-    });
+   
+    
   }
 
   renderCustomTools() {
@@ -917,7 +883,7 @@ ${audioResponse.transcript || ''}
             <button class="remove-tool" data-index="${index}" style="margin-left: 10px; padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;"><i class="fas fa-trash"></i></button>
           </div>
           <div style="position: relative;">
-            <textarea class="tool-prompt dynamic-textarea" placeholder="Prompt Template" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; resize: none; overflow: hidden; height: 38px; transition: all 0.2s; font-family: monospace;">${tool.prompt}</textarea>
+            <textarea class="tool-prompt" placeholder="Prompt Template" >${tool.prompt}</textarea>
             <small style="display: block; margin-top: 4px; color: #6c757d;">Use {text} where you want the selected text to be inserted</small>
           </div>
         `;
@@ -932,37 +898,7 @@ ${audioResponse.transcript || ''}
       container.appendChild(toolDiv);
     });
 
-    // Setup dynamic textareas for the newly added elements
-    container.querySelectorAll('.dynamic-textarea').forEach(textarea => {
-      // Function to adjust height
-      const adjustHeight = () => {
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.max(38, textarea.scrollHeight) + 'px';
-      };
-
-      // Set initial minimum height
-      textarea.style.minHeight = '38px';
-      
-      // Initial height adjustment
-      adjustHeight();
-
-      // Focus event - expand
-      textarea.addEventListener('focus', () => {
-      textarea.style.height = '100px';
-      });
-
-      // Blur event - collapse if not multiline
-      textarea.addEventListener('blur', () => {
-      if (textarea.value.indexOf('\n') === -1) {
-        adjustHeight();
-      } else {
-        adjustHeight();
-      }
-      });
-
-      // Input event - adjust height while typing
-      textarea.addEventListener('input', adjustHeight);
-    });
+   
   }
 
   addCustomTool() {
@@ -1411,7 +1347,6 @@ ${audioResponse.transcript || ''}
                 type: "image_url", 
                 image_url: {
                   url: imageUrl,
-                  detail: "low"
                 }
               }
             ] : (context.contextText ? 
