@@ -3125,7 +3125,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Delegate click event to parent element
   document.body.addEventListener('click', (event) => {
     const target = event.target;
-    if (target.tagName === 'IMG' || target.tagName === 'VIDEO' || target.tagName === 'AUDIO') {
+    if (target.tagName === 'IMG' || target.tagName === 'VIDEO' || target.tagName === 'AUDIO' ) {
         event.preventDefault(); // Prevent default behavior
         document.activeElement.blur(); // Unfocus the contenteditable area
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });

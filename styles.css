@@ -111,6 +111,11 @@ h3 {
     font-family: Georgia, 'Times New Roman', Times, serif;
 }
 
+image {
+    width: 500px;
+    max-width: 70vw;
+}
+
 
 
 
