@@ -3128,6 +3128,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (target.tagName === 'IMG' || target.tagName === 'VIDEO' || target.tagName === 'AUDIO') {
         event.preventDefault(); // Prevent default behavior
         document.activeElement.blur(); // Unfocus the contenteditable area
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 });
 });
