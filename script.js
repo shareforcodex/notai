@@ -1316,6 +1316,14 @@ ${audioResponse.transcript || ''}
       currentBlock = range.startContainer.closest('.block');
     }
 
+    let parentNode = currentBlock.parentElement;
+    while (parentNode && parentNode.nodeName !== 'BODY') {
+      if(parentNode.className === 'block') {
+        currentBlock = parentNode;
+      }
+      parentNode = parentNode.parentElement;
+    }
+
     // Get image URL if present
     let imageUrl = null;
     if (currentBlock) {
