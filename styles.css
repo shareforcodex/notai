@@ -571,10 +571,7 @@ video {
 
 /* Different block type colors */
 
-.image-block img {
-    max-width: 100%;
-    height: auto;
-}
+
 
 .audio-block audio,
 .video-block video {
