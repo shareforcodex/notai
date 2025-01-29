@@ -597,9 +597,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       let selectedContent = range.cloneContents();
       let imgElement = selectedContent.querySelector('img');
       
-      if (!imgElement && currentBlock) {
-        imgElement = currentBlock.querySelector('img');
-      }
+      
 
       if (imgElement && imgElement.src) {
         imageUrl = imgElement.src;
