@@ -2260,6 +2260,15 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       
       // Update table of contents after loading note
       this.updateTableOfContents();
+
+      //set img tags to lazyloading in editor
+      const mediaElements = this.editor.querySelectorAll('img, iframe, video, audio');
+      mediaElements.forEach(element => {
+        element.setAttribute('loading', 'lazy');
+        if (element.tagName === 'VIDEO' || element.tagName === 'AUDIO') {
+          element.setAttribute('preload', 'none');
+        }
+      });
     } else {
       console.error("Failed to load note:", note.error);
     }
@@ -3150,3 +3159,4 @@ document.getElementById('topbarPinBtn').addEventListener('click', () => {
     currentBlock.classList.add('pinned');
   }
 });
+
