@@ -1674,6 +1674,10 @@ by ${modelName}`;
           }
         };
 
+        document
+        .getElementById("insertIframe")
+        .addEventListener("click", () => this.insertIframe());
+
         // Setup media capture handlers
         if (capturePhotoBtn) {
           capturePhotoBtn.addEventListener('click', async () => {
@@ -1902,7 +1906,7 @@ by ${modelName}`;
         selection.addRange(newRange);
       }
 
-      return;
+      return block;
     }
 
     // Create new block for non-selected text case
@@ -2015,18 +2019,23 @@ by ${modelName}`;
   }
 
   insertIframe() {
+    
+
     const url = prompt("Enter webpage URL:");
     if (!url) return;
 
 
     const iframe = document.createElement("iframe");
     iframe.src = url;
-    iframe.setAttribute("style","width: 95vw; height: 500px; scrollbar-width:none")
     iframe.setAttribute("allowfullscreen", "true");
     iframe.setAttribute("allow","accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; magnetometer; microphone; midi; payment; speaker; usb; vr");
 
     const range = window.getSelection().getRangeAt(0);
+    //insert after range instead replace range
 
+
+    range.insertNode(document.createElement('br'));
+    range.collapse(false);
     range.insertNode(iframe);
   }
 
@@ -2760,6 +2769,23 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     return hashHex;
   }
+
+  // insertIframe() {
+  //   const url = prompt("Enter webpage URL:");
+  //   if (!url) return;
+
+  //   const block = this.addNewBlock();
+  //   block.className = "block iframe-block";
+
+  //   const iframe = document.createElement("iframe");
+    
+  //   iframe.setAttribute("frameborder", "0");
+  //   iframe.setAttribute("allowfullscreen", "true");
+  //   iframe.setAttribute("allow", "accelerometer; ambient-light-sensor; autoplay; battery; camera; clipboard-read; clipboard-write; display-capture; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; otp-credentials; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking");
+
+  //   block.appendChild(iframe);
+  //   this.editor.appendChild(block);
+  // }
 
   async uploadFile(file) {
     try {
