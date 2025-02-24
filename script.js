@@ -12,7 +12,7 @@ you are a assistant to help user write better doc now,  only output html body in
 you can put a head h2 with 2 to 5 words at start to summary the doc, aligned at left; 
 use inline style to avoid affect parent element, make the html doc looks beautiful, clean and mordern, make style like MDN site.  
 you can use image to show the concept when needed, like show a word definition via image, the img get api is simple, put the prompt after https://getsananimg.suisuy.eu.org/(you prompt for image here) , so you can just put it in a img tag.
-when in voice mode, you need not wrap text in html tags like div br span ..., only need simple img,audio,video tag for showing media when need
+when in voice mode, you need not wrap text in html tags like div br span ..., just use markdown response me,only need simple img,audio,video tag for showing media when need
 
 `;
 
@@ -57,7 +57,7 @@ when in voice mode, you need not wrap text in html tags like div br span ..., on
     this.currentNoteTitle = "";
     this.lastSavedContent = "";
     this.lastUpdated = null;
-    this.lastInteractionTime=0;
+    this.lastInteractionTime = 0;
     this.aiSettings = {
       systemPrompt: this.DEFAULT_SYSTEM_PROMPT,
 
@@ -67,7 +67,10 @@ when in voice mode, you need not wrap text in html tags like div br span ..., on
         translate: "Translate this text to English: {text}"
       },
       customTools: [],
-      models: [...this.DEFAULT_MODELS]
+      models: [...this.DEFAULT_MODELS],
+      else: {
+        enable_stream: true,
+      }
     };
     this.loadUserConfig();
     this.setupEventListeners();
@@ -86,7 +89,7 @@ when in voice mode, you need not wrap text in html tags like div br span ..., on
     this.isEditable = true;
     this.autoSaveTimeout = null;
 
-    
+
 
     // Initialize content and check auth
     this.updateContent();
@@ -103,19 +106,19 @@ when in voice mode, you need not wrap text in html tags like div br span ..., on
     document.addEventListener('pointerdown', (e) => {
       const target = e.target;
       const codeElement = target.closest('pre, code');
-      
+
       if (codeElement) {
         activeCodeElement = codeElement;
         const rect = codeElement.getBoundingClientRect();
         const buttonRect = copyBtn.getBoundingClientRect();
-        
+
         // Calculate position at top of code element
         let parentDiv = codeElement;
         while (parentDiv && parentDiv.nodeName !== 'DIV') {
           parentDiv = parentDiv.parentElement;
         }
         let parentRect = parentDiv.getBoundingClientRect();
-        let top = Math.max( rect.top , parentRect.top);
+        let top = Math.max(rect.top, parentRect.top);
         let left = parentRect.left;
 
         // Adjust if scrolled past top
@@ -137,7 +140,7 @@ when in voice mode, you need not wrap text in html tags like div br span ..., on
       if (activeCodeElement && copyBtn.style.display !== 'none') {
         const rect = activeCodeElement.getBoundingClientRect();
         const buttonRect = copyBtn.getBoundingClientRect();
-        
+
         if (rect.top < 0 && rect.bottom > buttonRect.height) {
           // Element is scrolled but still partially visible
           copyBtn.style.top = `${window.scrollY}px`;
@@ -230,16 +233,16 @@ when in voice mode, you need not wrap text in html tags like div br span ..., on
         ? "https://gmapi.suisuy.eu.org/corsproxy?q=https://models.inference.ai.azure.com/chat/completions"
         : `${API_BASE_URL}${endpoint}`;
 
-       //get else from config and combine it to body
-    let elseconfig={}
-    try {
-    
-    elseconfig=JSON.parse(this.aiSettings.models.find(m => m.model_id === body.model).else || '{}');
-    console.log('else config',elseconfig);      
-    } catch (error) {
-      console.log('error when parse else config',error)
-    }
-    body = { ...body, ...elseconfig };
+      //get else from config and combine it to body
+      let elseconfig = {}
+      try {
+
+        elseconfig = JSON.parse(this.aiSettings.models.find(m => m.model_id === body.model).else || '{}');
+        console.log('else config', elseconfig);
+      } catch (error) {
+        console.log('error when parse else config', error)
+      }
+      body = { ...body, ...elseconfig };
       const response = await fetch(
         isAIRequest && body?.model
           ? (this.aiSettings.models.find(m => m.model_id === body.model)?.url ||
@@ -247,15 +250,19 @@ when in voice mode, you need not wrap text in html tags like div br span ..., on
           : url, {
         method,
         headers,
-        body: method==='GET'? null: body ? JSON.stringify(body) : null,
+        body: method === 'GET' ? null : body ? JSON.stringify(body) : null,
       });
-
-      const data = await response.json();
 
       // Hide the spinner after the request completes
       this.hideSpinner();
+      if (isAIRequest) {
+        return response;
+      }
+      else {
+        let responseObject = await response.json();
+        return responseObject;
+      }
 
-      return data;
     } catch (error) {
       console.error("API Error:", error);
       this.hideSpinner(); // Ensure spinner is hidden on error
@@ -549,7 +556,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     document.addEventListener("selectionchange", this.selectionChangeHandler);
   }
 
-  async handleAIAction(action, text,includeCurrentBlockMedia=false) {
+  async handleAIAction(action, text, includeCurrentBlockMedia = false) {
     // Check if text has less than 3 words
     const useComment = text.length < 20;
 
@@ -566,7 +573,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     }
 
     // Get selected models from buttons
-    const model1 = document.getElementById("modelBtn1").getAttribute('data-selected-value') || 'gpt-4o';
+    const model1 = document.getElementById("modelBtn1").getAttribute('data-selected-value') || 'gpt-4o-mini';
     const model2 = document.getElementById("modelBtn2").getAttribute('data-selected-value') || 'none';
     const model3 = document.getElementById("modelBtn3").getAttribute('data-selected-value') || 'none';
 
@@ -581,272 +588,299 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       return;
     }
 
-    try {
-      // Hide AI toolbar immediately
-      this.aiToolbar.style.display = 'none';
-      this.aiToolbar.classList.remove("visible");
+    // Hide AI toolbar immediately
+    this.aiToolbar.style.display = 'none';
+    this.aiToolbar.classList.remove("visible");
 
-      // Get the current block where selection is  
-      let selection = window.getSelection();
-      let currentBlock = selection.anchorNode.parentElement.closest(".block");
-      const range = selection.getRangeAt(0);
-      let commentedSpan = null;
+    // Get the current block where selection is  
+    let selection = window.getSelection();
+    let currentBlock = selection.anchorNode.parentElement.closest(".block");
+    const range = selection.getRangeAt(0);
+    let commentedSpan = null;
 
-      // Check for image in selection or current block
-      let imageUrl = null;
-      let audioUrl = null;
-      let videoUrl = null;
-      let selectedContent = range.cloneContents();
-      let imgElement = selectedContent.querySelector('img');
-      
-      //check for audio and video
-      let audioElement = selectedContent.querySelector('audio') || (includeCurrentBlockMedia? currentBlock.querySelector('audio') : null);
-      let videoElement = selectedContent.querySelector('video') || (includeCurrentBlockMedia? currentBlock.querySelector('video') : null);
-      
+    // Check for image in selection or current block
+    let imageUrl = null;
+    let audioUrl = null;
+    let videoUrl = null;
+    let selectedContent = range.cloneContents();
+    let imgElement = selectedContent.querySelector('img');
 
-      if (imgElement && imgElement.src) {
-        imageUrl = imgElement.src;
+    //check for audio and video
+    let audioElement = selectedContent.querySelector('audio') || (includeCurrentBlockMedia ? currentBlock.querySelector('audio') : null);
+    let videoElement = selectedContent.querySelector('video') || (includeCurrentBlockMedia ? currentBlock.querySelector('video') : null);
+
+
+    if (imgElement && imgElement.src) {
+      imageUrl = imgElement.src;
+    }
+
+    async function fetchAndConvertToBase64(url) {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const base64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(',')[1]); // Extract Base64 part
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        return base64;
+      } catch (error) {
+        console.error("Error converting to Base64:", error);
+        return null;
       }
+    }
 
-      async function fetchAndConvertToBase64(url) {
-        try {
-          const response = await fetch(url);
-          const blob = await response.blob();
-          const base64 = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]); // Extract Base64 part
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-          return base64;
-        } catch (error) {
-          console.error("Error converting to Base64:", error);
-          return null;
-        }
-      }
+    if (audioElement && audioElement.src) {
+      audioUrl = await fetchAndConvertToBase64(audioElement.src);
+      console.log("Base64 audio:", audioUrl);
+    }
 
-      if (audioElement && audioElement.src) {
-        audioUrl = await fetchAndConvertToBase64(audioElement.src);
-        console.log("Base64 audio:", audioUrl);
-      }
+    if (videoElement && videoElement.src) {
+      videoUrl = await fetchAndConvertToBase64(videoElement.src);
+      console.log("Base64 video:", videoUrl);
+    }
 
-      if (videoElement && videoElement.src) {
-        videoUrl = await fetchAndConvertToBase64(videoElement.src);
-        console.log("Base64 video:", videoUrl);
-      }
-      
 
-      if (useComment) {
-        // Create span for the selected text
-        commentedSpan = document.createElement("span");
-        commentedSpan.className = "commented-text";
-        try {
-          range.surroundContents(commentedSpan);
-        } catch (e) {
-          // Fallback method for complex selections
-          const contents = range.extractContents();
-          commentedSpan.appendChild(contents);
-          range.insertNode(commentedSpan);
-        }
-      }
+    if (useComment) {
+      // Create span for the selected text
 
-      // build content from audio, image, and video tags
-      let content=(imageUrl || audioUrl || videoUrl) ? [
-        { type: "text", text: prompt },
-        ...(imageUrl ? [{
+
+    }
+
+    // build content from audio, image, and video tags
+    let content = (imageUrl || audioUrl || videoUrl) ? [
+      { type: "text", text: prompt },
+      ...(imageUrl ? [{
         type: "image_url",
         image_url: {
           url: imageUrl,
         }
-        }] : []),
-        ...(audioUrl ? [{
+      }] : []),
+      ...(audioUrl ? [{
         type: "input_audio",
         input_audio: {
           data: audioUrl,
           format: 'mpeg'
         }
-        }] : []),
-        ...(videoUrl ? [{
+      }] : []),
+      ...(videoUrl ? [{
         type: "input_video",
         input_video: {
           data: videoUrl,
           format: 'mpeg'
         }
-        }] : [])
-      ] : prompt
+      }] : [])
+    ] : prompt
 
-      // Make parallel requests to selected models
-      const requests = selectedModels.map(modelName => {
-        const modelConfig = this.aiSettings.models.find(m => m.model_id === modelName);
-        let requestBody = {
-          messages: [
-            {
-              role: "system",
-              content: this.aiSettings.systemPrompt,
-            },
-            {
-              role: "user",
-              content: content
-            },
-          ],
-          model: modelName,
-          temperature: 0.7,
-          top_p: 1,
-        };
+    // Make parallel requests to selected models
+    const requests = selectedModels.map(modelName => {
+      const modelConfig = this.aiSettings.models.find(m => m.model_id === modelName);
+      let requestBody = {
+        messages: [
+          {
+            role: "system",
+            content: this.aiSettings.systemPrompt,
+          },
+          {
+            role: "user",
+            content: content
+          },
+        ],
+        model: modelName,
+        temperature: 0.7,
+        top_p: 1,
+        stream: this.aiSettings.else.enable_stream,
+      };
 
-        // If model has additional configuration in 'else' field, parse and merge it
-        if (modelConfig && modelConfig.else) {
-          try {
-            const additionalConfig = JSON.parse(modelConfig.else);
-            requestBody = { ...requestBody, ...additionalConfig };
-          } catch (error) {
-            console.error('Error parsing additional config:', error);
+      // If model has additional configuration in 'else' field, parse and merge it
+      if (modelConfig && modelConfig.else) {
+        try {
+          const additionalConfig = JSON.parse(modelConfig.else);
+          requestBody = { ...requestBody, ...additionalConfig };
+        } catch (error) {
+          console.error('Error parsing additional config:', error);
+        }
+      }
+
+
+      return this.apiRequest('POST', '', requestBody, true);
+    });
+
+    let completedResponses = 0;
+    const totalResponses = requests.length;
+
+    requests.forEach(async (request, index) => {
+      let block = this.addNewBlock();
+
+      const modelName = selectedModels[index];
+      // Create a new block for longer responses
+      //  const block = document.createElement("div");
+      //  block.className = "block";
+      //  block.classList.add('highlight');
+      //  let blankLine = document.createElement('br');
+
+
+      request.then(async response => {
+        if (response.error) {
+          // Handle rate limit or other API errors
+          const errorMessage = response.error.code === "RateLimitReached"
+            ? `Rate limit reached for ${modelName}. Please try again later or choose another model.`
+            : `Error with ${modelName}: ${response.error.message || response.error.toString() || 'Unknown error'}`;
+          this.showToast(errorMessage);
+          completedResponses++;
+          if (completedResponses === totalResponses) {
+            this.delayedSaveNote(true);
           }
+          return;
         }
 
-        return this.apiRequest('POST', '', requestBody, true);
-      });
 
-      let completedResponses = 0;
-      const totalResponses = requests.length;
+        if (this.aiSettings.else.enable_stream) {
+          //the text will be in eventstream like {"id":"chatcmpl-b2RL2SeSw6wgjYjgB5qKfURWtXI1w","choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}],"created":1740386280,"model":"gemini-2.0-flash","object":"chat.completion.chunk"}	
+          //so we need to concat the content
+          let text = "";
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder("utf-8");
+          let done = false;
+          let chunkCounter=0;
 
-      requests.forEach((request, index) => {
-        const modelName = selectedModels[index];
+          while (!done) {
+            chunkCounter++;
+            const { done: doneReading, value } = await reader.read();
+            done = doneReading;
+            const chunk = decoder.decode(value);
 
-        request.then(response => {
-          if (response.error) {
-            // Handle rate limit or other API errors
-            const errorMessage = response.error.code === "RateLimitReached"
-              ? `Rate limit reached for ${modelName}. Please try again later or choose another model.`
-              : `Error with ${modelName}: ${response.error.message || response.error.toString() || 'Unknown error'}`;
-            this.showToast(errorMessage);
-            completedResponses++;
-            if (completedResponses === totalResponses) {
-              this.delayedSaveNote(true);
+            const lines = chunk.split("\n");
+            const parsedLines = lines
+              .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
+              .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
+              .map((line) => {
+                let result = null;
+                try {
+                  result = JSON.parse(line);
+                } catch (error) {
+                  console.error('Error parsing the line to JSON:', error, 'Line:', line);
+                }
+                return result;
+
+              }); // Parse the JSON string
+
+            try {
+              for (const parsedLine of parsedLines) {
+                if (parsedLine) {
+                  const choices = parsedLine.choices;
+                  if (choices) {
+                    
+                    const delta = choices[0]?.delta;
+                    const content = delta?.content;
+                    // Update the UI with the new content
+                    if (content) {
+                      text += content;
+                      block.innerHTML += content;
+  
+                    }
+                    if(chunkCounter === 3){
+                      block.innerHTML =text;
+                      
+                    }
+                    
+                    if(chunkCounter === 50){
+                      block.innerHTML =text;
+                      
+                    }
+                    console.log('chunkcounter:',chunkCounter);
+                  }
+                }
+              }  
+            } catch (error) {
+              console.log('error when parse line', error,'parsedLines:',parsedLines)
             }
-            return;
+            
+
           }
+          block.innerHTML = text + '<br><br> by ' + modelName;
+          console.log(text);
 
-          if (response.choices && response.choices[0]) {
-            const aiResponse = response.choices[0].message.content || '';
-            let audioResponse = response.choices[0].message.audio;
+        }
 
-            if (useComment) {
-              // Add this response to the comment
-              const currentComment = commentedSpan.getAttribute("data-comment") || "";
-              let newResponse = `<h4 onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });" style="position: sticky; top: 0; background: white; z-index: 100; padding: 0px 0; margin: 0; font-size: small; text-decoration: underline;">${modelName}</h4>
+        if (response.choices && response.choices[0]) {
+          const aiResponse = response.choices[0].message.content || '';
+          let audioResponse = response.choices[0].message.audio;
+
+          if (useComment) {
+            // Add this response to the comment
+            const currentComment = commentedSpan.getAttribute("data-comment") || "";
+            let newResponse = `<h4 onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });" style="position: sticky; top: 0; background: white; z-index: 100; padding: 0px 0; margin: 0; font-size: small; text-decoration: underline;">${modelName}</h4>
 <div style="display:block">
 ${(aiResponse)}`;
 
-              // Add audio player if audio response is available
-              if (audioResponse && audioResponse.data) {
-                newResponse += `<audio controls style="width: 90%; margin-top: 10px;">
+            // Add audio player if audio response is available
+            if (audioResponse && audioResponse.data) {
+              newResponse += `<audio controls style="width: 90%; margin-top: 10px;">
   <source src="data:audio/wav;base64,${audioResponse.data}" type="audio/wav">
   Your browser does not support the audio element.
 </audio>`;
-              }
+            }
 
-              newResponse += '</div>';
-              const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
-              commentedSpan.setAttribute("data-comment", updatedComment);
+            newResponse += '</div>';
+            const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
+            commentedSpan.setAttribute("data-comment", updatedComment);
 
-              // Show or update tooltip for all responses
-              const tooltip = document.getElementById('commentTooltip');
-                this.showCommentTooltip(commentedSpan, updatedComment);
-                // Add highlight effect to AI-generated comment
-                document.querySelector('.comment-tooltip').classList.add('highlight');
-                setTimeout(() => {
-                  document.querySelector('.comment-tooltip').classList.remove('highlight');
-                }, 1000);
-              
-            } else {
-              // Create a new block for longer responses
-              const block = document.createElement("div");
-              block.className = "block";
-              block.classList.add('highlight');
+            // Show or update tooltip for all responses
+            const tooltip = document.getElementById('commentTooltip');
+            this.showCommentTooltip(commentedSpan, updatedComment);
+            // Add highlight effect to AI-generated comment
+            document.querySelector('.comment-tooltip').classList.add('highlight');
+            setTimeout(() => {
+              document.querySelector('.comment-tooltip').classList.remove('highlight');
+            }, 1000);
 
-              let blockContent = `<h4 style="margin: 0; padding: 5px 0;"></h4>${(aiResponse)}
+          } else {
+
+
+            let blockContent = `<h4 style="margin: 0; padding: 5px 0;"></h4>${(aiResponse)}
               <br>
               <br>
 by ${modelName}`;
 
-              // Add audio player if audio response is available
-              if (audioResponse && audioResponse.data) {
-                blockContent += `<audio controls style="width: 90%; margin-top: 10px;">
+            // Add audio player if audio response is available
+            if (audioResponse && audioResponse.data) {
+              blockContent += `<audio controls style="width: 90%; margin-top: 10px;">
   <source src="data:audio/wav;base64,${audioResponse.data}" type="audio/wav">
   Your browser does not support the audio element.
 </audio> <br>
 ${audioResponse.transcript || ''}
 `;
-              }
-
-              block.innerHTML = blockContent;
-
-              setTimeout(() => {
-                block.classList.remove('highlight');
-              }, 1500);
-
-              let blankLine = document.createElement('br');
-
-              // Insert blank line and block
-              if (currentBlock) {
-                currentBlock.after(blankLine);
-                // Insert new block after blank line
-                blankLine.after(block);
-                // Update currentBlock for next iteration
-                currentBlock = block;
-              } else {
-                // Insert at cursor position
-                const selection = window.getSelection();
-                if (selection.rangeCount > 0) {
-                  const range = selection.getRangeAt(0);
-                  range.collapse(false); // Collapse the range to the end point
-
-                  // Insert the blank line
-                  range.insertNode(blankLine);
-
-                  // Insert the new block
-                  range.insertNode(block);
-
-                  // Add highlight effect
-                  block.classList.add('highlight');
-                  setTimeout(() => {
-                    block.classList.remove('highlight');
-                  }, 1000);
-
-                  // Move the cursor after the inserted block
-                  range.setStartAfter(block);
-                  range.collapse(true);
-                  selection.removeAllRanges();
-                  selection.addRange(range);
-                } else {
-                  // Fallback to appending at the end if no selection range is available
-                  this.editor.appendChild(blankLine);
-                  this.editor.appendChild(block);
-                }
-              }
             }
 
-            // Increment completed responses counter
-            completedResponses++;
+            block.innerHTML = blockContent;
 
-            // If all responses are complete, save the note
-            if (completedResponses === totalResponses) {
-              this.delayedSaveNote(true);
-            }
+            setTimeout(() => {
+              block.classList.remove('highlight');
+            }, 1500);
+
+
           }
-        }).catch(error => {
-          console.error(`Error with ${modelName} request:`, error);
-          this.showToast(`Error with ${modelName}: ${error.message || 'Network error'}`);
+
+          // Increment completed responses counter
           completedResponses++;
+
+          // If all responses are complete, save the note
           if (completedResponses === totalResponses) {
             this.delayedSaveNote(true);
           }
-        });
+        }
+      }).catch(error => {
+        console.error(`Error with ${modelName} request:`, error);
+        this.showToast(`Error with ${modelName}: ${error.message || 'Network error'}`);
+        completedResponses++;
+        if (completedResponses === totalResponses) {
+          this.delayedSaveNote(true);
+        }
       });
-    } catch (e) {
-      console.error(e);
-    }
+    });
+
   }
 
   async handleQuickAsk() {
@@ -855,7 +889,7 @@ ${audioResponse.transcript || ''}
       alert('Please select or create a block first');
       return;
     }
-    this.handleAIAction('ask', context,true);
+    this.handleAIAction('ask', context, true);
   }
 
   setupAISettings() {
@@ -871,7 +905,7 @@ ${audioResponse.transcript || ''}
     document.getElementById('correctPrompt').value = this.aiSettings.prompts.correct;
     document.getElementById('translatePrompt').value = this.aiSettings.prompts.translate;
 
-    
+
 
     this.renderCustomTools();
     this.renderModelSettings();
@@ -912,21 +946,21 @@ ${audioResponse.transcript || ''}
 
     resetSystemPromptBtn.onclick = () => {
       if (confirm('Are you sure you want to reset the system prompt to default?')) {
-      const systemPromptInput = document.getElementById('systemPrompt');
-      systemPromptInput.value = editor.DEFAULT_SYSTEM_PROMPT;
-      // Add highlight effect
-      systemPromptInput.style.transition = 'background-color 0.3s';
-      systemPromptInput.style.backgroundColor = '#e3f2fd';
-      setTimeout(() => {
-        systemPromptInput.style.backgroundColor = '';
-      }, 500);
+        const systemPromptInput = document.getElementById('systemPrompt');
+        systemPromptInput.value = editor.DEFAULT_SYSTEM_PROMPT;
+        // Add highlight effect
+        systemPromptInput.style.transition = 'background-color 0.3s';
+        systemPromptInput.style.backgroundColor = '#e3f2fd';
+        setTimeout(() => {
+          systemPromptInput.style.backgroundColor = '';
+        }, 500);
       }
     };
 
 
 
-   
-    
+
+
   }
 
   renderCustomTools() {
@@ -934,10 +968,10 @@ ${audioResponse.transcript || ''}
     container.innerHTML = '';
 
     this.aiSettings.customTools.forEach((tool, index) => {
-        const toolDiv = document.createElement('div');
-        toolDiv.className = 'custom-tool';
-        toolDiv.style.marginBottom = '20px';
-        toolDiv.innerHTML = `
+      const toolDiv = document.createElement('div');
+      toolDiv.className = 'custom-tool';
+      toolDiv.style.marginBottom = '20px';
+      toolDiv.innerHTML = `
           <div style="margin-bottom: 10px;">
             <input type="text" class="tool-name" placeholder="Tool Name" value="${tool.name}" style="width: 300px; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
             <button class="remove-tool" data-index="${index}" style="margin-left: 10px; padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;"><i class="fas fa-trash"></i></button>
@@ -948,17 +982,17 @@ ${audioResponse.transcript || ''}
           </div>
         `;
 
-        toolDiv.querySelector('.remove-tool').onclick = () => {
+      toolDiv.querySelector('.remove-tool').onclick = () => {
         if (confirm('Are you sure you want to delete this custom tool?')) {
           this.aiSettings.customTools.splice(index, 1);
           this.renderCustomTools();
         }
-        };
+      };
 
       container.appendChild(toolDiv);
     });
 
-   
+
   }
 
   addCustomTool() {
@@ -968,13 +1002,13 @@ ${audioResponse.transcript || ''}
       prompt: ''
     });
     this.renderCustomTools();
-    
+
     // Focus the name input of the newly added tool
     const tools = document.querySelectorAll('.custom-tool');
     const newTool = tools[tools.length - 1];
     if (newTool) {
-        const nameInput = newTool.querySelector('.tool-name');
-        nameInput.focus();
+      const nameInput = newTool.querySelector('.tool-name');
+      nameInput.focus();
     }
   }
 
@@ -1017,47 +1051,47 @@ ${audioResponse.transcript || ''}
 
   async loadUserConfig() {
     try {
-        const config = await this.apiRequest("GET", "/users/config");
-        if (config && !config.error) {
-            // Parse the config if it's a string
-            const parsedConfig = typeof config.config === 'string' ? JSON.parse(config.config) : config.config;
-            
-            // Load system prompt first
-            if (parsedConfig.systemPrompt) {
-                this.aiSettings.systemPrompt = parsedConfig.systemPrompt;
-                // Update the textarea if it exists
-                const systemPromptInput = document.getElementById('systemPrompt');
-                if (systemPromptInput) {
-                    systemPromptInput.value = parsedConfig.systemPrompt;
-                }
-            } else {
-                this.aiSettings.systemPrompt = this.DEFAULT_SYSTEM_PROMPT;
-                const systemPromptInput = document.getElementById('systemPrompt');
-                if (systemPromptInput) {
-                    systemPromptInput.value = this.DEFAULT_SYSTEM_PROMPT;
-                }
-            }
+      const config = await this.apiRequest("GET", "/users/config");
+      if (config && !config.error) {
+        // Parse the config if it's a string
+        const parsedConfig = typeof config.config === 'string' ? JSON.parse(config.config) : config.config;
 
-            // Merge prompts
-            this.aiSettings.prompts = parsedConfig.prompts || {
-                ask: "Answer this question: {text}",
-                correct: "Correct any grammar or spelling errors in this text: {text}",
-                translate: "Translate this text to English: {text}"
-            };
-
-            // Merge customTools
-            this.aiSettings.customTools = parsedConfig.customTools || [];
-
-            if (parsedConfig.models) {
-                this.aiSettings.models = [...parsedConfig.models];
-            } else {
-                this.aiSettings.models = [...this.DEFAULT_MODELS];
-            }
-            this.updateModelDropdowns();
+        // Load system prompt first
+        if (parsedConfig.systemPrompt) {
+          this.aiSettings.systemPrompt = parsedConfig.systemPrompt;
+          // Update the textarea if it exists
+          const systemPromptInput = document.getElementById('systemPrompt');
+          if (systemPromptInput) {
+            systemPromptInput.value = parsedConfig.systemPrompt;
+          }
+        } else {
+          this.aiSettings.systemPrompt = this.DEFAULT_SYSTEM_PROMPT;
+          const systemPromptInput = document.getElementById('systemPrompt');
+          if (systemPromptInput) {
+            systemPromptInput.value = this.DEFAULT_SYSTEM_PROMPT;
+          }
         }
-        this.updateAIToolbar();
+
+        // Merge prompts
+        this.aiSettings.prompts = parsedConfig.prompts || {
+          ask: "Answer this question: {text}",
+          correct: "Correct any grammar or spelling errors in this text: {text}",
+          translate: "Translate this text to English: {text}"
+        };
+
+        // Merge customTools
+        this.aiSettings.customTools = parsedConfig.customTools || [];
+
+        if (parsedConfig.models) {
+          this.aiSettings.models = [...parsedConfig.models];
+        } else {
+          this.aiSettings.models = [...this.DEFAULT_MODELS];
+        }
+        this.updateModelDropdowns();
+      }
+      this.updateAIToolbar();
     } catch (error) {
-        console.error("Error loading user config:", error);
+      console.error("Error loading user config:", error);
     }
   }
 
@@ -1306,8 +1340,8 @@ ${audioResponse.transcript || ''}
     if (!selection.rangeCount) return null;
 
     const range = selection.getRangeAt(0);
-    const startContainer = range.startContainer.nodeType === Node.TEXT_NODE 
-      ? range.startContainer.parentElement 
+    const startContainer = range.startContainer.nodeType === Node.TEXT_NODE
+      ? range.startContainer.parentElement
       : range.startContainer;
 
     // Find the current block, prioritizing the block containing the cursor
@@ -1326,7 +1360,7 @@ ${audioResponse.transcript || ''}
     const currentBlockIndex = allBlocks.indexOf(currentBlock);
 
     // Collect context from previous blocks
-    const contextBlocks = allBlocks.slice(0, currentBlockIndex );
+    const contextBlocks = allBlocks.slice(0, currentBlockIndex);
     const contextText = contextBlocks
       .map(block => block.textContent.trim())
       .filter(text => text)
@@ -1347,27 +1381,27 @@ ${audioResponse.transcript || ''}
 
   async setupEventListeners() {
     try {
-    // Auto-save on user interactions
-    document.body.addEventListener('pointerdown', () => this.idleSync());
-    document.body.addEventListener('keypress', () => this.idleSync());
-    document.body.addEventListener('paste', () => this.idleSync());
+      // Auto-save on user interactions
+      document.body.addEventListener('pointerdown', () => this.idleSync());
+      document.body.addEventListener('keypress', () => this.idleSync());
+      document.body.addEventListener('paste', () => this.idleSync());
 
       // Get all required elements
-    const uploadModal = document.getElementById('uploadModal');
-    const uploadFileBtn = document.getElementById('uploadFileBtn');
-    const closeUploadBtn = uploadModal?.querySelector('.close');
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const selectFileBtn = document.getElementById('selectFileBtn');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const previewArea = document.getElementById('previewArea');
-    const filePreview = document.getElementById('filePreview');
-    const capturePhotoBtn = document.getElementById('capturePhotoBtn');
-    const captureVideoBtn = document.getElementById('captureVideoBtn');
-    const captureAudioBtn = document.getElementById('captureAudioBtn');
-    const stopRecordingBtn = document.getElementById('stopRecordingBtn');
-    const videoDevices = document.getElementById('videoDevices');
-    const audioDevices = document.getElementById('audioDevices');
+      const uploadModal = document.getElementById('uploadModal');
+      const uploadFileBtn = document.getElementById('uploadFileBtn');
+      const closeUploadBtn = uploadModal?.querySelector('.close');
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('fileInput');
+      const selectFileBtn = document.getElementById('selectFileBtn');
+      const uploadBtn = document.getElementById('uploadBtn');
+      const previewArea = document.getElementById('previewArea');
+      const filePreview = document.getElementById('filePreview');
+      const capturePhotoBtn = document.getElementById('capturePhotoBtn');
+      const captureVideoBtn = document.getElementById('captureVideoBtn');
+      const captureAudioBtn = document.getElementById('captureAudioBtn');
+      const stopRecordingBtn = document.getElementById('stopRecordingBtn');
+      const videoDevices = document.getElementById('videoDevices');
+      const audioDevices = document.getElementById('audioDevices');
       const quickAskBtn = document.getElementById('quickAskBtn');
       const addBlockBtn = document.getElementById('addBlockBtn');
       const viewSourceBtn = document.getElementById('viewSourceBtn');
@@ -1385,8 +1419,8 @@ ${audioResponse.transcript || ''}
       const formatButtons = document.querySelectorAll('.formatting-tools button[data-command]');
 
       // Setup file upload and media capture handlers
-      if (uploadModal && uploadFileBtn && closeUploadBtn && dropZone && 
-          fileInput && selectFileBtn && uploadBtn && previewArea && filePreview) {
+      if (uploadModal && uploadFileBtn && closeUploadBtn && dropZone &&
+        fileInput && selectFileBtn && uploadBtn && previewArea && filePreview) {
 
         uploadFileBtn.onclick = () => {
           uploadModal.style.display = 'block';
@@ -1458,7 +1492,7 @@ ${audioResponse.transcript || ''}
               mediaRecorder.onstop = async () => {
                 const blob = new Blob(chunks, { type: 'video/webm' });
                 stream.getTracks().forEach(track => track.stop());
-                
+
                 // Create preview
                 const videoPreview = document.createElement('video');
                 videoPreview.controls = true;
@@ -1468,7 +1502,7 @@ ${audioResponse.transcript || ''}
                 previewArea.style.display = 'block';
                 filePreview.innerHTML = '';
                 filePreview.appendChild(videoPreview);
-                
+
                 // Create file for upload
                 const file = new File([blob], 'video.webm', { type: 'video/webm' });
                 document.getElementById('fileInput').files = new DataTransfer().files;
@@ -1485,7 +1519,7 @@ ${audioResponse.transcript || ''}
               this.currentMediaRecorder = mediaRecorder;
               document.getElementById('mediaPreview').style.display = 'block';
               document.getElementById('videoPreview').style.display = 'block';
-              
+
               // Update button to show recording state
               captureVideoBtn.innerHTML = '<i class="fas fa-stop"></i> ';
               captureVideoBtn.style.backgroundColor = '#e74c3c';
@@ -1544,8 +1578,8 @@ ${audioResponse.transcript || ''}
         };
 
         document
-        .getElementById("insertIframe")
-        .addEventListener("click", () => this.insertIframe());
+          .getElementById("insertIframe")
+          .addEventListener("click", () => this.insertIframe());
 
         // Setup media capture handlers
         if (capturePhotoBtn) {
@@ -1606,20 +1640,20 @@ ${audioResponse.transcript || ''}
         }
       }
 
-    // Quick Ask button 
+      // Quick Ask button 
       if (quickAskBtn) {
         quickAskBtn.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        //set quickaskbtn disabled and enable it after 5 seconds
-        quickAskBtn.disabled = true;
-        quickAskBtn.style.backgroundColor = '#ccc';
-        setTimeout(() => {
-          quickAskBtn.disabled = false;
-          quickAskBtn.style.backgroundColor = '';
-        }, 5000);
-        
-        this.handleQuickAsk();
-    });
+          e.preventDefault();
+          //set quickaskbtn disabled and enable it after 5 seconds
+          quickAskBtn.disabled = true;
+          quickAskBtn.style.backgroundColor = '#ccc';
+          setTimeout(() => {
+            quickAskBtn.disabled = false;
+            quickAskBtn.style.backgroundColor = '';
+          }, 5000);
+
+          this.handleQuickAsk();
+        });
       }
 
       // Sidebar toggle
@@ -1672,32 +1706,32 @@ ${audioResponse.transcript || ''}
         });
       }
 
-    // Add block button
+      // Add block button
       if (addBlockBtn) {
         addBlockBtn.addEventListener('click', () => {
-      this.addNewBlock();
-    });
+          this.addNewBlock();
+        });
       }
 
-    // View source button
+      // View source button
       if (viewSourceBtn) {
         viewSourceBtn.addEventListener('click', () => {
-      this.toggleSourceView();
-    });
+          this.toggleSourceView();
+        });
       }
 
-    // Toggle editable button
+      // Toggle editable button
       if (toggleEditableBtn) {
         toggleEditableBtn.addEventListener('click', () => {
-      this.toggleEditable();
-    });
+          this.toggleEditable();
+        });
       }
 
-    // Save button
+      // Save button
       if (saveNoteBtn) {
         saveNoteBtn.addEventListener('click', () => {
-      this.saveNote();
-    });
+          this.saveNote();
+        });
       }
 
       // Plain text button
@@ -1705,34 +1739,34 @@ ${audioResponse.transcript || ''}
         plainTextBtn.addEventListener('click', () => this.convertToPlainText());
       }
 
-    // Auto-save on content changes
+      // Auto-save on content changes
       if (this.editor) {
         this.editor.addEventListener('input', () => {
-      this.delayedSaveNote();
-      this.updateTableOfContents();
-    });
+          this.delayedSaveNote();
+          this.updateTableOfContents();
+        });
 
         this.editor.addEventListener('paste', () => {
-      this.delayedSaveNote();
-    });
+          this.delayedSaveNote();
+        });
 
-    // Handle keyboard shortcuts
+        // Handle keyboard shortcuts
         this.editor.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
-        if (e.shiftKey) {
-          document.execCommand('insertLineBreak', false, null);
-          e.preventDefault();
-        } else {
-          document.execCommand('insertLineBreak', false, null);
-          e.preventDefault();
-        }
-      }
+            if (e.shiftKey) {
+              document.execCommand('insertLineBreak', false, null);
+              e.preventDefault();
+            } else {
+              document.execCommand('insertLineBreak', false, null);
+              e.preventDefault();
+            }
+          }
           if (e.key === '/' && !e.shiftKey) {
-        this.showBlockMenu(e);
-      }
+            this.showBlockMenu(e);
+          }
           if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
-        this.handleQuickAsk();
+            this.handleQuickAsk();
           }
         });
       }
@@ -1754,44 +1788,44 @@ ${audioResponse.transcript || ''}
     const selection = window.getSelection();
     const selectedText = selection.toString().trim();
 
-    if (selectedText) {
-      // Create a new block element
-      const block = document.createElement("div");
-      block.className = "block";
-      block.innerHTML = selectedText;
-      block.classList.add('highlight');
-      setTimeout(() => {
-        block.classList.remove('highlight');
-      }, 1500);
+    // if (selectedText) {
+    //   // Create a new block element
+    //   const block = document.createElement("div");
+    //   block.className = "block";
+    //   block.innerHTML = selectedText;
+    //   block.classList.add('highlight');
+    //   setTimeout(() => {
+    //     block.classList.remove('highlight');
+    //   }, 1500);
 
-      // Get the range of the selected text
-      const range = selection.getRangeAt(0);
+    //   // Get the range of the selected text
+    //   const range = selection.getRangeAt(0);
 
-      // Replace the selected text with the new block
-      range.deleteContents();
-      range.insertNode(block);
+    //   // Replace the selected text with the new block
+    //   range.deleteContents();
+    //   range.insertNode(block);
 
-      // Clear the selection
-      selection.removeAllRanges();
+    //   // Clear the selection
+    //   selection.removeAllRanges();
 
-      // Focus the new block
-      const textNode = block;
-      if (textNode) {
-        textNode.focus();
-        const newRange = document.createRange();
-        newRange.selectNodeContents(textNode);
-        newRange.collapse(true);
-        selection.addRange(newRange);
-      }
+    //   // Focus the new block
+    //   const textNode = block;
+    //   if (textNode) {
+    //     textNode.focus();
+    //     const newRange = document.createRange();
+    //     newRange.selectNodeContents(textNode);
+    //     newRange.collapse(true);
+    //     selection.addRange(newRange);
+    //   }
 
-      return block;
-    }
+    //   return block;
+    // }
 
     // Create new block for non-selected text case
     const block = document.createElement("div");
     block.className = "block";
     block.innerHTML = '\n\n';
-    
+
 
     // Add highlight effect
     block.classList.add('highlight');
@@ -1808,7 +1842,7 @@ ${audioResponse.transcript || ''}
     // Insert the block after the cursor position
     const blankLine = document.createElement('br');
     const blankLine2 = document.createElement('br');
-    
+
     if (currentBlock) {
       // Insert after current block
       currentBlock.after(blankLine);
@@ -1816,14 +1850,14 @@ ${audioResponse.transcript || ''}
       block.after(document.createElement('br'));
     } else {
       // Insert at cursor position
-      if(this.editor.contains(range.commonAncestorContainer)){
-          range.collapse(false); // Collapse to end
-          range.insertNode(blankLine);
-          blankLine.after(block);
-          block.after(document.createElement('br'));
+      if (this.editor.contains(range.commonAncestorContainer)) {
+        range.collapse(false); // Collapse to end
+        range.insertNode(blankLine);
+        blankLine.after(block);
+        block.after(document.createElement('br'));
 
       }
-      
+
 
     }
 
@@ -1834,6 +1868,7 @@ ${audioResponse.transcript || ''}
     newRange.collapse(true);
     selection.removeAllRanges();
     selection.addRange(newRange);
+    return block;
   }
 
 
@@ -1897,7 +1932,7 @@ ${audioResponse.transcript || ''}
   }
 
   insertIframe() {
-    
+
 
     const url = prompt("Enter webpage URL:");
     if (!url) return;
@@ -1906,7 +1941,7 @@ ${audioResponse.transcript || ''}
     const iframe = document.createElement("iframe");
     iframe.src = url;
     iframe.setAttribute("allowfullscreen", "true");
-    iframe.setAttribute("allow","accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; magnetometer; microphone; midi; payment; speaker; usb; vr");
+    iframe.setAttribute("allow", "accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; magnetometer; microphone; midi; payment; speaker; usb; vr");
 
     const range = window.getSelection().getRangeAt(0);
     //insert after range instead replace range
@@ -2141,10 +2176,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       this.currentNoteId = note_id;
       this.currentNoteTitle = note.title; // Store the title for later use
       this.lastUpdated = note.last_updated; // Store last_updated timestamp
-      
+
       // Add to recent notes
       this.addToRecentNotes(note_id, note.title);
-      
+
       // Update table of contents after loading note
       this.updateTableOfContents();
 
@@ -2164,23 +2199,23 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   addToRecentNotes(noteId, noteTitle) {
     // Get existing recent notes from localStorage
     let recentNotes = JSON.parse(localStorage.getItem('recentNotes') || '[]');
-    
+
     // Remove the note if it already exists
     recentNotes = recentNotes.filter(note => note.id !== noteId);
-    
+
     // Add the new note to the beginning
     recentNotes.unshift({
       id: noteId,
       title: noteTitle,
       timestamp: new Date().toISOString()
     });
-    
+
     // Keep only the last 5 notes
     recentNotes = recentNotes.slice(0, 5);
-    
+
     // Save back to localStorage
     localStorage.setItem('recentNotes', JSON.stringify(recentNotes));
-    
+
     // Update the UI
     this.updateRecentNotesUI();
   }
@@ -2189,13 +2224,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     // Get recent notes from localStorage
     const recentNotes = JSON.parse(localStorage.getItem('recentNotes') || '[]');
     const recentContainer = document.getElementById('recentNotes');
-    
+
     // Clear existing recent notes
     recentContainer.innerHTML = '';
-    
+
     // Filter out current note from display
     const filteredNotes = recentNotes.filter(note => note.id !== this.currentNoteId);
-    
+
     // Add recent notes next to the title
     filteredNotes.forEach(note => {
       const noteEl = document.createElement('span');
@@ -2203,7 +2238,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       noteEl.setAttribute('data-note-id', note.id);
       noteEl.textContent = note.title;
       noteEl.title = new Date(note.timestamp).toLocaleString();
-      
+
       noteEl.addEventListener('click', () => {
         // Store current note before switching
         if (this.currentNoteId && this.currentNoteTitle) {
@@ -2212,7 +2247,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Load the clicked note
         this.loadNote(note.id);
       });
-      
+
       recentContainer.appendChild(noteEl);
     });
   }
@@ -2262,25 +2297,25 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   //sync if in idle, not interactive for 30s
   idleSync() {
 
-    let idleTime=Date.now()-this.lastInteractionTime|| 0 ;
-    console.log('idelTime ', idleTime,this.lastInteractionTime);
-    
-    if( idleTime>30000){
+    let idleTime = Date.now() - this.lastInteractionTime || 0;
+    console.log('idelTime ', idleTime, this.lastInteractionTime);
+
+    if (idleTime > 30000) {
       this.saveNote();
     }
     // Update last interaction time
     this.lastInteractionTime = Date.now();
-    
+
   }
 
   //save delay for 10s, if called again, reset the timer
   delayedSaveNote() {
     console.log('delayedSaveNote start ');
-    
+
     clearTimeout(this.autoSaveTimeout);
     this.autoSaveTimeout = setTimeout(() => {
       console.log('delayedSaveNote saveNote ');
-      
+
       this.saveNote();
     }, 10000);
   }
@@ -2303,32 +2338,32 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       spinnerIcon.style.display = "inline-block";
       spanText.textContent = " ";
 
-        // Fetch current note from server to check last_updated
-        const currentNote = await this.apiRequest("GET", `/notes/${this.currentNoteId}`, null, false, true);
-        //compare content, if same return
-        if(currentNote && currentNote.content === this.editor.innerHTML){
-          // Show saved state
-          spinnerIcon.style.display = "none";
-          saveIcon.style.display = "inline-block";
-          spanText.textContent = "";
-          
-          return;
-        }
-        // Server has newer version - load it
-        //need convert last_updated to number to compare, the last_updated is string like 2025-01-01 02:25:51
-        if (currentNote && new Date(currentNote.last_updated).getTime() > new Date(this.lastUpdated).getTime()) {
-          this.editor.innerHTML = currentNote.content;
-          document.getElementById("noteTitle").textContent = currentNote.title;
-          this.lastUpdated = currentNote.last_updated;
-          this.currentNoteTitle = currentNote.title;
-          
-          // Show saved state
-          spinnerIcon.style.display = "none";
-          saveIcon.style.display = "inline-block";
-          spanText.textContent = "⮟";
-          
-          return;
-        }
+      // Fetch current note from server to check last_updated
+      const currentNote = await this.apiRequest("GET", `/notes/${this.currentNoteId}`, null, false, true);
+      //compare content, if same return
+      if (currentNote && currentNote.content === this.editor.innerHTML) {
+        // Show saved state
+        spinnerIcon.style.display = "none";
+        saveIcon.style.display = "inline-block";
+        spanText.textContent = "";
+
+        return;
+      }
+      // Server has newer version - load it
+      //need convert last_updated to number to compare, the last_updated is string like 2025-01-01 02:25:51
+      if (currentNote && new Date(currentNote.last_updated).getTime() > new Date(this.lastUpdated).getTime()) {
+        this.editor.innerHTML = currentNote.content;
+        document.getElementById("noteTitle").textContent = currentNote.title;
+        this.lastUpdated = currentNote.last_updated;
+        this.currentNoteTitle = currentNote.title;
+
+        // Show saved state
+        spinnerIcon.style.display = "none";
+        saveIcon.style.display = "inline-block";
+        spanText.textContent = "⮟";
+
+        return;
+      }
 
 
       // Get current title from the title element
@@ -2347,12 +2382,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         if (updatedNote) {
           this.lastUpdated = updatedNote.last_updated;
         }
-        
+
         // Show saved state
         spinnerIcon.style.display = "none";
         saveIcon.style.display = "inline-block";
         spanText.textContent = "⮝";
-        
+
       } else {
         // Show error state
         spinnerIcon.style.display = "none";
@@ -2383,11 +2418,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const sidebar = document.querySelector(".sidebar");
     const mainContent = document.querySelector(".main-content");
     const editor = document.querySelector(".editor");
-    
+
     if (sidebar && mainContent) {
-    sidebar.classList.toggle("hidden");
-    mainContent.classList.toggle("expanded");
-      
+      sidebar.classList.toggle("hidden");
+      mainContent.classList.toggle("expanded");
+
       // Adjust editor width when sidebar is hidden/shown
       if (editor) {
         if (sidebar.classList.contains("hidden")) {
@@ -2506,9 +2541,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
       // Add click handler to scroll to heading
       tocItem.addEventListener('click', () => {
-        heading.scrollIntoView({ behavior: 'instant', block: 'start',inline:'start' });
+        heading.scrollIntoView({ behavior: 'instant', block: 'start', inline: 'start' });
         setTimeout(() => {
-          editor.editor.scrollLeft=0;
+          editor.editor.scrollLeft = 0;
         }, 100);
       });
 
@@ -2609,7 +2644,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       const img = document.createElement('img');
       img.src = URL.createObjectURL(file);
       filePreview.appendChild(img);
-      
+
     } else if (file.type.startsWith('video/')) {
       const video = document.createElement('video');
       video.controls = true;
@@ -2656,7 +2691,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   //   block.className = "block iframe-block";
 
   //   const iframe = document.createElement("iframe");
-    
+
   //   iframe.setAttribute("frameborder", "0");
   //   iframe.setAttribute("allowfullscreen", "true");
   //   iframe.setAttribute("allow", "accelerometer; ambient-light-sensor; autoplay; battery; camera; clipboard-read; clipboard-write; display-capture; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; otp-credentials; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking");
@@ -2752,13 +2787,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         block.appendChild(fileInfoDiv);
         block.appendChild(document.createElement('br'))
         block.appendChild(document.createElement('br'))
-          //check range inside editor
-        if (selection.rangeCount > 0 && this.editor.contains(selection.getRangeAt(0)?.commonAncestorContainer) ) {
+        //check range inside editor
+        if (selection.rangeCount > 0 && this.editor.contains(selection.getRangeAt(0)?.commonAncestorContainer)) {
           const range = selection.getRangeAt(0);
-          
-        range.insertNode(brelement);
-        brelement.after(block);
-        block.after(document.createElement('br'));
+
+          range.insertNode(brelement);
+          brelement.after(block);
+          block.after(document.createElement('br'));
         } else {
           // If no selection, append to the end of editor
           this.editor.prepend(brelement);
@@ -2767,7 +2802,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
           // Scroll to the newly added content
         }
-        block.scrollIntoView(true,{ behavior: 'smooth' });
+        block.scrollIntoView(true, { behavior: 'smooth' });
 
         this.showToast('File uploaded successfully!', 'success');
         this.saveNote();
@@ -2870,28 +2905,28 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         }
       });
 
-    // Set canvas dimensions to match video
-    canvas.width = videoPreview.videoWidth;
-    canvas.height = videoPreview.videoHeight;
+      // Set canvas dimensions to match video
+      canvas.width = videoPreview.videoWidth;
+      canvas.height = videoPreview.videoHeight;
 
-    // Draw video frame to canvas
-    context.drawImage(videoPreview, 0, 0);
+      // Draw video frame to canvas
+      context.drawImage(videoPreview, 0, 0);
 
-    // Convert canvas to blob
+      // Convert canvas to blob
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
-      
+
       // Stop the stream and hide video preview
       stream.getTracks().forEach(track => track.stop());
       videoPreview.srcObject = null;
       videoPreview.style.display = 'none';
-      
+
       // Create preview
       const previewArea = document.getElementById('previewArea');
       const filePreview = document.getElementById('filePreview');
       const img = document.createElement('img');
       img.src = URL.createObjectURL(blob);
       img.style.maxWidth = '100%';
-      
+
       // Add file info above preview
       const fileInfo = document.createElement('div');
       fileInfo.style.fontSize = '12px';
@@ -2903,18 +2938,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         <strong>Resolution:</strong> ${canvas.width}x${canvas.height}<br>
         <strong>Size:</strong> ${this.formatFileSize(blob.size)}
       `;
-      
+
       previewArea.style.display = 'block';
       filePreview.innerHTML = '';
       filePreview.appendChild(img);
       filePreview.appendChild(fileInfo);
-      
+
       // Create file for upload
       const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(file);
       document.getElementById('fileInput').files = dataTransfer.files;
-      
+
       return blob;
     } catch (error) {
       console.error('Error capturing photo:', error);
@@ -2958,7 +2993,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         document.getElementById('audioRecordingControls').style.display = 'none';
         document.getElementById('captureAudioBtn').innerHTML = '<i class="fas fa-microphone"></i>';
         document.getElementById('captureAudioBtn').style.backgroundColor = '#2ecc71';
-        
+
         // Create preview with file info
         const fileInfo = document.createElement('div');
         fileInfo.style.fontSize = '12px';
@@ -2970,7 +3005,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           <strong>Duration:</strong> ${document.getElementById('recordingTime').textContent}<br>
           <strong>Size:</strong> ${this.formatFileSize(blob.size)}
         `;
-        
+
         const audioPreview = document.createElement('audio');
         audioPreview.controls = true;
         audioPreview.src = URL.createObjectURL(blob);
@@ -3048,12 +3083,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Delegate click event to parent element
   document.body.addEventListener('click', (event) => {
     const target = event.target;
-    if (target.tagName === 'IMG' || target.tagName === 'VIDEO' || target.tagName === 'AUDIO' ) {
-        event.preventDefault(); // Prevent default behavior
-        document.activeElement.blur(); // Unfocus the contenteditable area
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (target.tagName === 'IMG' || target.tagName === 'VIDEO' || target.tagName === 'AUDIO') {
+      event.preventDefault(); // Prevent default behavior
+      document.activeElement.blur(); // Unfocus the contenteditable area
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-});
+  });
 });
 // Add event listener for topbar pin button
 document.getElementById('topbarPinBtn').addEventListener('pointerdown', (e) => {
@@ -3074,7 +3109,7 @@ document.getElementById('topbarPinBtn').addEventListener('pointerdown', (e) => {
         currentBlock.classList.add('highlight');
         setTimeout(() => {
           currentBlock.classList.remove('highlight');
-      }, 1000);
+        }, 1000);
 
       }, 200);
       return;
@@ -3082,7 +3117,7 @@ document.getElementById('topbarPinBtn').addEventListener('pointerdown', (e) => {
     // Unpin other blocks
     document.querySelectorAll('.pinned').forEach(b => b.classList.remove('pinned'));
     currentBlock.classList.add('pinned');
-    
+
   }
 });
 
