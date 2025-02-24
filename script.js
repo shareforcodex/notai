@@ -549,7 +549,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     document.addEventListener("selectionchange", this.selectionChangeHandler);
   }
 
-  async handleAIAction(action, text) {
+  async handleAIAction(action, text,includeCurrentBlockMedia=false) {
     // Check if text has less than 3 words
     const useComment = text.length < 20;
 
@@ -600,8 +600,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       let imgElement = selectedContent.querySelector('img');
       
       //check for audio and video
-      let audioElement = selectedContent.querySelector('audio');
-      let videoElement = selectedContent.querySelector('video');
+      let audioElement = selectedContent.querySelector('audio') || (includeCurrentBlockMedia? currentBlock.querySelector('audio') : null);
+      let videoElement = selectedContent.querySelector('video') || (includeCurrentBlockMedia? currentBlock.querySelector('video') : null);
       
 
       if (imgElement && imgElement.src) {
@@ -847,6 +847,15 @@ ${audioResponse.transcript || ''}
     } catch (e) {
       console.error(e);
     }
+  }
+
+  async handleQuickAsk() {
+    const context = this.getBlockContext();
+    if (!context) {
+      alert('Please select or create a block first');
+      return;
+    }
+    this.handleAIAction('ask', context,true);
   }
 
   setupAISettings() {
@@ -1334,197 +1343,7 @@ ${audioResponse.transcript || ''}
   }
 
 
-  async handleQuickAsk() {
-    const context = this.getBlockContext();
-    if (!context) {
-      alert('Please select or create a block first');
-      return;
-    }
 
-    // Get selected models from buttons
-    const model1 = document.getElementById("modelBtn1").getAttribute('data-selected-value') || 'gpt-4o';
-    const model2 = document.getElementById("modelBtn2").getAttribute('data-selected-value') || 'none';
-    const model3 = document.getElementById("modelBtn3").getAttribute('data-selected-value') || 'none';
-
-    // Build array of selected models (excluding "none")
-    const selectedModels = [];
-    if (model1 !== "none") selectedModels.push(model1);
-    if (model2 !== "none") selectedModels.push(model2);
-    if (model3 !== "none") selectedModels.push(model3);
-
-    if (selectedModels.length === 0) {
-      alert("Please select at least one AI model");
-      return;
-    }
-
-    // Check for image in current block
-    const selection = window.getSelection();
-    const range = selection.getRangeAt(0);
-    let currentBlock;
-    if (range.startContainer.nodeType === Node.TEXT_NODE) {
-      currentBlock = range.startContainer.parentElement.closest('.block');
-    } else {
-      currentBlock = range.startContainer.closest('.block');
-    }
-
-    let parentNode = currentBlock.parentElement;
-    while (parentNode && parentNode.nodeName !== 'BODY') {
-      if(parentNode.className === 'block') {
-        currentBlock = parentNode;
-      }
-      parentNode = parentNode.parentElement;
-    }
-
-    // Get image URL if present
-    let imageUrl = null;
-    if (currentBlock) {
-      const imgElement = currentBlock.querySelector('img');
-      if (imgElement && imgElement.src) {
-        imageUrl = imgElement.src;
-      }
-    }
-
-    // Make parallel requests to selected models
-    const requests = selectedModels.map(modelName => {
-      const modelConfig = this.aiSettings.models.find(m => m.model_id === modelName);
-      let requestBody = {
-        messages: [
-          {
-            role: "system",
-            content: this.aiSettings.systemPrompt,
-          },
-          {
-            role: "user",
-            content: imageUrl ? [
-              { 
-                type: "text", 
-                text: (context.contextText ? 
-                  `this is our chat history, you need only reply to the last message based on the history:\n${context.contextText}\n\n` : '') 
-                  + context.currentText
-              },
-              { 
-                type: "image_url", 
-                image_url: {
-                  url: imageUrl,
-                }
-              }
-            ] : (context.contextText ? 
-              `this is our chat history, you need only reply to the last message based on the history:\n${context.contextText}\n\n` : '') 
-              + context.currentText
-          },
-        ],
-        model: modelName,
-        temperature: 0.7,
-        top_p: 1,
-      };
-
-      // If model has additional configuration in 'else' field, parse and merge it
-      if (modelConfig && modelConfig.else) {
-        try {
-          const additionalConfig = JSON.parse(modelConfig.else);
-          requestBody = { ...requestBody, ...additionalConfig };
-        } catch (error) {
-          console.error('Error parsing additional config:', error);
-        }
-      }
-
-      return this.apiRequest('POST', '', requestBody, true);
-    });
-
-    try {
-      // Process each request
-      requests.forEach((request, index) => {
-        const modelName = selectedModels[index];
-
-        request.then(response => {
-          if (response.error) {
-            // Handle rate limit or other API errors
-            const errorMessage = response.error.code === "RateLimitReached"
-              ? `Rate limit reached for ${modelName}. Please try again later or select other model.`
-              : `Error with ${modelName}: ${response.error.message || 'Unknown error'}`;
-            this.showToast(errorMessage);
-            return;
-          }
-
-          if (response.choices && response.choices[0]) {
-            let aiResponse = response.choices[0].message.content|| " " + `<br>
-<audio src="data:audio/wav;base64,${response.choices[0].message.audio.data}" controls></audio> <br>
-${response.choices[0].message.audio.transcript} <br>
-`;  
-           
-
-            // Create new block for this model's response with h2 header
-            const block = document.createElement("div");
-            block.className = "block";
-            block.innerHTML = `${(aiResponse)}
-<br>
-<br>
-by ${modelName}`;
-
-
-
-            // Find the last AI response block for this quick ask
-            let lastResponseBlock = currentBlock;
-            let nextBlock = currentBlock?.nextElementSibling || currentBlock;
-
-            // // Keep going until we find a block that's not an AI response
-            // while (nextBlock) {
-            //     if (nextBlock.querySelector('h2')?.textContent.includes('AI Response')) {
-            //         lastResponseBlock = nextBlock;
-            //         nextBlock = nextBlock.nextElementSibling;
-            //     } else {
-            //         break;
-            //     }
-            // }
-
-            // Insert blank line and block
-            let blankLine = document.createElement('br');
-            if (currentBlock) {
-              //add new line at end of block
-
-              currentBlock.after(blankLine);
-              // Insert new block after blank line
-              blankLine.after(block);
-
-              block.classList.add('highlight')
-              setTimeout(() => {
-                block.classList.remove('highlight')
-
-              }, 1500);
-              currentBlock = block;
-            } else {
-              // Insert at cursor position
-              const selection = window.getSelection();
-              if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                range.collapse(false);
-
-                range.insertNode(block);
-                range.insertNode(blankLine);
-
-                range.setStartAfter(blankLine);
-                range.collapse(true);
-                selection.removeAllRanges();
-                selection.addRange(range);
-              } else {
-                this.editor.appendChild(block);
-                this.editor.appendChild(blankLine);
-              }
-            }
-            this.delayedSaveNote();
-
-
-          }
-        }).catch(error => {
-          console.error(`Error with ${modelName} request:`, error);
-          this.showToast(`Error with ${modelName}: ${error.message || 'Network error'}`);
-        });
-      });
-    } catch (error) {
-      console.error('Quick Ask error:', error);
-      this.showToast('Error getting AI responses');
-    }
-  }
 
   async setupEventListeners() {
     try {
@@ -1789,7 +1608,16 @@ by ${modelName}`;
 
     // Quick Ask button 
       if (quickAskBtn) {
-        quickAskBtn.addEventListener('click', () => {
+        quickAskBtn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        //set quickaskbtn disabled and enable it after 5 seconds
+        quickAskBtn.disabled = true;
+        quickAskBtn.style.backgroundColor = '#ccc';
+        setTimeout(() => {
+          quickAskBtn.disabled = false;
+          quickAskBtn.style.backgroundColor = '';
+        }, 5000);
+        
         this.handleQuickAsk();
     });
       }
