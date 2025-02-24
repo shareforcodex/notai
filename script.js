@@ -746,10 +746,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           let chunkCounter=0;
 
           while (!done) {
-            chunkCounter++;
             const { done: doneReading, value } = await reader.read();
             done = doneReading;
             const chunk = decoder.decode(value);
+            chunkCounter++;
 
             const lines = chunk.split("\n");
             const parsedLines = lines
@@ -768,6 +768,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
             try {
               for (const parsedLine of parsedLines) {
+
                 if (parsedLine) {
                   const choices = parsedLine.choices;
                   if (choices) {
@@ -780,15 +781,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
                       block.innerHTML += content;
   
                     }
-                    if(chunkCounter === 3){
+                    
+                    if(chunkCounter === 6){
+                      block.innerHTML =text;
+                      
+                    }
+                    if(chunkCounter === 80){
                       block.innerHTML =text;
                       
                     }
                     
-                    if(chunkCounter === 50){
-                      block.innerHTML =text;
-                      
-                    }
                     console.log('chunkcounter:',chunkCounter);
                   }
                 }
