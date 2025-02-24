@@ -2822,6 +2822,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   // Add media device handling methods
   async setupMediaDevices() {
     try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
       const audioDevices = devices.filter(device => device.kind === 'audioinput');
@@ -2842,6 +2843,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Select first device by default
         if (index === 0) {
           option.selected = true;
+          
         }
       });
 
