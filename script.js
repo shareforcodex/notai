@@ -594,14 +594,44 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
       // Check for image in selection or current block
       let imageUrl = null;
+      let audioUrl = null;
+      let videoUrl = null;
       let selectedContent = range.cloneContents();
       let imgElement = selectedContent.querySelector('img');
       
+      //check for audio and video
+      let audioElement = selectedContent.querySelector('audio');
+      let videoElement = selectedContent.querySelector('video');
       
 
       if (imgElement && imgElement.src) {
         imageUrl = imgElement.src;
       }
+
+      if (audioElement && audioElement.src) {
+        audioUrl = audioElement.src;
+        try {
+          const response = await fetch(audioUrl);
+          const blob = await response.blob();
+          
+          // Use FileReader to convert Blob to Base64
+          const reader = new FileReader();
+          const base64Promise = new Promise((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result.split(',')[1]); // Extract Base64 part
+            reader.onerror = reject;
+            reader.readAsDataURL(blob); // Converts to data URL (includes Base64)
+          });
+          
+          audioUrl = await base64Promise;
+          console.log("Base64 audio:", audioUrl);
+        } catch (error) {
+          console.error("Error converting to Base64:", error);
+        }
+      }
+      if (videoElement && videoElement.src) {
+        videoUrl = videoElement.src;
+      }
+      
 
       if (useComment) {
         // Create span for the selected text
@@ -617,6 +647,31 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         }
       }
 
+      // build content from audio, image, and video tags
+      let content=(imageUrl || audioUrl || videoUrl) ? [
+        { type: "text", text: prompt },
+        ...(imageUrl ? [{
+        type: "image_url",
+        image_url: {
+          url: imageUrl,
+        }
+        }] : []),
+        ...(audioUrl ? [{
+        type: "input_audio",
+        input_audio: {
+          data: audioUrl,
+          format: 'mpeg'
+        }
+        }] : []),
+        ...(videoUrl ? [{
+        type: "input_video",
+        video_url: {
+          data: videoUrl,
+          format: 'mpeg'
+        }
+        }] : [])
+      ] : prompt
+
       // Make parallel requests to selected models
       const requests = selectedModels.map(modelName => {
         const modelConfig = this.aiSettings.models.find(m => m.model_id === modelName);
@@ -628,15 +683,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
             },
             {
               role: "user",
-              content: imageUrl ? [
-                { type: "text", text: prompt },
-                { 
-                  type: "image_url", 
-                  image_url: {
-                    url: imageUrl,
-                  }
-                }
-              ] : prompt
+              content: content
             },
           ],
           model: modelName,
@@ -2825,9 +2872,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Create file info div
         const fileInfoDiv = document.createElement('div');
         fileInfoDiv.style.fontSize = '12px';
-        fileInfoDiv.style.color = '#666';
-        fileInfoDiv.style.margin = '0px';
-        fileInfoDiv.style.padding = '0px';
+
         fileInfoDiv.innerHTML = `
           <strong> ${uploadUrl}</strong><br>
           <strong>Type:</strong> ${file.type || 'Unknown'} 
@@ -2859,13 +2904,23 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
         // Create a new block for the media
         let brelement = document.createElement('br');
-        const block = document.createElement('div');
+        const selection = window.getSelection();
+        let block = null;
+        if (selection.rangeCount > 0) {
+          const commonAncestor = selection.getRangeAt(0).commonAncestorContainer;
+          block = commonAncestor.nodeType === Node.ELEMENT_NODE
+            ? commonAncestor.closest('.block')
+            : commonAncestor.parentElement.closest('.block');
+        }
+        if (!block) {
+          block = document.createElement('div');
+          block.className = 'block';
+        }
         block.className = 'block';
         block.appendChild(element);
         block.appendChild(fileInfoDiv);
-
-        // Try to insert at selection, if no selection append to editor
-        const selection = window.getSelection();
+        block.appendChild(document.createElement('br'))
+        block.appendChild(document.createElement('br'))
           //check range inside editor
         if (selection.rangeCount > 0 && this.editor.contains(selection.getRangeAt(0)?.commonAncestorContainer) ) {
           const range = selection.getRangeAt(0);
@@ -3194,7 +3249,7 @@ document.getElementById('topbarPinBtn').addEventListener('pointerdown', (e) => {
       return;
     }
     // Unpin other blocks
-    document.querySelectorAll('.block.pinned').forEach(b => b.classList.remove('pinned'));
+    document.querySelectorAll('.pinned').forEach(b => b.classList.remove('pinned'));
     currentBlock.classList.add('pinned');
     
   }
