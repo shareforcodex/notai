@@ -608,28 +608,31 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         imageUrl = imgElement.src;
       }
 
-      if (audioElement && audioElement.src) {
-        audioUrl = audioElement.src;
+      async function fetchAndConvertToBase64(url) {
         try {
-          const response = await fetch(audioUrl);
+          const response = await fetch(url);
           const blob = await response.blob();
-          
-          // Use FileReader to convert Blob to Base64
-          const reader = new FileReader();
-          const base64Promise = new Promise((resolve, reject) => {
+          const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result.split(',')[1]); // Extract Base64 part
             reader.onerror = reject;
-            reader.readAsDataURL(blob); // Converts to data URL (includes Base64)
+            reader.readAsDataURL(blob);
           });
-          
-          audioUrl = await base64Promise;
-          console.log("Base64 audio:", audioUrl);
+          return base64;
         } catch (error) {
           console.error("Error converting to Base64:", error);
+          return null;
         }
       }
+
+      if (audioElement && audioElement.src) {
+        audioUrl = await fetchAndConvertToBase64(audioElement.src);
+        console.log("Base64 audio:", audioUrl);
+      }
+
       if (videoElement && videoElement.src) {
-        videoUrl = videoElement.src;
+        videoUrl = await fetchAndConvertToBase64(videoElement.src);
+        console.log("Base64 video:", videoUrl);
       }
       
 
@@ -665,7 +668,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         }] : []),
         ...(videoUrl ? [{
         type: "input_video",
-        video_url: {
+        input_video: {
           data: videoUrl,
           format: 'mpeg'
         }
