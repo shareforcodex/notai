@@ -3170,7 +3170,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 });
 // Add event listener for topbar pin button
-document.getElementById('topbarPinBtn').addEventListener('click', () => {
+document.getElementById('topbarPinBtn').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+
+
   const selection = window.getSelection();
   if (selection.rangeCount === 0) return;
   const range = selection.getRangeAt(0);
@@ -3178,11 +3181,22 @@ document.getElementById('topbarPinBtn').addEventListener('click', () => {
   if (currentBlock) {
     if (currentBlock.classList.contains('pinned')) {
       currentBlock.classList.remove('pinned')
+      setTimeout(() => {
+        //scroll to the block
+        currentBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        //flash the block
+        currentBlock.classList.add('highlight');
+        setTimeout(() => {
+          currentBlock.classList.remove('highlight');
+      }, 1000);
+
+      }, 200);
       return;
     }
     // Unpin other blocks
     document.querySelectorAll('.block.pinned').forEach(b => b.classList.remove('pinned'));
     currentBlock.classList.add('pinned');
+    
   }
 });
 

@@ -1248,14 +1248,14 @@ pre code {
 
 .pinned {
     position: fixed;
-    max-height: 220px;
+    max-height: 500px;
     min-height: 100px;
-    width: 90%;
+    width: 95%;
     top: 40px;
-    left: 5vw;
-    z-index: 99;
+    left: 2%;
+    z-index: 110;
     box-shadow: 0 16px 16px rgba(0, 0, 0, 0.3);
-    border: 2px solid #2ecc71;
+    border: 2px solid lightblue;
 }
 
 /* Upload Modal Styles */
