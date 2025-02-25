@@ -758,7 +758,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     }
 
 
-    
+    if (useComment) {
+      // Create span for the selected text
+      utils.underlineSelectedText();
+
+    }
 
     // build content from audio, image, and video tags
     let content = (imageUrl || audioUrl || videoUrl) ? [
@@ -848,6 +852,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           block.after(document.createElement('br'));
           block.before(document.createElement('br'));
         }
+        block.classList.add('showcomment');
         
       }
       else{
