@@ -588,6 +588,8 @@ iframe {
     background-color: white;
     border: 1px solid lightblue;
     height: 40vh !important;
+    width: 90vw !important;
+    max-width: 700px;
     z-index: 110;
     box-shadow: 0 -8px 10px rgba(0, 0, 0, 0.315);
 }
