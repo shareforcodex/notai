@@ -149,12 +149,12 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
         this.currentBlock.classList.remove('highlight');
       }, 1500);
 
-      if(e.target.tagName==="U"){
+      if (e.target.tagName === "U") {
         console.log(e.target);
         document.querySelector('.showcomment')?.classList.remove('showcomment');
-        this.showCommentTooltip(e.target.innerHTML,e);
+        this.showCommentTooltip(e.target.innerHTML, e);
       }
-      else{
+      else {
         let node = e.target;
         while (node) {
           if (node.classList && node.classList.contains('comment')) {
@@ -162,7 +162,7 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
           }
           node = node.parentElement;
         }
-        
+
         document.querySelector('.showcomment')?.classList.remove('showcomment');
       }
     });
@@ -831,7 +831,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
     requests.forEach(async (request, index) => {
       let block = null;
-      if(useComment){
+      if (useComment) {
         //get commentContainer with the id, if not exsit create it, it a div, append at bottom of editor, then move block into it, make block id to comment+selection text
         let commentContainer = document.getElementById('commentContainer');
         if (!commentContainer) {
@@ -856,10 +856,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           block.before(document.createElement('br'));
         }
         block.classList.add('showcomment');
-        
+
       }
-      else{
-        block=this.addNewBlock();
+      else {
+        block = this.addNewBlock();
       }
 
       const modelName = selectedModels[index];
@@ -955,7 +955,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           this.delayedSaveNote();
         }
 
-        if (response.choices && response.choices[0]) {
+        else  {
+          let responseObject = await response.json();
+          response=responseObject;
           const aiResponse = response.choices[0].message.content || '';
           let audioResponse = response.choices[0].message.audio;
 
@@ -1040,7 +1042,7 @@ ${audioResponse.transcript || ''}
       alert('Please select or create a block first');
       return;
     }
-    this.handleAIAction('ask','this is chat history :\n'+ context.contextText + '\n\n this is current query:\n' + context.currentText, true);
+    this.handleAIAction('ask', 'this is chat history :\n' + context.contextText + '\n\n this is current query:\n' + context.currentText, true);
   }
 
   setupAISettings() {
@@ -1049,6 +1051,7 @@ ${audioResponse.transcript || ''}
     const closeBtn = modal.querySelector('.close');
     const saveBtn = document.getElementById('saveSettings');
     const addCustomToolBtn = document.getElementById('addCustomTool');
+    const enableStreamCheckbox = document.getElementById('enableStreamCheckbox');
 
     // Load current settings
     document.getElementById('systemPrompt').value = this.aiSettings.systemPrompt;
@@ -1056,7 +1059,13 @@ ${audioResponse.transcript || ''}
     document.getElementById('correctPrompt').value = this.aiSettings.prompts.correct;
     document.getElementById('translatePrompt').value = this.aiSettings.prompts.translate;
 
+    // Ensure the else object exists
+    if (!this.aiSettings.else) {
+      this.aiSettings.else = {};
+    }
 
+    // Set the checkbox based on the current setting
+    enableStreamCheckbox.checked = this.aiSettings.else.enable_stream || false; // Default to false if undefined
 
     this.renderCustomTools();
     this.renderModelSettings();
@@ -1085,6 +1094,7 @@ ${audioResponse.transcript || ''}
     document.getElementById('addModelBtn').onclick = () => this.addModel();
 
     saveBtn.onclick = async () => {
+
       await this.saveAISettings();
       modal.style.display = "none";
       this.updateAIToolbar();
@@ -1107,11 +1117,6 @@ ${audioResponse.transcript || ''}
         }, 500);
       }
     };
-
-
-
-
-
   }
 
   renderCustomTools() {
@@ -1271,7 +1276,10 @@ ${audioResponse.transcript || ''}
         name: toolDiv.querySelector('.tool-name').value,
         prompt: toolDiv.querySelector('.tool-prompt').value
       })),
-      models: updatedModels
+      models: updatedModels,
+      else: {
+        enable_stream: document.getElementById('enableStreamCheckbox').checked
+      }
     };
 
     try {
@@ -1326,7 +1334,7 @@ ${audioResponse.transcript || ''}
         const comment = target.getAttribute('data-comment');
         if (comment) {
           currentCommentElement = target;
-          this.showCommentTooltip(target,e);
+          this.showCommentTooltip(target, e);
         }
       } else {
         // Hide tooltip when clicking anywhere else
@@ -1354,16 +1362,16 @@ ${audioResponse.transcript || ''}
     });
   }
 
-  showCommentTooltip(target,e) {
+  showCommentTooltip(target, e) {
     console.log(target);
-    let targetid='comment'+target;
-    let targetElem=document.getElementById(targetid);
+    let targetid = 'comment' + target;
+    let targetElem = document.getElementById(targetid);
     targetElem.classList.add('showcomment');
     //get mouse postion from e, and set target left ,top to that
-    let left=e.clientX;
-    let top=e.clientY;
+    let left = e.clientX;
+    let top = e.clientY;
     // targetElem.style.left=left+'px';
-    targetElem.style.top=top+50+'px';
+    targetElem.style.top = top + 50 + 'px';
   }
 
   editComment(element) {
@@ -2830,7 +2838,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   //   iframe.setAttribute("frameborder", "0");
   //   iframe.setAttribute("allowfullscreen", "true");
-  //   iframe.setAttribute("allow", "accelerometer; ambient-light-sensor; autoplay; battery; camera; clipboard-read; clipboard-write; display-capture; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; otp-credentials; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking");
+  //   iframe.setAttribute("allow", "accelerometer; ambient-light-sensor; autoplay; battery; camera; clipboard-read; clipboard-write; display-capture; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; otp-credentials; payment; picture-in-picture; publickey-credentials-get; screen-wake-lock; sync-xhr; usb; web-share; xr-spatial-tracking");
 
   //   block.appendChild(iframe);
   //   this.editor.appendChild(block);
