@@ -48,7 +48,7 @@ class HTMLEditor {
   constructor() {
     // Define DEFAULT_SYSTEM_PROMPT as a class property
     this.DEFAULT_SYSTEM_PROMPT = `
-you are a assistant to help user write better doc now,  only output html body innerHTML code  to me, don't put it in codeblock do not use markdown;
+you are a assistant with most advanced knowledge, you should write html doc to reply me,  only output html body innerHTML code  to me, don't put it in codeblock do not use markdown;
 you can put a head h2 with 2 to 5 words at start to summary the doc, aligned at left; 
 
 use inline style to avoid affect parent element, make the html doc looks beautiful, clean and mordern, make style like MDN site.  
@@ -701,7 +701,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
     // Get the current block where selection is  
     let selection = window.getSelection();
-    let currentBlock = selection.anchorNode.parentElement.closest(".block");
+    let currentBlock = this.currentBlock;
     const range = selection.getRangeAt(0);
     let commentedSpan = null;
 
@@ -710,11 +710,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     let audioUrl = null;
     let videoUrl = null;
     let selectedContent = range.cloneContents();
-    let imgElement = selectedContent.querySelector('img');
+    let imgElement = selectedContent?.querySelector('img') || (includeCurrentBlockMedia ? currentBlock.querySelector('img') : null);
 
     //check for audio and video
-    let audioElement = selectedContent.querySelector('audio') || (includeCurrentBlockMedia ? currentBlock.querySelector('audio') : null);
-    let videoElement = selectedContent.querySelector('video') || (includeCurrentBlockMedia ? currentBlock.querySelector('video') : null);
+    let audioElement = selectedContent?.querySelector('audio') || (includeCurrentBlockMedia ? currentBlock.querySelector('audio') : null);
+    let videoElement = selectedContent?.querySelector('video') || (includeCurrentBlockMedia ? currentBlock.querySelector('video') : null);
 
 
     if (imgElement && imgElement.src) {
@@ -1040,7 +1040,7 @@ ${audioResponse.transcript || ''}
       alert('Please select or create a block first');
       return;
     }
-    this.handleAIAction('ask', context.contextText + '\n\n' + context.currentText, true);
+    this.handleAIAction('ask','this is chat history :\n'+ context.contextText + '\n\n this is current query:\n' + context.currentText, true);
   }
 
   setupAISettings() {
