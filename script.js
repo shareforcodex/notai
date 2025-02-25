@@ -4,6 +4,11 @@ let currentUser = {
   credentials: localStorage.getItem("credentials"),
 };
 
+
+let globalDevices = {
+  mediaStream: null
+};
+
 class HTMLEditor {
   constructor() {
     // Define DEFAULT_SYSTEM_PROMPT as a class property
@@ -97,6 +102,53 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     this.checkAuthAndLoadNotes();
     this.loadFolders();
     this.setupCodeCopyButton();
+
+    this.editor.addEventListener('pointerdown', (e) => {
+      this.currentBlock=this.getCurrentOtterBlock(e.target);
+      console.log('current blcok',this.currentBlock)
+      this.currentBlock.classList.add('highlight');
+      setTimeout(() => {
+        this.currentBlock.classList.remove('highlight');
+      }, 1500);
+    });
+  }
+
+  getCurrentOtterBlock(startElement){
+    if (!startElement) {
+      startElement = document.activeElement || document.querySelector('.block');
+      
+      // If still no starting element found, return null
+      if (!startElement) {
+        return null;
+      }
+    }
+    
+    // Start with the current element
+    let currentElement = startElement;
+    
+    // Find the closest .block element from the starting element
+    let closestBlock = currentElement.classList.contains('block') ? 
+      currentElement : currentElement.closest('.block');
+    
+    // If no block found, return null
+    if (!closestBlock) {
+      return null;
+    }
+    
+    // Find the outermost .block until we reach body
+    let outermostBlock = closestBlock;
+    let parent = outermostBlock.parentElement;
+    
+    while (parent && parent !== document.body) {
+      // If parent has .block class, update outermost block
+      if (parent.classList.contains('block')) {
+        outermostBlock = parent;
+      }
+      parent = parent.parentElement;
+    }
+    
+    return outermostBlock;
+    
   }
 
   setupCodeCopyButton() {
@@ -632,13 +684,25 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     }
 
     if (audioElement && audioElement.src) {
-      audioUrl = await fetchAndConvertToBase64(audioElement.src);
-      console.log("Base64 audio:", audioUrl);
+      if (this.aiSettings.compitable_mode) {
+        audioUrl = await fetchAndConvertToBase64(audioElement.src);
+        console.log("Base64 audio:", audioUrl);
+      }
+      else{
+        audioUrl= audioElement.src;
+      }
+
     }
 
     if (videoElement && videoElement.src) {
-      videoUrl = await fetchAndConvertToBase64(videoElement.src);
-      console.log("Base64 video:", videoUrl);
+      if (this.aiSettings.compitable_mode) {
+        videoUrl = await fetchAndConvertToBase64(videoElement.src);
+        console.log("Base64 video:", videoUrl);
+      }
+      else{
+        videoUrl= videoElement.src || videoElement.querySelector('source').src;
+      }
+
     }
 
 
@@ -743,7 +807,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           const reader = response.body.getReader();
           const decoder = new TextDecoder("utf-8");
           let done = false;
-          let chunkCounter=0;
+          let chunkCounter = 0;
 
           while (!done) {
             const { done: doneReading, value } = await reader.read();
@@ -772,38 +836,38 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
                 if (parsedLine) {
                   const choices = parsedLine.choices;
                   if (choices) {
-                    
+
                     const delta = choices[0]?.delta;
                     const content = delta?.content;
                     // Update the UI with the new content
                     if (content) {
                       text += content;
                       block.innerHTML += content;
-  
+
                     }
-                    
-                    if(chunkCounter === 6){
-                      block.innerHTML =text;
-                      
+
+                    if (chunkCounter === 6) {
+                      block.innerHTML = text;
+
                     }
-                    if(chunkCounter === 80){
-                      block.innerHTML =text;
-                      
+                    if (chunkCounter === 80) {
+                      block.innerHTML = text;
+
                     }
-                    
-                    console.log('chunkcounter:',chunkCounter);
+
+                    console.log('chunkcounter:', chunkCounter);
                   }
                 }
-              }  
+              }
             } catch (error) {
-              console.log('error when parse line', error,'parsedLines:',parsedLines)
+              console.log('error when parse line', error, 'parsedLines:', parsedLines)
             }
-            
+
 
           }
           block.innerHTML = text + '<br><br> by ' + modelName;
           console.log(text);
-
+          this.delayedSaveNote();
         }
 
         if (response.choices && response.choices[0]) {
@@ -891,7 +955,7 @@ ${audioResponse.transcript || ''}
       alert('Please select or create a block first');
       return;
     }
-    this.handleAIAction('ask', context, true);
+    this.handleAIAction('ask', context.contextText+'\n\n'+context.currentText, true);
   }
 
   setupAISettings() {
@@ -1347,7 +1411,7 @@ ${audioResponse.transcript || ''}
       : range.startContainer;
 
     // Find the current block, prioritizing the block containing the cursor
-    let currentBlock = startContainer.closest('.block');
+    let currentBlock = this.currentBlock;
 
     // If no block found, try to find the last block
     if (!currentBlock) {
@@ -1600,6 +1664,7 @@ ${audioResponse.transcript || ''}
               shootPhotoBtn.style.display = 'block';
               capturePhotoBtn.style.display = 'none';
             }
+            globalDevices.mediaStream = stream;
           });
         }
 
@@ -1615,6 +1680,20 @@ ${audioResponse.transcript || ''}
                 shootPhotoBtn.style.display = 'none';
                 capturePhotoBtn.style.display = 'block';
               }
+
+              let stream = globalDevices.mediaStream;
+              const tracks = stream.getTracks();
+              // Stop each track
+              tracks.forEach(track => {
+                track.stop();
+                console.log('Stopped track:', track.kind, track.id);
+              });
+              stream = null;
+              globalDevices.mediaStream = null;
+
+
+
+
             }
           });
         }
@@ -1837,9 +1916,7 @@ ${audioResponse.transcript || ''}
 
     // Get current selection and find closest block
     const range = selection.getRangeAt(0);
-    let currentBlock = range.startContainer.nodeType === Node.TEXT_NODE
-      ? range.startContainer.parentElement.closest(".block")
-      : range.startContainer.closest(".block");
+    let currentBlock = this.currentBlock;
 
     // Insert the block after the cursor position
     const blankLine = document.createElement('br');
@@ -2822,7 +2899,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   // Add media device handling methods
   async setupMediaDevices() {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      globalDevices.mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
       const audioDevices = devices.filter(device => device.kind === 'audioinput');
@@ -2843,7 +2920,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Select first device by default
         if (index === 0) {
           option.selected = true;
-          
+
         }
       });
 
@@ -2874,7 +2951,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     try {
       const constraints = {
         video: videoDeviceId ? { deviceId: { exact: videoDeviceId } } : true,
-        audio: includeAudio ? { echoCancellation: false, noiseSuppression: true } : false
+        audio: includeAudio ? { echoCancellation: false, noiseSuppression: false } : false
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -2895,6 +2972,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   }
 
   async capturePhoto(stream) {
+    const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
     const videoPreview = document.getElementById('videoPreview');
     const canvas = document.getElementById('photoCanvas');
     const context = canvas.getContext('2d');
@@ -2920,7 +2998,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
 
       // Stop the stream and hide video preview
-      stream.getTracks().forEach(track => track.stop());
+      globalDevices.mediaStream.getTracks().forEach(track => track.stop());
       videoPreview.srcObject = null;
       videoPreview.style.display = 'none';
 
@@ -2953,6 +3031,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(file);
       document.getElementById('fileInput').files = dataTransfer.files;
+
 
       return blob;
     } catch (error) {
@@ -3056,7 +3135,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     window.editor = new HTMLEditor();
-    await window.editor.loadFolders();
+    window.editor.loadFolders();
 
     // Profile Modal functionality
     const profileModal = document.getElementById('profileModal');
