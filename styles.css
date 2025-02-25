@@ -572,6 +572,25 @@ iframe {
     transition: background-color 0.2s;
 }
 
+.commentContainer {
+    margin: 10px 0;
+    padding: 5px;
+    border-radius: 4px;
+    height: 500px;
+    border: 1px solid #e0e0e0;
+    
+}
+
+.showcomment{
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background-color: white;
+    border: 1px solid lightblue;
+    height: 40vh !important;
+    z-index: 110;
+    box-shadow: 0 -8px 10px rgba(0, 0, 0, 0.315);
+}
 
 
 

@@ -9,6 +9,41 @@ let globalDevices = {
   mediaStream: null
 };
 
+
+let utils = {
+  underlineSelectedText() {
+    if (window.getSelection) {
+      const selection = window.getSelection();
+
+      if (selection.rangeCount > 0 && !selection.isCollapsed) {
+        const range = selection.getRangeAt(0);
+        //check if it already in <u>,do nothing then
+        if (range.startContainer.parentNode.nodeName === 'U') {
+          return;
+        }
+
+        // Create underline element
+        const uElement = document.createElement('u');
+
+        try {
+          // Wrap selected content in the u element
+          range.surroundContents(uElement);
+          return uElement;
+
+          // Clear selection
+          //selection.removeAllRanges();
+        } catch (e) {
+          console.error("Cannot wrap selection that crosses multiple nodes:", e);
+          alert("Cannot underline text that spans across different elements or already includes formatting. Try selecting text within a single paragraph.");
+        }
+      } else {
+        alert("Please select some text first.");
+      }
+    }
+  }
+}
+
+
 class HTMLEditor {
   constructor() {
     // Define DEFAULT_SYSTEM_PROMPT as a class property
@@ -104,41 +139,58 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     this.setupCodeCopyButton();
 
     this.editor.addEventListener('pointerdown', (e) => {
-      this.currentBlock=this.getCurrentOtterBlock(e.target);
-      console.log('current blcok',this.currentBlock)
+      this.currentBlock = this.getCurrentOtterBlock(e.target);
+      console.log('current blcok', this.currentBlock)
       this.currentBlock.classList.add('highlight');
       setTimeout(() => {
         this.currentBlock.classList.remove('highlight');
       }, 1500);
+
+      if(e.target.tagName==="U"){
+        console.log(e.target);
+        document.querySelector('.showcomment')?.classList.remove('showcomment');
+        this.showCommentTooltip(e.target.innerHTML,e);
+      }
+      else{
+        let node = e.target;
+        while (node) {
+          if (node.classList && node.classList.contains('comment')) {
+            return;
+          }
+          node = node.parentElement;
+        }
+        
+        document.querySelector('.showcomment')?.classList.remove('showcomment');
+      }
     });
   }
 
-  getCurrentOtterBlock(startElement){
+  getCurrentOtterBlock(startElement) {
     if (!startElement) {
       startElement = document.activeElement || document.querySelector('.block');
-      
+
       // If still no starting element found, return null
       if (!startElement) {
         return null;
       }
     }
-    
+
     // Start with the current element
     let currentElement = startElement;
-    
+
     // Find the closest .block element from the starting element
-    let closestBlock = currentElement.classList.contains('block') ? 
+    let closestBlock = currentElement.classList.contains('block') ?
       currentElement : currentElement.closest('.block');
-    
+
     // If no block found, return null
     if (!closestBlock) {
       return null;
     }
-    
+
     // Find the outermost .block until we reach body
     let outermostBlock = closestBlock;
     let parent = outermostBlock.parentElement;
-    
+
     while (parent && parent !== document.body) {
       // If parent has .block class, update outermost block
       if (parent.classList.contains('block')) {
@@ -146,9 +198,9 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
       }
       parent = parent.parentElement;
     }
-    
+
     return outermostBlock;
-    
+
   }
 
   setupCodeCopyButton() {
@@ -609,8 +661,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
   }
 
   async handleAIAction(action, text, includeCurrentBlockMedia = false) {
-    // Check if text has less than 3 words
-    const useComment = text.length < 20;
+    // Check if text has less than 3 words or less than 20
+    const useComment = text.length < 5 || text.split(' ').length < 3;
 
     let customTool = null;
     let prompt = "";
@@ -688,8 +740,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         audioUrl = await fetchAndConvertToBase64(audioElement.src);
         console.log("Base64 audio:", audioUrl);
       }
-      else{
-        audioUrl= audioElement.src;
+      else {
+        audioUrl = audioElement.src;
       }
 
     }
@@ -699,18 +751,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         videoUrl = await fetchAndConvertToBase64(videoElement.src);
         console.log("Base64 video:", videoUrl);
       }
-      else{
-        videoUrl= videoElement.src || videoElement.querySelector('source').src;
+      else {
+        videoUrl = videoElement.src || videoElement.querySelector('source').src;
       }
 
     }
 
 
-    if (useComment) {
-      // Create span for the selected text
-
-
-    }
+    
 
     // build content from audio, image, and video tags
     let content = (imageUrl || audioUrl || videoUrl) ? [
@@ -775,7 +823,36 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     const totalResponses = requests.length;
 
     requests.forEach(async (request, index) => {
-      let block = this.addNewBlock();
+      let block = null;
+      if(useComment){
+        //get commentContainer with the id, if not exsit create it, it a div, append at bottom of editor, then move block into it, make block id to comment+selection text
+        let commentContainer = document.getElementById('commentContainer');
+        if (!commentContainer) {
+          commentContainer = document.createElement('div');
+          commentContainer.id = 'commentContainer';
+          commentContainer.classList.add('commentContainer');
+          this.editor.appendChild(commentContainer);
+        }
+        //move  commentContainer to last child of the editor
+        this.editor.appendChild(commentContainer);
+
+        //get block from commentContainer, if not exsit ,addnewblock
+        let commentId = 'comment' + selection.toString();
+        block = document.getElementById(commentId);
+        if (!block) {
+          block = this.addNewBlock();
+          block.id = commentId;
+          block.classList.add('comment');
+          commentContainer.appendChild(block);
+          block.innerHTML = `<h4 style="margin: 0; padding: 5px 0;"></h4>${block.id}`;
+          block.after(document.createElement('br'));
+          block.before(document.createElement('br'));
+        }
+        
+      }
+      else{
+        block=this.addNewBlock();
+      }
 
       const modelName = selectedModels[index];
       // Create a new block for longer responses
@@ -790,7 +867,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           // Handle rate limit or other API errors
           const errorMessage = response.error.code === "RateLimitReached"
             ? `Rate limit reached for ${modelName}. Please try again later or choose another model.`
-            : `Error with ${modelName}: ${response.error.message || response.error.toString() || 'Unknown error'}`;
+            : `Error with ${modelName}: ${response.error.message + response.error.code || response.error.toString() || 'Unknown error'}`;
           this.showToast(errorMessage);
           completedResponses++;
           if (completedResponses === totalResponses) {
@@ -895,7 +972,7 @@ ${(aiResponse)}`;
 
             // Show or update tooltip for all responses
             const tooltip = document.getElementById('commentTooltip');
-            this.showCommentTooltip(commentedSpan, updatedComment);
+            // this.showCommentTooltip(commentedSpan.innerHTML);
             // Add highlight effect to AI-generated comment
             document.querySelector('.comment-tooltip').classList.add('highlight');
             setTimeout(() => {
@@ -939,7 +1016,7 @@ ${audioResponse.transcript || ''}
         }
       }).catch(error => {
         console.error(`Error with ${modelName} request:`, error);
-        this.showToast(`Error with ${modelName}: ${error.message || 'Network error'}`);
+        this.showToast(`Error with ${modelName}: ${error || ' error'}`);
         completedResponses++;
         if (completedResponses === totalResponses) {
           this.delayedSaveNote(true);
@@ -955,7 +1032,7 @@ ${audioResponse.transcript || ''}
       alert('Please select or create a block first');
       return;
     }
-    this.handleAIAction('ask', context.contextText+'\n\n'+context.currentText, true);
+    this.handleAIAction('ask', context.contextText + '\n\n' + context.currentText, true);
   }
 
   setupAISettings() {
@@ -1241,7 +1318,7 @@ ${audioResponse.transcript || ''}
         const comment = target.getAttribute('data-comment');
         if (comment) {
           currentCommentElement = target;
-          this.showCommentTooltip(target, comment);
+          this.showCommentTooltip(target,e);
         }
       } else {
         // Hide tooltip when clicking anywhere else
@@ -1269,44 +1346,16 @@ ${audioResponse.transcript || ''}
     });
   }
 
-  showCommentTooltip(element, comment) {
-    const tooltip = document.getElementById('commentTooltip');
-    tooltip.innerHTML = `
-      <div class="tooltip-header">
-        <div class="comment-actions">
-          <button class="edit-comment">Edit</button>
-          <button class="toggle-size-comment">Zoom</button>
-          <button class="close-tooltip">Close</button>
-          </div>
-        
-      </div>
-      <div class="comment-content">${comment}</div>
-    `;
-
-    // Reattach close button event listener
-    tooltip.querySelector('.close-tooltip').addEventListener('click', () => {
-      tooltip.style.display = 'none';
-      currentCommentElement = null;
-    });
-
-    const toggleBtn = tooltip.querySelector('.toggle-size-comment');
-    toggleBtn.addEventListener('click', () => {
-      if (tooltip.dataset.large === 'true') {
-        tooltip.dataset.large = 'false';
-        tooltip.style.maxWidth = '';
-        tooltip.style.top = '';
-        tooltip.style.height = '';
-
-      } else {
-        tooltip.dataset.large = 'true';
-        tooltip.style.maxWidth = '90vw';
-        tooltip.style.height = '50vh';
-        tooltip.style.top = '50vh';
-      }
-    });
-
-    // Position the tooltip
-    tooltip.style.display = 'block';
+  showCommentTooltip(target,e) {
+    console.log(target);
+    let targetid='comment'+target;
+    let targetElem=document.getElementById(targetid);
+    targetElem.classList.add('showcomment');
+    //get mouse postion from e, and set target left ,top to that
+    let left=e.clientX;
+    let top=e.clientY;
+    // targetElem.style.left=left+'px';
+    targetElem.style.top=top+50+'px';
   }
 
   editComment(element) {
