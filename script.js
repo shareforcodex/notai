@@ -2919,9 +2919,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         let block = null;
         if (selection.rangeCount > 0) {
           const commonAncestor = selection.getRangeAt(0).commonAncestorContainer;
-          block = commonAncestor.nodeType === Node.ELEMENT_NODE
-            ? commonAncestor.closest('.block')
-            : commonAncestor.parentElement.closest('.block');
+          block = this.currentBlock;
         }
         if (!block) {
           block = document.createElement('div');

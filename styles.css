@@ -112,9 +112,7 @@ h3 {
 }
 
 video, img {
- 
-    width: auto;
-    height: 400px !important; 
+     height: 300px !important; 
 }
 audio {
     width: 90%;
@@ -136,15 +134,20 @@ iframe {
 }
 
 .block {
-    position: static;
-    max-height: 500px;
+    padding: 10px 0px 0px 5px;
+    max-height: 400px;
     min-height: 100px;
     overflow: auto;
-    scrollbar-color: lightblue white;
-    background-color: #f5f5f5;
-    /* Light gray */
+    scrollbar-color: rgb(236, 234, 234) white;
+    background-color: #f5f5f560;
+    border: 1px solid rgb(231, 228, 228); /* Added border style */
 
+    /* Light gray */
     scrollbar-width: thin;
+}
+
+.current-block {
+    max-height: 600px;
 }
 
 
@@ -565,12 +568,6 @@ iframe {
 
 
 
-.block {
-    margin: 10px 0;
-    padding: 5px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-}
 
 .commentContainer {
     margin: 10px 0;
@@ -1251,8 +1248,8 @@ pre code {
 /* Pin Block Button Styles */
 
 .highlight {
-    background-color: rgb(233, 255, 233);
-    transition: box-shadow 0.3s ease, border 0.3s ease, background-color 0.3s ease;
+    
+    border: 1px solid lightblue; /* Added border style */
 
 }
 
