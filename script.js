@@ -2916,36 +2916,35 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Create a new block for the media
         let brelement = document.createElement('br');
         const selection = window.getSelection();
-        let block = null;
-        if (selection.rangeCount > 0) {
-          const commonAncestor = selection.getRangeAt(0).commonAncestorContainer;
-          block = this.currentBlock;
-        }
+        let block = this.currentBlock;
+        
         if (!block) {
           block = document.createElement('div');
           block.className = 'block';
+          if (selection.rangeCount > 0 && this.editor.contains(selection.getRangeAt(0)?.commonAncestorContainer)) {
+            const range = selection.getRangeAt(0);
+  
+            range.insertNode(brelement);
+            brelement.after(block);
+            block.after(document.createElement('br'));
+          } else {
+            // If no selection, append to the end of editor
+            this.editor.prepend(brelement);
+            this.editor.prepend(block);
+            this.editor.prepend(document.createElement('br'));
+  
+            // Scroll to the newly added content
+          }
         }
-        block.className = 'block';
         block.appendChild(element);
         block.appendChild(fileInfoDiv);
         block.appendChild(document.createElement('br'))
         block.appendChild(document.createElement('br'))
         //check range inside editor
-        if (selection.rangeCount > 0 && this.editor.contains(selection.getRangeAt(0)?.commonAncestorContainer)) {
-          const range = selection.getRangeAt(0);
+        setTimeout(() => {
+          element.scrollIntoView(true, { behavior: 'smooth' });
 
-          range.insertNode(brelement);
-          brelement.after(block);
-          block.after(document.createElement('br'));
-        } else {
-          // If no selection, append to the end of editor
-          this.editor.prepend(brelement);
-          this.editor.prepend(block);
-          this.editor.prepend(document.createElement('br'));
-
-          // Scroll to the newly added content
-        }
-        block.scrollIntoView(true, { behavior: 'smooth' });
+        }, 800);        
 
         this.showToast('File uploaded successfully!', 'success');
         this.saveNote();
