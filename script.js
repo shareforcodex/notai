@@ -664,8 +664,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
   }
 
   async handleAIAction(action, text, includeCurrentBlockMedia = false) {
-    // Check if text has less than 3 words or less than 20
-    const useComment = text.length < 5 || text.split(' ').length < 3;
+    const useComment =  text.split(' ').length < 3;
 
     let customTool = null;
     let prompt = "";
@@ -809,13 +808,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         model: modelName,
         temperature: 0.7,
         top_p: 1,
-        stream: this.aiSettings.else.enable_stream,
+        stream:  this.aiSettings.else.enable_stream,
       };
 
       // If model has additional configuration in 'else' field, parse and merge it
+      let additionalConfig = {};
       if (modelConfig && modelConfig.else) {
         try {
-          const additionalConfig = JSON.parse(modelConfig.else);
+        additionalConfig = JSON.parse(modelConfig.else);
           requestBody = { ...requestBody, ...additionalConfig };
         } catch (error) {
           console.error('Error parsing additional config:', error);
@@ -823,13 +823,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       }
 
 
-      return this.apiRequest('POST', '', requestBody, true);
-    });
 
-    let completedResponses = 0;
-    const totalResponses = requests.length;
 
-    requests.forEach(async (request, index) => {
+      let request= this.apiRequest('POST', '', requestBody, true);
       let block = null;
       if (useComment) {
         //get commentContainer with the id, if not exsit create it, it a div, append at bottom of editor, then move block into it, make block id to comment+selection text
@@ -862,7 +858,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         block = this.addNewBlock();
       }
 
-      const modelName = selectedModels[index];
       // Create a new block for longer responses
       //  const block = document.createElement("div");
       //  block.className = "block";
@@ -884,8 +879,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           return;
         }
 
+        let enable_stream =  this.aiSettings.else.enable_stream ;
+        if(additionalConfig.stream===false) enable_stream=false;
 
-        if (this.aiSettings.else.enable_stream) {
+        //if model name include gpt-4o-audio or gpt-4o-mini-audio, set enable_stream to false;
+        modelName.includes('gpt-4o-audio') ? enable_stream = false : enable_stream = enable_stream;
+        modelName.includes('gpt-4o-mini-audio') ? enable_stream = false : enable_stream = enable_stream;
+
+        if (enable_stream) {
           //the text will be in eventstream like {"id":"chatcmpl-b2RL2SeSw6wgjYjgB5qKfURWtXI1w","choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}],"created":1740386280,"model":"gemini-2.0-flash","object":"chat.completion.chunk"}	
           //so we need to concat the content
           let text = "";
@@ -1032,7 +1033,14 @@ ${audioResponse.transcript || ''}
           this.delayedSaveNote(true);
         }
       });
+
     });
+
+    let completedResponses = 0;
+    const totalResponses = requests.length;
+
+    requests.forEach(async (request, index) => {
+          });
 
   }
 
