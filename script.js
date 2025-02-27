@@ -2883,8 +2883,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         const fileInfoDiv = document.createElement('div');
         fileInfoDiv.style.fontSize = '12px';
 
+        let fileURL=`https://pub-cb2c87ea7373408abb1050dd43e3cd8e.r2.dev/${shaCode}.${extension}`;
         fileInfoDiv.innerHTML = `
-          <strong> ${uploadUrl}</strong><br>
+          <strong> ${fileURL}</strong><br>
           <strong>Type:</strong> ${file.type || 'Unknown'} 
           <strong>Size:</strong> ${this.formatFileSize(file.size)} 
           ${deviceInfo} <br>
@@ -2895,19 +2896,19 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         let element;
         if (file.type.startsWith('image/')) {
           element = document.createElement('img');
-          element.src = uploadUrl;
+          element.src = fileURL;
           element.alt = file.name;
         } else if (file.type.startsWith('video/')) {
           element = document.createElement('video');
-          element.src = uploadUrl;
+          element.src = fileURL;
           element.controls = true;
         } else if (file.type.startsWith('audio/')) {
           element = document.createElement('audio');
-          element.src = uploadUrl;
+          element.src = fileURL;
           element.controls = true;
         } else {
           element = document.createElement('iframe');
-          element.src = uploadUrl;
+          element.src = fileURL;
           element.style.height = '500px';
           element.setAttribute('allowfullscreen', 'true');
         }
