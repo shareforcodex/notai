@@ -162,11 +162,11 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     this.setupCodeCopyButton();
 
     this.editor.addEventListener('pointerdown', (e) => {
-      this.currentBlock = this.getCurrentOtterBlock(e.target);
+      this.currentBlock = this.getCurrentOtterBlock(e.target) ;
       console.log('current blcok', this.currentBlock)
-      this.currentBlock.classList.add('highlight');
+      this.currentBlock?.classList?.add('highlight');
       setTimeout(() => {
-        this.currentBlock.classList.remove('highlight');
+        this.currentBlock?.classList?.remove('highlight');
       }, 1500);
 
       if (e.target.tagName === "U") {
@@ -175,6 +175,8 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
         this.showCommentTooltip(e.target.innerHTML, e);
       }
       else {
+        document.querySelector('.showcomment')?.classList.remove('showcomment');
+
         let node = e.target;
         while (node) {
           if (node.classList && node.classList.contains('comment')) {
@@ -183,7 +185,6 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
           node = node.parentElement;
         }
 
-        document.querySelector('.showcomment')?.classList.remove('showcomment');
       }
     });
   }
@@ -1407,7 +1408,7 @@ ${audioResponse.transcript || ''}
     let left = e.clientX;
     let top = e.clientY;
     // targetElem.style.left=left+'px';
-    targetElem.style.top = top + 50 + 'px';
+    targetElem.style.top = top + 150 + 'px';
   }
 
   editComment(element) {
@@ -1934,15 +1935,20 @@ ${audioResponse.transcript || ''}
 
         // Handle keyboard shortcuts
         this.editor.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            if (e.shiftKey) {
-              document.execCommand('insertLineBreak', false, null);
+          
+            if (e.key === 'Enter' ) {
               e.preventDefault();
-            } else {
               document.execCommand('insertLineBreak', false, null);
-              e.preventDefault();
-            }
+
+              
           }
+        
+
+
+           
+          
+          
+
           if (e.key === '/' && !e.shiftKey) {
             this.showBlockMenu(e);
           }
@@ -2035,6 +2041,7 @@ ${audioResponse.transcript || ''}
         range.insertNode(blankLine);
         blankLine.after(block);
         block.after(document.createElement('br'));
+        this.currentBlock=block;
 
       }
 
