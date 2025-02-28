@@ -156,8 +156,6 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
 
 
 
-    // Initialize content and check auth
-    this.updateContent();
 
     this.checkAuthAndLoadNotes();
     this.loadFolders();
@@ -431,13 +429,7 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     return md.trim();
   }
 
-  // Update markdown content
-  updateContent() {
-    this.content = this.htmlToMarkdown(this.editor.innerHTML);
-    if (this.sourceViewEditor) {
-      this.sourceViewEditor.setValue(this.content);
-    }
-  }
+
 
   async fetchReadmeContent() {
     try {
@@ -514,7 +506,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
         })
         this.sourceViewEditor.setValue(formattedCode)
-      }, 2000);
+      }, 1000);
 
       // Add input event listener to sync changes
       // sourceView.addEventListener('input', () => {
@@ -2115,8 +2107,7 @@ ${audioResponse.transcript || ''}
     range.deleteContents();
     range.insertNode(block);
 
-    // Update markdown content
-    this.updateContent();
+   
   }
 
   insertIframe() {
@@ -2359,7 +2350,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     if (note && !note.error) {
       this.editor.innerHTML = note.content || "";
       document.getElementById("noteTitle").textContent = note.title || "";
-      this.updateContent();
       // Update the current note ID
       this.currentNoteId = note_id;
       this.currentNoteTitle = note.title; // Store the title for later use
