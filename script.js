@@ -45,7 +45,7 @@ let utils = {
 
 
 class HTMLEditor {
-  constructor() {
+   constructor() {
     // Define DEFAULT_SYSTEM_PROMPT as a class property
     this.DEFAULT_SYSTEM_PROMPT = `
 you are a assistant with most advanced knowledge, you should write html doc to reply me,  only output html body innerHTML code  to me, don't put it in codeblock do not use markdown;
@@ -94,7 +94,29 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
 
     // Assign verified elements
     this.editor = editor;
-    this.sourceView = sourceView;
+    this.sourceViewEditor =  CodeMirror.fromTextArea(
+      sourceView,
+      {
+        mode: "htmlmixed",
+        lineNumbers: true,
+        autoCloseTags: true,
+        matchBrackets: true,
+        autoCloseBrackets: true,
+        indentUnit: 2,
+        tabSize: 2,
+        lineWrapping: true,
+        foldGutter: true,
+        styleActiveLine: true,
+        
+        
+      },
+    );
+    setTimeout(() => {
+      let editorView=this.sourceViewEditor.getWrapperElement();
+      editorView.style.display='none';
+      editorView.style.height='80vh';
+      
+    }, 2000);
     this.toolbar = toolbar;
     this.aiToolbar = aiToolbar;
     this.currentNoteTitle = "";
@@ -412,8 +434,8 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
   // Update markdown content
   updateContent() {
     this.content = this.htmlToMarkdown(this.editor.innerHTML);
-    if (this.sourceView) {
-      this.sourceView.textContent = this.content;
+    if (this.sourceViewEditor) {
+      this.sourceViewEditor.setValue(this.content);
     }
   }
 
@@ -471,27 +493,41 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
   toggleSourceView() {
     this.isSourceView = !this.isSourceView;
-    const sourceView = this.sourceView;
+    const sourceView = this.sourceViewEditor;
     const editor = this.editor;
 
     if (this.isSourceView) {
       // Switching to source view
-      this.updateContent();  // Convert current HTML to markdown
-      sourceView.value = editor.innerHTML;  // Show HTML source
-      editor.style.display = "none";
-      sourceView.style.display = "block";
+      this.editor.style.display = "none";
+      this.sourceViewEditor.getWrapperElement().style.display = "block";
+      this.sourceViewEditor.setValue(editor.innerHTML);
+
+      setTimeout(() => {
+        let formattedCode = prettier.format(this.editor.innerHTML, {
+          parser: "html",
+          plugins: [prettierPlugins.html], 
+          "trailingComma": "es5",
+          "tabWidth": 4,
+          "useTabs": false,
+          "singleQuote": true,
+          
+
+        })
+        this.sourceViewEditor.setValue(formattedCode)
+      }, 2000);
 
       // Add input event listener to sync changes
-      sourceView.addEventListener('input', () => {
-        editor.innerHTML = sourceView.value;
-        this.delayedSaveNote();
-      });
+      // sourceView.addEventListener('input', () => {
+      //   editor.innerHTML = sourceView.value;
+      //   this.delayedSaveNote();
+      // });
+      
+
     } else {
       // Switching back to editor view
-      editor.innerHTML = sourceView.value;  // Apply source changes to editor
-      editor.style.display = "block";
-      sourceView.style.display = "none";
-      this.updateContent();  // Update markdown content
+      this.editor.innerHTML = this.sourceViewEditor.getValue();  // Apply source changes to editor
+      this.editor.style.display = "block";
+      this.sourceViewEditor.getWrapperElement().style.display      = "none";
       this.delayedSaveNote();
     }
   }
@@ -3223,12 +3259,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       profileModal.style.display = 'none';
     });
 
-    // Close modal when clicking outside of the modal content
-    window.addEventListener('click', (event) => {
-      if (event.target == profileModal) {
-        profileModal.style.display = 'none';
-      }
-    });
+
+   
+    
   } catch (error) {
     console.error('Error initializing editor:', error);
     // Redirect to auth page if initialization fails

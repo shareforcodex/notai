@@ -2,18 +2,45 @@
 <html lang="en">
 
 <head>
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Free notai</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://corsp.suisuy.eu.org?https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+
+
+    <!-- codemirror -->
+    <!-- Import CodeMirror from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/view/view.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/closetag.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/closebrackets.min.js"></script>
+    <!-- Import CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/dracula.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/fold/foldgutter.min.css" />
+
+    <!-- premitter -->
+    <script src="https://cdn.jsdelivr.net/npm/prettier@2.3.2/standalone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prettier@2.3.2/parser-html.js"></script>
+
+
+
 </head>
 
 <body>
     <div class="editor-container">
-        
+
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="auth-buttons">
@@ -41,16 +68,17 @@
         <div class="main-content">
             <div class="toolbar">
                 <div class="formatting-tools">
-                    
-                <button id="toggleSidebar" class="toggle-sidebar-btn">
-                    <i class="fas fa-bars"></i>
-                </button>
+
+                    <button id="toggleSidebar" class="toggle-sidebar-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <div class="dropdown user-settings">
                         <button class="dropbtn"><i class="fas fa-user-cog"></i></button>
                         <div class="dropdown-content">
                             <button id="userProfileBtn"><i class="fas fa-user"></i> Profile</button>
                             <button id="aiSettingsBtn"><i class="fas fa-cog"></i> AI Settings</button>
-                            <button id="logoutBtn" onclick="window.editor.logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                            <button id="logoutBtn" onclick="window.editor.logout()"><i class="fas fa-sign-out-alt"></i>
+                                Logout</button>
                         </div>
                     </div>
 
@@ -72,31 +100,43 @@
                                 </div>
                                 <div class="settings-section">
                                     <h3 id="default-prompts">Default Prompts</h3>
-                                    <div class="prompt-item system-prompt" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px;">
-                                        <label style="display: block; font-weight: bold; color: #007bff; margin-bottom: 10px;">System Prompt:</label>
+                                    <div class="prompt-item system-prompt"
+                                        style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px;">
+                                        <label
+                                            style="display: block; font-weight: bold; color: #007bff; margin-bottom: 10px;">System
+                                            Prompt:</label>
                                         <div style=" gap: 10px; align-items: flex-start;">
-                                            <textarea id="systemPrompt" placeholder="Enter system prompt that will be prepended before all AI messages" style="width: 100%; min-height: 100px; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-family: monospace; resize: vertical;"></textarea>
+                                            <textarea id="systemPrompt"
+                                                placeholder="Enter system prompt that will be prepended before all AI messages"
+                                                style="width: 100%; min-height: 100px; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-family: monospace; resize: vertical;"></textarea>
                                             <br>
-                                            <button id="resetSystemPrompt" class="reset-btn" style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">
+                                            <button id="resetSystemPrompt" class="reset-btn"
+                                                style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">
                                                 <i class="fas fa-undo"></i> Reset
                                             </button>
                                         </div>
-                                        <small class="help-text" style="display: block; margin-top: 8px; color: #6c757d;">This prompt will be used as the system message for all AI interactions.<b>if the app broken, try to reset the system prompt</b></small>
+                                        <small class="help-text"
+                                            style="display: block; margin-top: 8px; color: #6c757d;">This prompt will be
+                                            used as the system message for all AI interactions.<b>if the app broken, try
+                                                to reset the system prompt</b></small>
                                     </div>
-                                    <p class="help-text">Use {text} in your prompt templates where you want the selected text inserted.</p>
+                                    <p class="help-text">Use {text} in your prompt templates where you want the selected
+                                        text inserted.</p>
                                     <div class="prompt-settings">
                                         <div class="prompt-item">
                                             <label>Ask Button:</label>
-                                            <textarea class="tool-prompt" id="askPrompt" placeholder="Enter prompt template" 
-                                            ></textarea>
+                                            <textarea class="tool-prompt" id="askPrompt"
+                                                placeholder="Enter prompt template"></textarea>
                                         </div>
                                         <div class="prompt-item">
                                             <label>Correct Button:</label>
-                                            <textarea class="tool-prompt" id="correctPrompt" placeholder="Enter prompt template" ></textarea>
+                                            <textarea class="tool-prompt" id="correctPrompt"
+                                                placeholder="Enter prompt template"></textarea>
                                         </div>
                                         <div class="prompt-item">
                                             <label>Translate Button:</label>
-                                            <textarea class="tool-prompt" id="translatePrompt" placeholder="Enter prompt template" ></textarea>
+                                            <textarea class="tool-prompt" id="translatePrompt"
+                                                placeholder="Enter prompt template"></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -108,10 +148,13 @@
                                     </button>
                                 </div>
                                 <div class="settings-section">
-                                  <h3 id="models">Models</h3>
-                                  <small>Provide a Model Name, a unique Model ID, the Model URL (API endpoint), and optionally an API Key. For consistency, it's recommended to use the same value for Name and ID.</small>
-                                  <div id="modelSettingsContainer"></div>
-                                  <button id="addModelBtn" class="add-tool-btn"><i class="fas fa-plus"></i> Add Model</button>
+                                    <h3 id="models">Models</h3>
+                                    <small>Provide a Model Name, a unique Model ID, the Model URL (API endpoint), and
+                                        optionally an API Key. For consistency, it's recommended to use the same value
+                                        for Name and ID.</small>
+                                    <div id="modelSettingsContainer"></div>
+                                    <button id="addModelBtn" class="add-tool-btn"><i class="fas fa-plus"></i> Add
+                                        Model</button>
                                 </div>
                                 <div class="settings-section">
                                     <h3>Streaming Settings</h3>
@@ -185,7 +228,8 @@
             </div>
             <div style="display: flex; align-items: center; gap: 10px; background-color: #f5f5f5;">
                 <div id="noteTitle" class="note-title" contenteditable="true" placeholder="Untitled"></div>
-                <div id="recentNotes" class="recent-notes" style="display: inline-flex; align-items: center; margin-left: 10px;"></div>
+                <div id="recentNotes" class="recent-notes"
+                    style="display: inline-flex; align-items: center; margin-left: 10px;"></div>
             </div>
             <div id="editor" class="editor" contenteditable="true">
                 <div class="block">
@@ -241,21 +285,21 @@
     </button>
     <script src="script.js"></script>
     <div id="toastContainer" class="toast-container"></div>
-<!-- Profile Modal -->
-<div id="profileModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Profile</h2>
-            <span class="close">&times;</span>
-        </div>
-        <div class="modal-body">
-            <p>User ID: <span id="currentUserId"></span></p>
-        </div>
-        <div class="modal-footer">
-            <button class="close-profile-btn">Close</button>
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Profile</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>User ID: <span id="currentUserId"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button class="close-profile-btn">Close</button>
+            </div>
         </div>
     </div>
-</div>
     <div id="loadingSpinner" class="spinner" style="display: none;">
         <div class="double-bounce1"></div>
         <div class="double-bounce2"></div>
@@ -270,7 +314,8 @@
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <div id="dropZone" style="border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 20px;">
+                <div id="dropZone"
+                    style="border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 20px;">
                     <p>Drag & drop files here or click to select</p>
                     <input type="file" id="fileInput" style="display: none;" accept="*/*">
                     <button id="selectFileBtn" style="padding: 10px; margin: 10px;">Select File</button>
@@ -279,19 +324,19 @@
                 </div>
 
                 <div class="media-capture-controls">
-                   
+
                     <div class="capture-buttons">
                         <button id="capturePhotoBtn" class="capture-btn">
-                            <i class="fas fa-camera"></i> 
+                            <i class="fas fa-camera"></i>
                         </button>
                         <button id="shootPhotoBtn" class="capture-btn" style="display: none;">
                             <i class="fas fa-camera"></i>
                         </button>
                         <button id="captureVideoBtn" class="capture-btn">
-                            <i class="fas fa-video"></i> 
+                            <i class="fas fa-video"></i>
                         </button>
                         <button id="captureAudioBtn" class="capture-btn">
-                            <i class="fas fa-microphone"></i> 
+                            <i class="fas fa-microphone"></i>
                         </button>
                     </div>
                     <div class="device-selectors">
@@ -302,7 +347,7 @@
                             <option value="">Select Microphone</option>
                         </select>
                     </div>
-                    <div id="mediaPreview" >
+                    <div id="mediaPreview">
                         <video id="videoPreview" autoplay playsinline style="display: none;"></video>
                         <canvas id="photoCanvas" style="display: none;"></canvas>
                         <div id="audioRecordingControls" style="display: none;">
@@ -311,7 +356,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div id="previewArea" style="display: none; margin-top: 20px;">
                     <h3>Preview:</h3>
                     <div id="filePreview" style="max-width: 100%; margin-top: 10px;"></div>

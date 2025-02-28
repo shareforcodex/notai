@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT-4o Audio Chat</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .settings {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="url"], select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .audio-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .record-btn {
+            background-color: #f44336;
+        }
+        .record-btn.recording {
+            background-color: #9e9e9e;
+        }
+        .upload-btn {
+            background-color: #2196F3;
+        }
+        .chat-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .user {
+            background-color: #DCF8C6;
+            margin-left: auto;
+        }
+        .assistant {
+            background-color: #ECECEC;
+        }
+        .audio-message {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .text-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+        #messageInput {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .send-btn {
+            margin-left: 10px;
+        }
+        .status {
+            text-align: center;
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+        }
+        .hide {
+            display: none;
+        }
+        .file-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>GPT-4o Audio Chat</h1>
+    
+    <div class="settings">
+        <div class="form-group">
+            <label for="apiKey">API Key:</label>
+            <input type="text" id="apiKey" placeholder="Enter your OpenAI API key">
+        </div>
+        <div class="form-group">
+            <label for="apiEndpoint">API Endpoint:</label>
+            <input type="url" id="apiEndpoint" value="https://api.openai.com/v1/chat/completions" placeholder="Enter API endpoint URL">
+        </div>
+        <div class="form-group">
+            <label for="modelSelect">Model:</label>
+            <select id="modelSelect">
+                <option value="gpt-4o-mini-audio" selected>GPT-4o Mini Audio</option>
+                <option value="gpt-4o-audio-preview">GPT-4o Audio</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="voiceSelect">Voice:</label>
+            <select id="voiceSelect">
+                <option value="alloy" selected>Alloy</option>
+                <option value="echo">Echo</option>
+                <option value="fable">Fable</option>
+                <option value="onyx">Onyx</option>
+                <option value="nova">Nova</option>
+                <option value="shimmer">Shimmer</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="audio-controls">
+        <button id="recordBtn" class="record-btn">Start Recording</button>
+        <button id="uploadBtn" class="upload-btn">Upload Audio</button>
+        <input type="file" id="audioFileInput" class="file-input" accept="audio/*">
+    </div>
+    
+    <div class="chat-container">
+        <div id="chatMessages" class="chat-messages">
+            <div class="message assistant">
+                <p>Hello! I'm ready to chat with you using audio. You can type a message, record audio, or upload an audio file.</p>
+            </div>
+        </div>
+        <div class="text-input">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <button id="sendBtn" class="send-btn">Send</button>
+        </div>
+    </div>
+    
+    <p id="status" class="status">Ready</p>
+    <!-- <script src="https://unpkg.com/mp3-mediarecorder" type="module"></script> -->
+    <!-- <script src="https://unpkg.com/mp3-mediarecorder@4.0.5/worker/index.js" type="module"></script> -->
+
+    
+    <script type="module">
+
+        import { MediaRecorder, register } from 'https://cdn.jsdelivr.net/npm/extendable-media-recorder@9.2.20/+esm';
+        import { connect } from 'https://cdn.jsdelivr.net/npm/extendable-media-recorder-wav-encoder@7.0.124/+esm';
+        await register(await connect());
+
+        const audio_type='audio/wav';
+
+        // const worker = new Worker('worker.js',{ type: 'module' });
+        //recorder = new Mp3MediaRecorder(stream, { worker });
+
+
+
+        let mediaRecorder;
+        let audioChunks = [];
+        let recording = false;
+        let conversation = [
+            {
+                role: "assistant",
+                content: "Hello! I'm ready to chat with you using audio. You can type a message, record audio, or upload an audio file."
+            }
+        ];
+        
+        // DOM elements
+        const recordBtn = document.getElementById('recordBtn');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const audioFileInput = document.getElementById('audioFileInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const messageInput = document.getElementById('messageInput');
+        const chatMessages = document.getElementById('chatMessages');
+        const status = document.getElementById('status');
+        const apiKeyInput = document.getElementById('apiKey');
+        const apiEndpointInput = document.getElementById('apiEndpoint');
+        const modelSelect = document.getElementById('modelSelect');
+        const voiceSelect = document.getElementById('voiceSelect');
+        
+        // Event listeners
+        recordBtn.addEventListener('click', toggleRecording);
+        uploadBtn.addEventListener('click', () => audioFileInput.click());
+        audioFileInput.addEventListener('change', handleAudioUpload);
+        sendBtn.addEventListener('click', sendTextMessage);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendTextMessage();
+        });
+        
+        // Save API key and endpoint to localStorage when changed
+        apiKeyInput.addEventListener('change', saveSettings);
+        apiEndpointInput.addEventListener('change', saveSettings);
+        modelSelect.addEventListener('change', saveSettings);
+        voiceSelect.addEventListener('change', saveSettings);
+        
+        // Initialize microphone setup
+        async function setupMicrophone() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream, { mimeType: audio_type });
+                
+                mediaRecorder.ondataavailable = (e) => {
+                    audioChunks.push(e.data);
+                };
+                
+                mediaRecorder.onstop = processRecording;
+                
+                status.textContent = "Microphone access granted";
+            } catch (err) {
+                console.error("Error accessing microphone:", err);
+                status.textContent = "Error accessing microphone. Please ensure you've granted permission.";
+                recordBtn.disabled = true;
+            }
+        }
+        
+        // Toggle recording state
+        function toggleRecording() {
+            if (!recording) {
+                setupMicrophone();
+                audioChunks = [];
+                mediaRecorder.start();
+                recordBtn.textContent = "Stop Recording";
+                recordBtn.classList.add("recording");
+                status.textContent = "Recording...";
+                recording = true;
+            } else {
+                mediaRecorder.stop();
+                recordBtn.textContent = "Start Recording";
+                recordBtn.classList.remove("recording");
+                status.textContent = "Processing audio...";
+                recording = false;
+            }
+        }
+        
+        // Process recorded audio
+        function processRecording() {
+            const audioBlob = new Blob(audioChunks, { type: audio_type });
+            sendAudioMessage(audioBlob);
+        }
+        
+        // Handle audio file upload
+        function handleAudioUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                status.textContent = `Selected file: ${file.name}`;
+                sendAudioMessage(file);
+                // Reset the file input so the same file can be selected again
+                audioFileInput.value = '';
+            }
+        }
+        
+        // Send text message
+        function sendTextMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                addMessageToChat('user', message);
+                
+                const userMessage = {
+                    role: "user",
+                    content: message
+                };
+                
+                conversation.push(userMessage);
+                messageInput.value = '';
+                
+                sendToAPI(prepareTextRequest());
+            }
+        }
+        
+        // Send audio message
+        async function sendAudioMessage(audioBlob) {
+            status.textContent = "Processing audio...";
+            
+            try {
+                const base64Audio = await blobToBase64(audioBlob);
+                
+                // Create an audio element to display in the chat
+                const audioElement = document.createElement('audio');
+                audioElement.controls = true;
+                audioElement.src = URL.createObjectURL(audioBlob);
+                
+                addAudioToChat('user', audioElement);
+                
+                const userMessage = {
+                    role: "user",
+                    content: [
+                        { type: "text", text: "Here's my audio message:" },
+                        { 
+                            type: "input_audio", 
+                            input_audio: { 
+                                data: base64Audio, 
+                                format: getAudioFormat(audioBlob.type) 
+                            }
+                        }
+                    ]
+                };
+                
+                conversation.push(userMessage);
+                
+                sendToAPI(prepareAudioRequest(base64Audio, getAudioFormat(audioBlob.type)));
+            } catch (err) {
+                console.error("Error processing audio:", err);
+                status.textContent = "Error processing audio. Please try again.";
+            }
+        }
+        
+        // Convert audio blob to base64
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64String = reader.result.split(',')[1];
+                    resolve(base64String);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+        
+        // Get audio format from MIME type
+        function getAudioFormat(mimeType) {
+            if (mimeType.includes('wav')) return 'wav';
+            if (mimeType.includes('mp3')) return 'mp3';
+            if (mimeType.includes('mpeg')) return 'mp3';
+            if (mimeType.includes('ogg')) return 'ogg';
+            if (mimeType.includes('webm')) return 'webm';
+            // Default to wav if unknown
+            return 'wav';
+        }
+        
+        // Prepare regular text request
+        function prepareTextRequest() {
+            const model = modelSelect.value;
+            const voice = voiceSelect.value;
+            
+            return {
+                model: model,
+                modalities: ["text", "audio"],
+                audio: { voice: voice, format: "pcm16" },
+                messages: conversation.map(msg => {
+                    // For multi-turn conversations, we need to handle audio IDs
+                    if (msg.role === "assistant" && msg.audio && msg.audio.id) {
+                        return {
+                            role: "assistant",
+                            audio: {
+                                id: msg.audio.id
+                            }
+                        };
+                    }
+                    return msg;
+                }),
+                frequency_penalty: 0,
+                max_tokens: 5000,
+                temperature: 0.7,
+                top_p: 0.95,
+                stop: null
+
+
+            };
+        }
+        
+        // Prepare audio request
+        function prepareAudioRequest(base64Audio, format) {
+            const model = modelSelect.value;
+            const voice = voiceSelect.value;
+            
+            // Start with text request and modify as needed
+            const request = prepareTextRequest();
+            
+            // Replace the last user message with the audio input format
+            const lastUserMessageIndex = request.messages.length - 1;
+            request.messages[lastUserMessageIndex] = {
+                role: "user",
+                content: [
+                    { type: "text", text: "Here's my audio message:" },
+                    { 
+                        type: "input_audio", 
+                        input_audio: { 
+                            data: base64Audio, 
+                            format: format 
+                        }
+                    }
+                ]
+            };
+            
+            return request;
+        }
+        
+        // Send request to OpenAI API
+        async function sendToAPI(requestData) {
+            const apiKey = apiKeyInput.value.trim();
+            const apiEndpoint = apiEndpointInput.value.trim();
+            
+            if (!apiKey) {
+                status.textContent = "Please enter your OpenAI API key";
+                return;
+            }
+            
+            status.textContent = "Sending to API...";
+            sendBtn.disabled = true;
+            recordBtn.disabled = true;
+            uploadBtn.disabled = true;
+            
+            try {
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`,
+                        'api-key': apiKey
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `API Error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                processAPIResponse(data);
+            } catch (err) {
+                console.error("API Error:", err);
+                status.textContent = `API Error: ${err.message}`;
+                addMessageToChat('assistant', `Error: ${err.message}`);
+            } finally {
+                sendBtn.disabled = false;
+                recordBtn.disabled = false;
+                uploadBtn.disabled = false;
+            }
+        }
+        
+        // Process API response
+        function processAPIResponse(data) {
+            const message = data.choices[0].message;
+            
+            // Store the message in our conversation history
+            const assistantMessage = {
+                role: "assistant"
+            };
+            
+            // Handle text content if available
+            if (message.content) {
+                assistantMessage.content = message.content;
+                addMessageToChat('assistant', message.content);
+            }
+            
+            // Handle audio content if available
+            if (message.audio) {
+                assistantMessage.audio = {
+                    id: message.audio.id,
+                    transcript: message.audio.transcript
+                };
+                
+                // Create audio element for the response
+                const audioElement = document.createElement('audio');
+                audioElement.controls = true;
+                
+                // Convert base64 to blob and set as audio source
+                const audioData = message.audio.data;
+                const audioBlob = base64ToBlob(audioData, 'audio/mp3');
+                audioElement.src = URL.createObjectURL(audioBlob);
+                
+                addAudioToChat('assistant', audioElement, message.audio.transcript);
+            }
+            
+            // Add to conversation history
+            conversation.push(assistantMessage);
+            
+            status.textContent = "Ready";
+        }
+        
+        // Convert base64 to blob
+        function base64ToBlob(base64, mimeType) {
+            const byteCharacters = atob(base64);
+            const byteNumbers = new Array(byteCharacters.length);
+            
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], { type: mimeType });
+        }
+        
+        // Add text message to chat
+        function addMessageToChat(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', role);
+            
+            const messageContent = document.createElement('p');
+            messageContent.textContent = content;
+            
+            messageDiv.appendChild(messageContent);
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll to the bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Add audio message to chat
+        function addAudioToChat(role, audioElement, transcript) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', role);
+            
+            const audioContainer = document.createElement('div');
+            audioContainer.classList.add('audio-message');
+            audioContainer.appendChild(audioElement);
+            
+            messageDiv.appendChild(audioContainer);
+            
+            // Add transcript if available
+            if (transcript) {
+                const transcriptPara = document.createElement('p');
+                transcriptPara.textContent = transcript;
+                messageDiv.appendChild(transcriptPara);
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll to the bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Save settings to localStorage
+        function saveSettings() {
+            localStorage.setItem('apiKey', apiKeyInput.value);
+            localStorage.setItem('apiEndpoint', apiEndpointInput.value);
+            localStorage.setItem('model', modelSelect.value);
+            localStorage.setItem('voice', voiceSelect.value);
+            status.textContent = "Settings saved";
+            setTimeout(() => {
+                status.textContent = "Ready";
+            }, 1500);
+        }
+        
+        // Load settings from localStorage
+        function loadSettings() {
+            if (localStorage.getItem('apiKey')) {
+                apiKeyInput.value = localStorage.getItem('apiKey');
+            }
+            
+            if (localStorage.getItem('apiEndpoint')) {
+                apiEndpointInput.value = localStorage.getItem('apiEndpoint');
+            }
+            
+            if (localStorage.getItem('model')) {
+                modelSelect.value = localStorage.getItem('model');
+            }
+            
+            if (localStorage.getItem('voice')) {
+                voiceSelect.value = localStorage.getItem('voice');
+            }
+        }
+        
+        // Initialize the app
+        window.onload = function() {
+            setupMicrophone();
+            loadSettings();
+        };
+    </script>
+</body>
+</html>
