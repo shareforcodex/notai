@@ -24,10 +24,13 @@ let utils = {
 
         // Create underline element
         const uElement = document.createElement('u');
+        //create a space text elem
+        const spaceText = document.createTextNode('\u00A0\u00A0');
 
         try {
           // Wrap selected content in the u element
           range.surroundContents(uElement);
+          uElement.after(spaceText);
           return uElement;
 
           // Clear selection
@@ -2012,7 +2015,7 @@ ${audioResponse.transcript || ''}
     // Create new block for non-selected text case
     const block = document.createElement("div");
     block.className = "block";
-    block.innerHTML = '\n\n';
+    block.innerHTML = '<br><br><br><br>';
 
 
     // Add highlight effect
