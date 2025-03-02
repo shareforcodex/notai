@@ -178,8 +178,6 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
         this.showCommentTooltip(e.target.innerHTML, e);
       }
       else {
-        document.querySelector('.showcomment')?.classList.remove('showcomment');
-
         let node = e.target;
         while (node) {
           if (node.classList && node.classList.contains('comment')) {
@@ -187,6 +185,8 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
           }
           node = node.parentElement;
         }
+        document.querySelector('.showcomment')?.classList.remove('showcomment');
+
 
       }
     });
