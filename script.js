@@ -24,6 +24,8 @@ let utils = {
 
         // Create underline element
         const uElement = document.createElement('u');
+        //set a id for u, the id is u+Date.now()
+        uElement.id = 'u' + Date.now();
         //create a space text elem
         const spaceText = document.createTextNode('\u00A0\u00A0');
 
@@ -174,8 +176,19 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
 
       if (e.target.tagName === "U") {
         console.log(e.target);
+        //check if e.target insider a showcomment block, dont remove 
+        let node = e.target;
+        while (node) {
+          if (node.classList && node.classList.contains('showcomment')) {
+            this.showCommentTooltip(e.target.id, e);
+            
+            return;
+          }
+          node = node.parentElement;
+        }
+         
         document.querySelector('.showcomment')?.classList.remove('showcomment');
-        this.showCommentTooltip(e.target.innerHTML, e);
+        this.showCommentTooltip(e.target.id, e);
       }
       else {
         let node = e.target;
@@ -792,12 +805,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     }
 
 
-    if (useComment) {
-      // Create span for the selected text
-      utils.underlineSelectedText();
-
-    }
-
+    
     // build content from audio, image, and video tags
     let content = (imageUrl || audioUrl || videoUrl) ? [
       { type: "text", text: prompt },
@@ -860,6 +868,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       let request= this.apiRequest('POST', '', requestBody, true);
       let block = null;
       if (useComment) {
+        let underlinedElem= utils.underlineSelectedText();
+
         //get commentContainer with the id, if not exsit create it, it a div, append at bottom of editor, then move block into it, make block id to comment+selection text
         let commentContainer = document.getElementById('commentContainer');
         if (!commentContainer) {
@@ -872,7 +882,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         this.editor.appendChild(commentContainer);
 
         //get block from commentContainer, if not exsit ,addnewblock
-        let commentId = 'comment' + selection.toString();
+        let commentId = 'comment' + underlinedElem.id;
         block = document.getElementById(commentId);
         if (!block) {
           block = this.addNewBlock();
@@ -1443,13 +1453,11 @@ ${audioResponse.transcript || ''}
           element.classList.remove('highlight');
         }, 1000);
 
-        this.showCommentTooltip(element, newComment);
         this.delayedSaveNote();
       }
     };
 
     const handleCancel = () => {
-      this.showCommentTooltip(element, currentComment);
     };
 
     saveBtn.addEventListener('click', handleSave);
@@ -3308,3 +3316,10 @@ document.getElementById('topbarPinBtn').addEventListener('pointerdown', (e) => {
   }
 });
 
+window.addEventListener('pointerup', () => {
+  console.log('current selection:',window.getSelection().toString());
+  if(window.getSelection().toString().length>0){
+  window.selectionText = window.getSelection().toString();
+
+  }
+});
