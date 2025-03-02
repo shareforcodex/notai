@@ -198,7 +198,9 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
           }
           node = node.parentElement;
         }
-        document.querySelector('.showcomment')?.classList.remove('showcomment');
+        document.querySelectorAll('.showcomment').forEach(element => {
+          element.classList.remove('showcomment');
+        });
 
 
       }
@@ -1417,6 +1419,12 @@ ${audioResponse.transcript || ''}
     let targetid = 'comment' + target;
     let targetElem = document.getElementById(targetid);
     targetElem.classList.add('showcomment');
+    //remove all other topcomment class
+    let allComment = document.querySelectorAll('.topcomment');
+    allComment.forEach((comment) => {
+      comment.classList.remove('topcomment');
+    }); 
+    targetElem.classList.add('topcomment');
     //get mouse postion from e, and set target left ,top to that
     let left = e.clientX;
     let top = e.clientY;
