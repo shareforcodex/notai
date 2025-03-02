@@ -2564,7 +2564,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Show saved state
         spinnerIcon.style.display = "none";
         saveIcon.style.display = "inline-block";
-        spanText.textContent = "⮟";
+        spanText.textContent = "V";
 
         return;
       }
@@ -2590,7 +2590,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Show saved state
         spinnerIcon.style.display = "none";
         saveIcon.style.display = "inline-block";
-        spanText.textContent = "⮝";
+        spanText.textContent = "^";
 
       } else {
         // Show error state
