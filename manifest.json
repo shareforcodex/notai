@@ -1,7 +1,7 @@
 {
     "name": "NotaiUI",
     "short_name": "NotaiUI",
-    "start_url": "/index.html",
+    "start_url": "/",
     "display": "standalone",
     "icons": [
       {
