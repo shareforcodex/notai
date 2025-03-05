@@ -3,11 +3,11 @@ self.addEventListener('install', event => {
     event.waitUntil(
       caches.open('app-cache').then(cache => {
         return cache.addAll([
-          '/',
-          '/styles.css',
-          '/script.js',
-          '/icons/notai-192x192.png',
-          '/icons/notai-512x512.png'
+          './',
+          './styles.css',
+          './script.js',
+          './icons/notai-192x192.png',
+          './icons/notai-512x512.png'
         ]);
       })
     );
