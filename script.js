@@ -887,9 +887,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         let commentId = 'comment' + underlinedElem.id;
         block = document.getElementById(commentId);
         if (!block) {
-          block = this.addNewBlock();
+          block = document.createElement('div');
           block.id = commentId;
           block.classList.add('comment');
+          block.classList.add('block');
           commentContainer.appendChild(block);
           block.innerHTML = `<h4 style="margin: 0; padding: 5px 0;"></h4>${block.id}`;
           block.after(document.createElement('br'));
