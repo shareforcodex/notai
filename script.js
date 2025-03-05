@@ -1094,7 +1094,7 @@ ${audioResponse.transcript || ''}
       alert('Please select or create a block first');
       return;
     }
-    this.handleAIAction('ask', 'this is chat history :\n' + context.contextText + '\n\n this is current query:\n' + context.currentText, true);
+    this.handleAIAction('ask', 'this is chat history :\n' + context.contextText + '\n\n  current query:\n' + context.currentText, true);
   }
 
   setupAISettings() {
@@ -1548,10 +1548,46 @@ ${audioResponse.transcript || ''}
 
     // Collect context from previous blocks
     const contextBlocks = allBlocks.slice(0, currentBlockIndex);
-    const contextText = contextBlocks
-      .map(block => block.textContent.trim())
-      .filter(text => text)
-      .join('\n\n');
+    // const contextText = contextBlocks
+    //   .map(block => block.textContent.trim())
+    //   .filter(text => text)
+    //   .join('\n\n');
+
+    function extractTextWithLineBreaks(range) {
+      let fragment = range.cloneContents();
+      let textParts = [];
+  
+      function traverseNodes(node) {
+          if (node.nodeType === Node.TEXT_NODE) {
+              textParts.push(node.nodeValue);
+          } else {
+              if (node.tagName === "DIV" || node.tagName === "P" || node.tagName === "BR") {
+                  textParts.push("\n"); // Ensure line breaks are added for block elements
+              }
+              else{
+                textParts.push(" "); 
+              }
+              for (let child of node.childNodes) {
+                  traverseNodes(child);
+              }
+          }
+      }
+  
+      traverseNodes(fragment);
+      return textParts.join("");
+  }
+    let contextText = '';
+    // Get the range at the current selection
+                
+    // Create a new range from start of div to cursor position
+    const preCursorRange = document.createRange();
+    preCursorRange.setStart(this.editor, 0);
+    preCursorRange.setEnd(range.startContainer, 0);
+    
+    // Get all text before cursor
+    contextText = extractTextWithLineBreaks(preCursorRange);
+    console.log(contextText);
+
 
     // Get the current block's text
     const currentText = currentBlock.textContent.trim();
