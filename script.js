@@ -2036,7 +2036,6 @@ ${audioResponse.transcript || ''}
             }
             ol = document.createElement('ul');
             ol.classList.add('ai-input-shortcuts');
-            ol.style.display = 'block';
             ol.style.position = 'fixed';
             //get current cursor location and set ol top and let
             let selection = window.getSelection();
@@ -2048,13 +2047,13 @@ ${audioResponse.transcript || ''}
             if (rect.top + 80 > window.innerHeight) {
               ol.style.top = window.innerHeight - 80 + 'px';
             }
-            if (rect.left + 80 > window.innerWidth) {
-              ol.style.left = window.innerWidth - 80 + 'px';
+            if (rect.left + 300 > window.innerWidth) {
+              ol.style.left = window.innerWidth - 300 + 'px';
             }
             ol.style.zIndex = '9999';
             ol.style.backgroundColor = 'black';
             ol.style.color = 'white';
-            ol.style.maxHeight = '200px';
+            ol.style.width = '300px';
             ol.style.overflow = 'auto';
             ol.style.scrollbarWidth = 'none';
             ol.style.padding = '10px';
@@ -2076,18 +2075,10 @@ ${audioResponse.transcript || ''}
             for (let custometoool of this.aiSettings.customTools) {
               allprompts[custometoool.name] = custometoool.prompt;
             }
-            //create li for remove ol
-            let li = document.createElement('li');
-            li.innerHTML = 'Remove';
-            li.style.cursor = 'pointer';
-            li.addEventListener('pointerdown', (e) => {
-              e.preventDefault();
-              ol.remove();
-            });
-            
-            ol.appendChild(li);
 
             //create li for quick ask
+            let li = document.createElement('li');
+
             li = document.createElement('li');
             li.innerHTML = 'Send';
             li.style.cursor = 'pointer';
@@ -2097,6 +2088,18 @@ ${audioResponse.transcript || ''}
             }
             );
             ol.appendChild(li);
+
+            //create li for remove ol
+            li = document.createElement('li');
+            li.innerHTML = 'Remove';
+            li.style.cursor = 'pointer';
+            li.addEventListener('pointerdown', (e) => {
+              e.preventDefault();
+              ol.remove();
+            });
+            
+            ol.appendChild(li);
+
 
 
             for (let key in allprompts) {
