@@ -2043,7 +2043,14 @@ ${audioResponse.transcript || ''}
             let range = selection.getRangeAt(0);
             let rect = range.getBoundingClientRect();
             ol.style.top = rect.top + 30 + 'px';
-            ol.style.left = rect.left + 30 + 'px';
+            ol.style.left = rect.left + 'px';
+            //make sure ol inside window
+            if (rect.top + 80 > window.innerHeight) {
+              ol.style.top = window.innerHeight - 80 + 'px';
+            }
+            if (rect.left + 80 > window.innerWidth) {
+              ol.style.left = window.innerWidth - 80 + 'px';
+            }
             ol.style.zIndex = '9999';
             ol.style.backgroundColor = 'black';
             ol.style.color = 'white';
