@@ -2000,18 +2000,19 @@ ${audioResponse.transcript || ''}
         // Handle keyboard shortcuts
         this.editor.lastKey = null;
         let resetTimeout = null;
+        let      rect = {top:0,left:0};
         this.editor.addEventListener('keydown', (e) => {
+          //log rect
+          console.log('rect',rect);
 
           //if key is enter and last key is enter too, show a button at cursor location, when click, do a quick ask
           if (e.key === 'Enter') {
 
-            // e.preventDefault();
-            // document.execCommand('insertLineBreak', false, null);
+            e.preventDefault();
+            document.execCommand('insertLineBreak', false, null);
 
             let button = document.querySelector('#quickAskBtn');
-            let selection = window.getSelection();
-            let range = selection.getRangeAt(0);
-            let rect = range.getBoundingClientRect();
+           
             if (rect.top !== 0 && rect.left !== 0) {
 
               button.style.top = rect.top + 30 + 'px';
@@ -2030,10 +2031,8 @@ ${audioResponse.transcript || ''}
 
             }, 4000);
           }
-          else if (e.key === 'Enter') {
-
-
-
+          else  {
+             rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
           }
 
           if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
