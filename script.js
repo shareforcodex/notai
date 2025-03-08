@@ -2095,7 +2095,7 @@ ${audioResponse.transcript || ''}
               li.style.cursor = 'pointer';
               //change color when hover
               li.addEventListener('pointerover', () => {
-                li.style.backgroundColor = 'blue';
+                li.style.backgroundColor = '#440';
                 clearTimeout(resetTimeout);
               });
               li.addEventListener('pointerout', () => {
