@@ -2027,13 +2027,14 @@ ${audioResponse.transcript || ''}
             this.handleQuickAsk();
           }
 
+          //check if ol already exist, if exist, remove it
+          let ol = document.querySelector('.ai-input-shortcuts');
+          if (ol) {
+            ol.remove();
+          }
           //if key is space and last key is space too, show the ai action as list, when click , insert each prompts
           if (e.key === ' ' && this.editor.lastKey === ' ') {
-            //check if ol already exist, if exist, remove it
-            let ol = document.querySelector('.ai-input-shortcuts');
-            if (ol) {
-              ol.remove();
-            }
+            
             ol = document.createElement('ul');
             ol.classList.add('ai-input-shortcuts');
             ol.style.position = 'fixed';
@@ -2057,7 +2058,6 @@ ${audioResponse.transcript || ''}
             ol.style.overflow = 'auto';
             ol.style.scrollbarWidth = 'none';
             ol.style.padding = '10px';
-            ol.style.fontSize='large';
             ol.addEventListener('pointerover', () => {
               ol.style.backgroundColor = '#222200';
               clearTimeout(resetTimeout);
@@ -2080,7 +2080,7 @@ ${audioResponse.transcript || ''}
             let li = document.createElement('li');
 
             li = document.createElement('li');
-            li.innerHTML = 'Send';
+            li.innerHTML = '<i class="fas fa-paper-plane"></i>';
             li.style.cursor = 'pointer';
             li.addEventListener('click', () => {
               ol.remove();
@@ -2088,19 +2088,6 @@ ${audioResponse.transcript || ''}
             }
             );
             ol.appendChild(li);
-
-            //create li for remove ol
-            li = document.createElement('li');
-            li.innerHTML = 'Remove';
-            li.style.cursor = 'pointer';
-            li.addEventListener('pointerdown', (e) => {
-              e.preventDefault();
-              ol.remove();
-            });
-            
-            ol.appendChild(li);
-
-
 
             for (let key in allprompts) {
               let li = document.createElement('li');
