@@ -2033,6 +2033,12 @@ ${audioResponse.transcript || ''}
           }
           else  {
              rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
+             let button = document.querySelector('#quickAskBtn');
+           
+
+              button.style.top =  '';
+              button.style.left = '';
+            
           }
 
           if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
