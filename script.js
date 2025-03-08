@@ -2000,10 +2000,10 @@ ${audioResponse.transcript || ''}
         // Handle keyboard shortcuts
         this.editor.lastKey = null;
         let resetTimeout = null;
-        let      rect = {top:0,left:0};
+        let rect = { top: 0, left: 0 };
         this.editor.addEventListener('keydown', (e) => {
           //log rect
-          console.log('rect',rect);
+          console.log('rect', rect);
 
           //if key is enter and last key is enter too, show a button at cursor location, when click, do a quick ask
           if (e.key === 'Enter') {
@@ -2011,34 +2011,15 @@ ${audioResponse.transcript || ''}
             e.preventDefault();
             document.execCommand('insertLineBreak', false, null);
 
-            let button = document.querySelector('#quickAskBtn');
-           
-            if (rect.top !== 0 && rect.left !== 0) {
-
-              button.style.top = rect.top + 30 + 'px';
-              button.style.left = rect.left + 10 + 'px';
-            }
-
-
-            setTimeout(() => {
-
-            }, 200);
-
-            clearTimeout(resetTimeout);
-            resetTimeout = setTimeout(() => {
-              button.style.top = '';
-              button.style.left = '';
-
-            }, 4000);
           }
-          else  {
-             rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
-             let button = document.querySelector('#quickAskBtn');
-           
+          else {
+            rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
+            let button = document.querySelector('#quickAskBtn');
 
-              button.style.top =  '';
-              button.style.left = '';
-            
+
+            button.style.top = '';
+            button.style.left = '';
+
           }
 
           if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -2053,7 +2034,7 @@ ${audioResponse.transcript || ''}
             if (ol) {
               ol.remove();
             }
-            ol = document.createElement('ol');
+            ol = document.createElement('ul');
             ol.classList.add('ai-input-shortcuts');
             ol.style.display = 'block';
             ol.style.position = 'fixed';
@@ -2062,20 +2043,54 @@ ${audioResponse.transcript || ''}
             let range = selection.getRangeAt(0);
             let rect = range.getBoundingClientRect();
             ol.style.top = rect.top + 30 + 'px';
-            ol.style.left = rect.left +30+ 'px';
+            ol.style.left = rect.left + 30 + 'px';
             ol.style.zIndex = '9999';
-            ol.style.backgroundColor = 'white';
+            ol.style.backgroundColor = 'black';
+            ol.style.color = 'white';
+            ol.style.maxHeight = '200px';
+            ol.style.overflow = 'auto';
+            ol.style.scrollbarWidth = 'none';
+            ol.style.padding = '10px';
+            ol.style.fontSize='large';
+            ol.addEventListener('pointerover', () => {
+              ol.style.backgroundColor = '#222200';
+              clearTimeout(resetTimeout);
+            });
+
             document.body.appendChild(ol);
+
             //remove ol after 8 seconds
             clearTimeout(resetTimeout);
             resetTimeout = setTimeout(() => {
               ol.remove();
             }, 5000);
 
-            let allprompts= this.aiSettings.prompts;
-            for (let custometoool of  this.aiSettings.customTools){
-              allprompts[custometoool.name]=custometoool.prompt;
+            let allprompts = this.aiSettings.prompts;
+            for (let custometoool of this.aiSettings.customTools) {
+              allprompts[custometoool.name] = custometoool.prompt;
             }
+            //create li for remove ol
+            let li = document.createElement('li');
+            li.innerHTML = 'Remove';
+            li.style.cursor = 'pointer';
+            li.addEventListener('pointerdown', (e) => {
+              e.preventDefault();
+              ol.remove();
+            });
+            
+            ol.appendChild(li);
+
+            //create li for quick ask
+            li = document.createElement('li');
+            li.innerHTML = 'Send';
+            li.style.cursor = 'pointer';
+            li.addEventListener('click', () => {
+              ol.remove();
+              this.handleQuickAsk();
+            }
+            );
+            ol.appendChild(li);
+
 
             for (let key in allprompts) {
               let li = document.createElement('li');
@@ -2083,20 +2098,28 @@ ${audioResponse.transcript || ''}
               li.style.cursor = 'pointer';
               //change color when hover
               li.addEventListener('pointerover', () => {
-                li.style.backgroundColor = 'lightgray';
+                li.style.backgroundColor = 'blue';
+                clearTimeout(resetTimeout);
               });
               li.addEventListener('pointerout', () => {
-                li.style.backgroundColor = 'white';
+                li.style.backgroundColor = '';
+                resetTimeout = setTimeout(() => {
+                  ol.remove();
+                }, 5000);
               }
               );
               li.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
-                ol.remove();
-
-                document.execCommand('insertText', false, this.aiSettings.prompts[key]);
-                //remove ol
               }
+              
               );
+              li.addEventListener('click', () => {
+                ol.remove();
+                let insertedText=this.aiSettings.prompts[key];
+                //remove {text} from prompt
+                insertedText=insertedText.replace('{text}','');
+                document.execCommand('insertText', false, insertedText);
+              });
               ol.appendChild(li);
 
 
