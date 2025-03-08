@@ -50,7 +50,7 @@ let utils = {
 
 
 class HTMLEditor {
-   constructor() {
+  constructor() {
     // Define DEFAULT_SYSTEM_PROMPT as a class property
     this.DEFAULT_SYSTEM_PROMPT = `
 you are a assistant with most advanced knowledge, you should write html doc to reply me,  only output html body innerHTML code  to me, don't put it in codeblock do not use markdown;
@@ -99,7 +99,7 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
 
     // Assign verified elements
     this.editor = editor;
-    this.sourceViewEditor =  CodeMirror.fromTextArea(
+    this.sourceViewEditor = CodeMirror.fromTextArea(
       sourceView,
       {
         mode: "htmlmixed",
@@ -112,15 +112,15 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
         lineWrapping: true,
         foldGutter: true,
         styleActiveLine: true,
-        
-        
+
+
       },
     );
     setTimeout(() => {
-      let editorView=this.sourceViewEditor.getWrapperElement();
-      editorView.style.display='none';
-      editorView.style.height='80vh';
-      
+      let editorView = this.sourceViewEditor.getWrapperElement();
+      editorView.style.display = 'none';
+      editorView.style.height = '80vh';
+
     }, 2000);
     this.toolbar = toolbar;
     this.aiToolbar = aiToolbar;
@@ -158,8 +158,16 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     this.isSourceView = false;
     this.isEditable = true;
     this.autoSaveTimeout = null;
-
-
+    this.audioRecordType = 'audio/mp4';
+    //check if the browser support webm, if not , use mp4
+    if (!MediaRecorder.isTypeSupported('audio/webm')) {
+      this.audioRecordType = 'audio/mp4';
+    }
+    //get file extension from the type
+    this.audioRecordExt = this.audioRecordType.split('/')[1];
+    //set video record type to video/this.audioRecordExt
+    this.videoRecordType = 'video/' + this.audioRecordExt;
+    this.videoRecordExt = this.audioRecordExt;
 
 
     this.checkAuthAndLoadNotes();
@@ -167,7 +175,7 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     this.setupCodeCopyButton();
 
     this.editor.addEventListener('pointerdown', (e) => {
-      this.currentBlock = this.getCurrentOtterBlock(e.target) ;
+      this.currentBlock = this.getCurrentOtterBlock(e.target);
       console.log('current blcok', this.currentBlock)
       this.currentBlock?.classList?.add('highlight');
       setTimeout(() => {
@@ -181,12 +189,12 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
         while (node) {
           if (node.classList && node.classList.contains('showcomment')) {
             this.showCommentTooltip(e.target.id, e);
-            
+
             return;
           }
           node = node.parentElement;
         }
-         
+
         document.querySelector('.showcomment')?.classList.remove('showcomment');
         this.showCommentTooltip(e.target.id, e);
       }
@@ -516,12 +524,12 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       setTimeout(() => {
         let formattedCode = prettier.format(this.editor.innerHTML, {
           parser: "html",
-          plugins: [prettierPlugins.html], 
+          plugins: [prettierPlugins.html],
           "trailingComma": "es5",
           "tabWidth": 4,
           "useTabs": false,
           "singleQuote": true,
-          
+
 
         })
         this.sourceViewEditor.setValue(formattedCode)
@@ -532,13 +540,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       //   editor.innerHTML = sourceView.value;
       //   this.delayedSaveNote();
       // });
-      
+
 
     } else {
       // Switching back to editor view
       this.editor.innerHTML = this.sourceViewEditor.getValue();  // Apply source changes to editor
       this.editor.style.display = "block";
-      this.sourceViewEditor.getWrapperElement().style.display      = "none";
+      this.sourceViewEditor.getWrapperElement().style.display = "none";
       this.delayedSaveNote();
     }
   }
@@ -711,7 +719,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
   }
 
   async handleAIAction(action, text, includeCurrentBlockMedia = false) {
-    const useComment =  text.split(' ').length < 3;
+    const useComment = text.split(' ').length < 3;
 
     let customTool = null;
     let prompt = "";
@@ -807,7 +815,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     }
 
 
-    
+
     // build content from audio, image, and video tags
     let content = (imageUrl || audioUrl || videoUrl) ? [
       { type: "text", text: prompt },
@@ -850,14 +858,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         model: modelName,
         temperature: 0.7,
         top_p: 1,
-        stream:  this.aiSettings.else.enable_stream,
+        stream: this.aiSettings.else.enable_stream,
       };
 
       // If model has additional configuration in 'else' field, parse and merge it
       let additionalConfig = {};
       if (modelConfig && modelConfig.else) {
         try {
-        additionalConfig = JSON.parse(modelConfig.else);
+          additionalConfig = JSON.parse(modelConfig.else);
           requestBody = { ...requestBody, ...additionalConfig };
         } catch (error) {
           console.error('Error parsing additional config:', error);
@@ -867,10 +875,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
 
 
-      let request= this.apiRequest('POST', '', requestBody, true);
+      let request = this.apiRequest('POST', '', requestBody, true);
       let block = null;
       if (useComment) {
-        let underlinedElem= utils.underlineSelectedText();
+        let underlinedElem = utils.underlineSelectedText();
 
         //get commentContainer with the id, if not exsit create it, it a div, append at bottom of editor, then move block into it, make block id to comment+selection text
         let commentContainer = document.getElementById('commentContainer');
@@ -924,8 +932,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           return;
         }
 
-        let enable_stream =  this.aiSettings.else.enable_stream ;
-        if(additionalConfig.stream===false) enable_stream=false;
+        let enable_stream = this.aiSettings.else.enable_stream;
+        if (additionalConfig.stream === false) enable_stream = false;
 
         //if model name include gpt-4o-audio or gpt-4o-mini-audio, set enable_stream to false;
         modelName.includes('gpt-4o-audio') ? enable_stream = false : enable_stream = enable_stream;
@@ -1001,9 +1009,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           this.delayedSaveNote();
         }
 
-        else  {
+        else {
           let responseObject = await response.json();
-          response=responseObject;
+          response = responseObject;
           const aiResponse = response.choices[0].message.content || '';
           let audioResponse = response.choices[0].message.audio;
 
@@ -1085,7 +1093,7 @@ ${audioResponse.transcript || ''}
     const totalResponses = requests.length;
 
     requests.forEach(async (request, index) => {
-          });
+    });
 
   }
 
@@ -1424,7 +1432,7 @@ ${audioResponse.transcript || ''}
     let allComment = document.querySelectorAll('.topcomment');
     allComment.forEach((comment) => {
       comment.classList.remove('topcomment');
-    }); 
+    });
     targetElem.classList.add('topcomment');
     //get mouse postion from e, and set target left ,top to that
     let left = e.clientX;
@@ -1557,34 +1565,34 @@ ${audioResponse.transcript || ''}
     function extractTextWithLineBreaks(range) {
       let fragment = range.cloneContents();
       let textParts = [];
-  
+
       function traverseNodes(node) {
-          if (node.nodeType === Node.TEXT_NODE) {
-              textParts.push(node.nodeValue);
-          } else {
-              if (node.tagName === "DIV" || node.tagName === "P" || node.tagName === "BR") {
-                  textParts.push("\n"); // Ensure line breaks are added for block elements
-              }
-              else{
-                textParts.push(" "); 
-              }
-              for (let child of node.childNodes) {
-                  traverseNodes(child);
-              }
+        if (node.nodeType === Node.TEXT_NODE) {
+          textParts.push(node.nodeValue);
+        } else {
+          if (node.tagName === "DIV" || node.tagName === "P" || node.tagName === "BR") {
+            textParts.push("\n"); // Ensure line breaks are added for block elements
           }
+          else {
+            textParts.push(" ");
+          }
+          for (let child of node.childNodes) {
+            traverseNodes(child);
+          }
+        }
       }
-  
+
       traverseNodes(fragment);
       return textParts.join("");
-  }
+    }
     let contextText = '';
     // Get the range at the current selection
-                
+
     // Create a new range from start of div to cursor position
     const preCursorRange = document.createRange();
     preCursorRange.setStart(this.editor, 0);
     preCursorRange.setEnd(range.startContainer, 0);
-    
+
     // Get all text before cursor
     contextText = extractTextWithLineBreaks(preCursorRange);
     console.log(contextText);
@@ -1708,13 +1716,13 @@ ${audioResponse.transcript || ''}
               }
 
               const mediaRecorder = new MediaRecorder(stream, {
-                mimeType: 'video/webm;codecs=vp8,opus'
+                mimeType: this.videoRecordType
               });
               const chunks = [];
 
               mediaRecorder.ondataavailable = e => chunks.push(e.data);
               mediaRecorder.onstop = async () => {
-                const blob = new Blob(chunks, { type: 'video/webm' });
+                const blob = new Blob(chunks, { type: this.videoRecordType });
                 stream.getTracks().forEach(track => track.stop());
 
                 // Create preview
@@ -1728,7 +1736,7 @@ ${audioResponse.transcript || ''}
                 filePreview.appendChild(videoPreview);
 
                 // Create file for upload
-                const file = new File([blob], 'video.webm', { type: 'video/webm' });
+                const file = new File([blob], 'video.' + this.videoRecordExt, { type: this.videoRecordType });
                 document.getElementById('fileInput').files = new DataTransfer().files;
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
@@ -1990,28 +1998,115 @@ ${audioResponse.transcript || ''}
         });
 
         // Handle keyboard shortcuts
+        this.editor.lastKey = null;
+        let resetTimeout = null;
         this.editor.addEventListener('keydown', (e) => {
-          
-            if (e.key === 'Enter' ) {
-              e.preventDefault();
-              document.execCommand('insertLineBreak', false, null);
 
-              
+          //if key is enter and last key is enter too, show a button at cursor location, when click, do a quick ask
+          if (e.key === 'Enter') {
+
+            // e.preventDefault();
+            // document.execCommand('insertLineBreak', false, null);
+
+            let button = document.querySelector('#quickAskBtn');
+            let selection = window.getSelection();
+            let range = selection.getRangeAt(0);
+            let rect = range.getBoundingClientRect();
+            if (rect.top !== 0 && rect.left !== 0) {
+
+              button.style.top = rect.top + 30 + 'px';
+              button.style.left = rect.left + 10 + 'px';
+            }
+
+
+            setTimeout(() => {
+
+            }, 200);
+
+            clearTimeout(resetTimeout);
+            resetTimeout = setTimeout(() => {
+              button.style.top = '';
+              button.style.left = '';
+
+            }, 4000);
           }
-        
+          else if (e.key === 'Enter') {
 
 
-           
-          
-          
 
-          if (e.key === '/' && !e.shiftKey) {
-            this.showBlockMenu(e);
           }
+
           if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
             this.handleQuickAsk();
           }
+
+          //if key is space and last key is space too, show the ai action as list, when click , insert each prompts
+          if (e.key === ' ' && this.editor.lastKey === ' ') {
+            //check if ol already exist, if exist, remove it
+            let ol = document.querySelector('.ai-input-shortcuts');
+            if (ol) {
+              ol.remove();
+            }
+            ol = document.createElement('ol');
+            ol.classList.add('ai-input-shortcuts');
+            ol.style.display = 'block';
+            ol.style.position = 'fixed';
+            //get current cursor location and set ol top and let
+            let selection = window.getSelection();
+            let range = selection.getRangeAt(0);
+            let rect = range.getBoundingClientRect();
+            ol.style.top = rect.top + 30 + 'px';
+            ol.style.left = rect.left +30+ 'px';
+            ol.style.zIndex = '9999';
+            ol.style.backgroundColor = 'white';
+            document.body.appendChild(ol);
+            //remove ol after 8 seconds
+            clearTimeout(resetTimeout);
+            resetTimeout = setTimeout(() => {
+              ol.remove();
+            }, 5000);
+
+            let allprompts= this.aiSettings.prompts;
+            for (let custometoool of  this.aiSettings.customTools){
+              allprompts[custometoool.name]=custometoool.prompt;
+            }
+
+            for (let key in allprompts) {
+              let li = document.createElement('li');
+              li.innerHTML = key;
+              li.style.cursor = 'pointer';
+              //change color when hover
+              li.addEventListener('pointerover', () => {
+                li.style.backgroundColor = 'lightgray';
+              });
+              li.addEventListener('pointerout', () => {
+                li.style.backgroundColor = 'white';
+              }
+              );
+              li.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                ol.remove();
+
+                document.execCommand('insertText', false, this.aiSettings.prompts[key]);
+                //remove ol
+              }
+              );
+              ol.appendChild(li);
+
+
+
+
+            }
+          }
+
+
+
+          // if (e.key === '/' && !e.shiftKey) {
+          //   this.showBlockMenu(e);
+          // }
+
+          this.editor.lastKey = e.key;
         });
       }
     } catch (error) {
@@ -2097,7 +2192,7 @@ ${audioResponse.transcript || ''}
         range.insertNode(blankLine);
         blankLine.after(block);
         block.after(document.createElement('br'));
-        this.currentBlock=block;
+        this.currentBlock = block;
 
       }
 
@@ -2170,7 +2265,7 @@ ${audioResponse.transcript || ''}
     range.deleteContents();
     range.insertNode(block);
 
-   
+
   }
 
   insertIframe() {
@@ -2980,7 +3075,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         const fileInfoDiv = document.createElement('div');
         fileInfoDiv.style.fontSize = '12px';
 
-        let fileURL=`https://pub-cb2c87ea7373408abb1050dd43e3cd8e.r2.dev/${shaCode}.${extension}`;
+        let fileURL = `https://pub-cb2c87ea7373408abb1050dd43e3cd8e.r2.dev/${shaCode}.${extension}`;
         fileInfoDiv.innerHTML = `
           <strong> ${fileURL}</strong><br>
           <strong>Type:</strong> ${file.type || 'Unknown'} 
@@ -3014,13 +3109,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         let brelement = document.createElement('br');
         const selection = window.getSelection();
         let block = this.currentBlock;
-        
+
         if (!block) {
           block = document.createElement('div');
           block.className = 'block';
           if (selection.rangeCount > 0 && this.editor.contains(selection.getRangeAt(0)?.commonAncestorContainer)) {
             const range = selection.getRangeAt(0);
-  
+
             range.insertNode(brelement);
             brelement.after(block);
             block.after(document.createElement('br'));
@@ -3029,7 +3124,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             this.editor.prepend(brelement);
             this.editor.prepend(block);
             this.editor.prepend(document.createElement('br'));
-  
+
             // Scroll to the newly added content
           }
         }
@@ -3041,7 +3136,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         setTimeout(() => {
           element.scrollIntoView(true, { behavior: 'smooth' });
 
-        }, 800);        
+        }, 800);
 
         this.showToast('File uploaded successfully!', 'success');
         this.saveNote();
@@ -3227,7 +3322,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
       mediaRecorder.ondataavailable = e => chunks.push(e.data);
       mediaRecorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const blob = new Blob(chunks, { type: this.audioRecordType });
         // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
         clearInterval(timerInterval);
@@ -3260,7 +3355,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         filePreview.appendChild(fileInfo);
 
         // Create file for upload
-        const file = new File([blob], 'recording.webm', { type: 'audio/webm' });
+        const file = new File([blob], 'recording.' + this.audioRecordExt, { type: this.audioRecordType });
         document.getElementById('fileInput').files = new DataTransfer().files;
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
@@ -3313,8 +3408,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
 
-   
-    
+
+
   } catch (error) {
     console.error('Error initializing editor:', error);
     // Redirect to auth page if initialization fails
@@ -3362,9 +3457,9 @@ document.getElementById('topbarPinBtn').addEventListener('pointerdown', (e) => {
 });
 
 window.addEventListener('pointerup', () => {
-  console.log('current selection:',window.getSelection().toString());
-  if(window.getSelection().toString().length>0){
-  window.selectionText = window.getSelection().toString();
+  console.log('current selection:', window.getSelection().toString());
+  if (window.getSelection().toString().length > 0) {
+    window.selectionText = window.getSelection().toString();
 
   }
 });
