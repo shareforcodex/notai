@@ -158,7 +158,7 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     this.isSourceView = false;
     this.isEditable = true;
     this.autoSaveTimeout = null;
-    this.audioRecordType = 'audio/mp4';
+    this.audioRecordType = 'audio/webm';
     //check if the browser support webm, if not , use mp4
     if (!MediaRecorder.isTypeSupported('audio/webm')) {
       this.audioRecordType = 'audio/mp4';
