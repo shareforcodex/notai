@@ -2062,6 +2062,13 @@ ${audioResponse.transcript || ''}
               ol.style.backgroundColor = '#222200';
               clearTimeout(resetTimeout);
             });
+            ol.addEventListener('pointerout', () => {
+              
+              resetTimeout = setTimeout(() => {
+                ol.remove();
+              }
+                , 5000);
+            });
 
             document.body.appendChild(ol);
 
@@ -2093,18 +2100,7 @@ ${audioResponse.transcript || ''}
               let li = document.createElement('li');
               li.innerHTML = key;
               li.style.cursor = 'pointer';
-              //change color when hover
-              li.addEventListener('pointerover', () => {
-                li.style.backgroundColor = '#440';
-                clearTimeout(resetTimeout);
-              });
-              li.addEventListener('pointerout', () => {
-                li.style.backgroundColor = '';
-                resetTimeout = setTimeout(() => {
-                  ol.remove();
-                }, 5000);
-              }
-              );
+             
               li.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
               }
