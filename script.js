@@ -45,6 +45,52 @@ let utils = {
         alert("Please select some text first.");
       }
     }
+  },
+  insertTextAtCursor(insertedText, removeSelectionDelay = 1000) {
+    const activeElement = document.activeElement;
+
+    if (activeElement.isContentEditable) {
+      // For contenteditable elements
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return false;
+      selection.deleteFromDocument();
+      const range = selection.getRangeAt(0);
+      //insertedText may be multiple lines, so split it and insert each line
+      let lines = insertedText.split('\n');
+      for (let i = lines.length - 1; i >= 0; i--) {
+        let line = lines[i];
+
+        if (i < lines.length - 1) {
+          range.insertNode(document.createElement('br'));
+        }
+        range.insertNode(document.createTextNode(line+' '));
+      }
+      // If the selection is not collapsed, collapse it
+      selection.removeAllRanges();
+      selection.addRange(range);
+      setTimeout(() => {
+        selection.removeAllRanges();
+        range.collapse(false);
+        selection.addRange(range);
+
+      }, removeSelectionDelay);
+
+    } else if (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT') {
+      // For textarea or input elements
+      const startPos = activeElement.selectionStart;
+      const endPos = activeElement.selectionEnd;
+      const beforeText = activeElement.value.substring(0, startPos);
+      const afterText = activeElement.value.substring(endPos, activeElement.value.length);
+      activeElement.value = beforeText + insertedText + afterText;
+      // Move the cursor to the end of the inserted text
+      const cursorPosition = startPos + insertedText.length;
+      activeElement.setSelectionRange(cursorPosition, cursorPosition);
+      activeElement.focus();
+    } else {
+      // Unsupported element
+      console.warn('The active element is neither contenteditable nor a textarea/input.');
+      return false;
+    }
   }
 }
 
@@ -2009,8 +2055,8 @@ ${audioResponse.transcript || ''}
           if (e.key === 'Enter') {
 
             e.preventDefault();
-            document.execCommand('insertLineBreak', false, null);
-
+            utils.insertTextAtCursor('\n',50);
+            
           }
           else {
             rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
@@ -2034,7 +2080,7 @@ ${audioResponse.transcript || ''}
           }
           //if key is space and last key is space too, show the ai action as list, when click , insert each prompts
           if (e.key === ' ' && this.editor.lastKey === ' ') {
-            
+
             ol = document.createElement('ul');
             ol.classList.add('ai-input-shortcuts');
             ol.style.position = 'fixed';
@@ -2063,7 +2109,7 @@ ${audioResponse.transcript || ''}
               clearTimeout(resetTimeout);
             });
             ol.addEventListener('pointerout', () => {
-              
+
               resetTimeout = setTimeout(() => {
                 ol.remove();
               }
@@ -2100,18 +2146,18 @@ ${audioResponse.transcript || ''}
               let li = document.createElement('li');
               li.innerHTML = key;
               li.style.cursor = 'pointer';
-             
+
               li.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
               }
-              
+
               );
               li.addEventListener('click', () => {
                 ol.remove();
-                let insertedText=this.aiSettings.prompts[key];
+                let insertedText = this.aiSettings.prompts[key];
                 //remove {text} from prompt
-                insertedText=insertedText.replace('{text}','');
-                document.execCommand('insertText', false, insertedText);
+                insertedText = insertedText.replace('{text}', '');
+                utils.insertTextAtCursor(insertedText);
               });
               ol.appendChild(li);
 
