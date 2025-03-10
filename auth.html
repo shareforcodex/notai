@@ -73,7 +73,7 @@
             <div class="error-message" id="loginError"></div>
             <input type="text" id="loginUserId" placeholder="User ID" required>
             <input type="password" id="loginPassword" placeholder="Password" required>
-            <button onclick="handleLogin()">Login</button>
+            <button id="loginBtn" onclick="handleLogin()">Login</button>
             <div class="switch-form">
                 Don't have an account? <a href="#" onclick="toggleForms()">Register</a>
             </div>
@@ -127,6 +127,8 @@
         }
 
         async function handleLogin() {
+            document.querySelector('#loginBtn').disabled = true;
+            document.querySelector('#loginBtn').textContent = 'Logging in...';
             const userId = document.getElementById('loginUserId').value;
             const password = document.getElementById('loginPassword').value;
             const errorElement = document.getElementById('loginError');

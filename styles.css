@@ -1018,12 +1018,13 @@ pre code {
 
 .ai-input-shortcuts li {
     flex: 1;
-    max-width: 100px;
+    overflow: hidden;
+    width: 60;
     margin-left: 10px;
     margin-right: 10px;
     margin-bottom: 7px;
     list-style: none;
-    font-size: x-large;
+    font-size: large;
 
 }
 

@@ -3530,3 +3530,20 @@ window.addEventListener('pointerup', () => {
 
   }
 });
+
+document.querySelector('#updateAppBtn').addEventListener('click', () => {
+  //remove all caches
+  caches.keys().then(cacheNames => {
+    cacheNames.forEach(cacheName => {
+      caches.delete(cacheName);
+    });
+  });
+
+  //unregister service worker
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(registration => {
+      registration.unregister();
+    });
+  });
+  window.location.reload();
+});
