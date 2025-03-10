@@ -221,7 +221,10 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     this.setupCodeCopyButton();
 
     this.editor.addEventListener('pointerdown', (e) => {
-      this.currentBlock = this.getCurrentOtterBlock(e.target);
+      if(e.target.classList.contains('block')) {
+        this.currentBlock = this.getCurrentOtterBlock(e.target);
+      }
+
       console.log('current blcok', this.currentBlock)
       this.currentBlock?.classList?.add('highlight');
       setTimeout(() => {
@@ -1637,7 +1640,7 @@ ${audioResponse.transcript || ''}
     // Create a new range from start of div to cursor position
     const preCursorRange = document.createRange();
     preCursorRange.setStart(this.editor, 0);
-    preCursorRange.setEnd(range.startContainer, 0);
+    preCursorRange.setEnd(this.currentBlock, 0);
 
     // Get all text before cursor
     contextText = extractTextWithLineBreaks(preCursorRange);
@@ -2108,12 +2111,15 @@ ${audioResponse.transcript || ''}
               ol.style.backgroundColor = '#222200';
               clearTimeout(resetTimeout);
             });
+            ol.addEventListener('pointerdown', () => {
+              e.preventDefault();
+            });
             ol.addEventListener('pointerout', () => {
 
               resetTimeout = setTimeout(() => {
                 ol.remove();
               }
-                , 5000);
+                , 10000);
             });
 
             document.body.appendChild(ol);
