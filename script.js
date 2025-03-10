@@ -2408,7 +2408,13 @@ ${audioResponse.transcript || ''}
   updateAuthUI() {
     const isLoggedIn = currentUser.userId && currentUser.credentials;
     if (!isLoggedIn) {
+      //ask user to confirm login yes to login, no do nothin
+      let confirmLogin = confirm('Do you want to login?');
+      if (confirmLogin) {
+
       window.location.href = "auth.html";
+    
+      }
     }
   }
 
