@@ -1018,8 +1018,8 @@ pre code {
 
 .ai-input-shortcuts li {
     flex: 1;
-    overflow: hidden;
-    width: 60;
+    width: 80px;
+    height: 25px;
     margin-left: 10px;
     margin-right: 10px;
     margin-bottom: 7px;
