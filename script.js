@@ -63,7 +63,7 @@ let utils = {
         if (i < lines.length - 1) {
           range.insertNode(document.createElement('br'));
         }
-        range.insertNode(document.createTextNode(line+' '));
+        range.insertNode(document.createTextNode(line + ' '));
       }
       // If the selection is not collapsed, collapse it
       selection.removeAllRanges();
@@ -92,19 +92,19 @@ let utils = {
       return false;
     }
   },
-   base64ToBlob(base64String) {
+  base64ToBlob(base64String) {
     let mimeType;
     let base64Data;
-    
+
     // Check if it's a data URL (starts with "data:")
     if (base64String.startsWith('data:')) {
       // Extract MIME type and base64 data
       const matches = base64String.match(/^data:([^;]+);base64,(.+)$/);
-      
+
       if (!matches || matches.length !== 3) {
         throw new Error('Invalid data URL format');
       }
-      
+
       mimeType = matches[1];
       base64Data = matches[2];
     } else {
@@ -112,76 +112,76 @@ let utils = {
       base64Data = base64String;
       mimeType = detectMimeTypeFromBase64(base64Data);
     }
-    
+
     // Convert base64 to binary
     const binaryString = atob(base64Data);
-    
+
     // Create array buffer from binary string
     const bytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {
       bytes[i] = binaryString.charCodeAt(i);
     }
-    
+
     // Create blob from array buffer
     return new Blob([bytes], { type: mimeType });
   },
-  
-   detectMimeTypeFromBase64(base64String) {
+
+  detectMimeTypeFromBase64(base64String) {
     // Decode a small portion of the beginning to check file signatures
     const sample = atob(base64String.substring(0, 24));
     const bytes = new Uint8Array(sample.length);
     for (let i = 0; i < sample.length; i++) {
       bytes[i] = sample.charCodeAt(i);
     }
-    
+
     // Check file signatures (magic numbers)
     // PNG signature: 89 50 4E 47 0D 0A 1A 0A
     if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
       return 'image/png';
     }
-    
+
     // JPEG signature: FF D8 FF
     if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
       return 'image/jpeg';
     }
-    
+
     // GIF signature: 47 49 46 38
     if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) {
       return 'image/gif';
     }
-    
+
     // PDF signature: 25 50 44 46
     if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
       return 'application/pdf';
     }
-    
+
     // MP3 signature: ID3 or FF FB
-    if ((bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) || 
-        (bytes[0] === 0xFF && bytes[1] === 0xFB)) {
+    if ((bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) ||
+      (bytes[0] === 0xFF && bytes[1] === 0xFB)) {
       return 'audio/mpeg';
     }
-    
+
     // MP4/M4A signature: 66 74 79 70
     if (bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70) {
       return 'video/mp4';
     }
-    
+
     // WebM signature: 1A 45 DF A3
     if (bytes[0] === 0x1A && bytes[1] === 0x45 && bytes[2] === 0xDF && bytes[3] === 0xA3) {
       return 'video/webm';
     }
-    
+
     // OGG signature: 4F 67 67 53
     if (bytes[0] === 0x4F && bytes[1] === 0x67 && bytes[2] === 0x67 && bytes[3] === 0x53) {
       return 'audio/ogg';
     }
-    
+
     // WEBP signature: 52 49 46 46 then WEBP at offset 8
     if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
-        bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) {
+      bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) {
       return 'image/webp';
     }
-    
+
     // Default to octet-stream if type cannot be determined
     return 'application/octet-stream';
   }
@@ -316,7 +316,7 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     this.editor.addEventListener('pointerdown', (e) => {
       this.currentBlock = this.getCurrentOtterBlock(e.target);
 
-      if(e.target.classList.contains('block')) {
+      if (e.target.classList.contains('block')) {
       }
 
       console.log('current blcok', this.currentBlock)
@@ -534,7 +534,7 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
       let elseconfig = {}
       try {
 
-        elseconfig = JSON.parse(this.aiSettings.models.find(m => m.model_id === body.model).else || '{}');
+        elseconfig = JSON.parse(this.aiSettings.models.find(m => m.model_id === body?.model)?.else || '{}');
         console.log('else config', elseconfig);
       } catch (error) {
         console.log('error when parse else config', error)
@@ -1088,67 +1088,80 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           let text = "";
           const reader = response.body.getReader();
           const decoder = new TextDecoder("utf-8");
-          let done = false;
+          let buffer = ""; // Add a buffer to handle incomplete chunks
           let chunkCounter = 0;
+          let done = false;
 
           while (!done) {
             const { done: doneReading, value } = await reader.read();
             done = doneReading;
-            const chunk = decoder.decode(value);
-            chunkCounter++;
 
-            const lines = chunk.split("\n");
-            const parsedLines = lines
-              .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
-              .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
-              .map((line) => {
-                let result = null;
-                try {
-                  result = JSON.parse(line);
-                } catch (error) {
-                  console.error('Error parsing the line to JSON:', error, 'Line:', line);
+            // If we have data to process
+            if (value) {
+              // Decode with stream option to properly handle multi-byte characters
+              const chunk = decoder.decode(value, { stream: true });
+              chunkCounter++;
+
+              // Add chunk to buffer
+              buffer += chunk;
+
+              // Process complete messages
+              const lines = buffer.split("\n\n");
+              // Keep the last part in buffer as it might be incomplete
+              buffer = lines.pop() || "";
+
+              for (const line of lines) {
+                // Skip empty lines
+                const trimmedLine = line.trim();
+                if (!trimmedLine || trimmedLine === "[DONE]") continue;
+
+                // Handle data: prefix
+                const jsonStr = trimmedLine.replace(/^data: /, "");
+                
+                //check jsonStr is valid json or not
+                if (jsonStr && jsonStr === "[DONE]") {
+                  continue;
                 }
-                return result;
 
-              }); // Parse the JSON string
+                try {
+                  const parsedData = JSON.parse(jsonStr);
 
-            try {
-              for (const parsedLine of parsedLines) {
-
-                if (parsedLine) {
-                  const choices = parsedLine.choices;
-                  if (choices) {
-
-                    const delta = choices[0]?.delta;
-                    const content = delta?.content;
-                    // Update the UI with the new content
-                    if (content) {
-                      text += content;
-                      block.innerHTML += content;
-
+                  if (parsedData && parsedData.choices) {
+                    const delta = parsedData.choices[0]?.delta;
+                    if (delta && delta.content) {
+                      text += delta.content;
+                      block.innerHTML = text; // Update UI with full text for consistency
                     }
-
-                    if (chunkCounter === 6) {
-                      block.innerHTML = text;
-
-                    }
-                    if (chunkCounter === 80) {
-                      block.innerHTML = text;
-
-                    }
-
-                    console.log('chunkcounter:', chunkCounter);
                   }
+                } catch (error) {
+                  console.error('Error parsing JSON:', error, 'Line:', jsonStr);
                 }
               }
-            } catch (error) {
-              console.log('error when parse line', error, 'parsedLines:', parsedLines)
             }
-
-
           }
+
+          // Process any data left in the buffer
+          if (buffer.trim()) {
+            const jsonStr = buffer.replace(/^data: /, "").trim();
+            if (jsonStr && jsonStr !== "[DONE]") {
+              try {
+                const parsedData = JSON.parse(jsonStr);
+                if (parsedData && parsedData.choices) {
+                  const delta = parsedData.choices[0]?.delta;
+                  if (delta && delta.content) {
+                    text += delta.content;
+                  }
+                }
+              } catch (error) {
+                console.error('Error parsing final JSON:', error);
+              }
+            }
+          }
+
+          // Final update of the UI
           block.innerHTML = text + '<br><br> by ' + modelName;
           console.log(text);
+
           this.delayedSaveNote();
         }
 
@@ -1762,7 +1775,7 @@ ${audioResponse.transcript || ''}
       // Auto-save on user interactions
       document.body.addEventListener('pointerdown', () => this.idleSync());
       document.body.addEventListener('keypress', () => this.idleSync());
-      
+
 
       // Get all required elements
       const uploadModal = document.getElementById('uploadModal');
@@ -2157,8 +2170,8 @@ ${audioResponse.transcript || ''}
           if (e.key === 'Enter') {
 
             e.preventDefault();
-            utils.insertTextAtCursor('\n',50);
-            
+            utils.insertTextAtCursor('\n', 50);
+
           }
           else {
             rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
@@ -2510,8 +2523,8 @@ ${audioResponse.transcript || ''}
       let confirmLogin = confirm('Do you want to login?');
       if (confirmLogin) {
 
-      window.location.href = "auth.html";
-    
+        window.location.href = "auth.html";
+
       }
     }
   }
@@ -2928,21 +2941,21 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     this.editor.innerHTML = "Start writing here...>";
   }
 
-  cleanNote(){
+  cleanNote() {
     //check all img and audio, video tags, if src is base64, upload to server and replace src with url
     setTimeout(() => {
       let mediaElements = this.editor.querySelectorAll('img, audio, video');
-    mediaElements.forEach(async element => {
-      let src = element.src;
-      if (src.startsWith('data:')) {
-        let type = src.split(';')[0].split(':')[1];
-        let data = src.split(',')[1];
-        let blob = utils.base64ToBlob(src);
-        let file = new File([blob], `media.${type.split('/')[1]}`, { type });
-        let url = await this.uploadFile(file,false);
-        element.src = url;
-      }
-    });
+      mediaElements.forEach(async element => {
+        let src = element.src;
+        if (src.startsWith('data:')) {
+          let type = src.split(';')[0].split(':')[1];
+          let data = src.split(',')[1];
+          let blob = utils.base64ToBlob(src);
+          let file = new File([blob], `media.${type.split('/')[1]}`, { type });
+          let url = await this.uploadFile(file, false);
+          element.src = url;
+        }
+      });
     }, 1000);
   }
 
@@ -3272,7 +3285,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         fileInfoDiv.style.fontSize = '12px';
 
         let fileURL = `https://pub-cb2c87ea7373408abb1050dd43e3cd8e.r2.dev/${shaCode}.${extension}`;
-        if(!ifInsertElement){
+        if (!ifInsertElement) {
           return fileURL;
         }
         fileInfoDiv.innerHTML = `
