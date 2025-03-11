@@ -1130,7 +1130,15 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
                     const delta = parsedData.choices[0]?.delta;
                     if (delta && delta.content) {
                       text += delta.content;
-                      block.innerHTML = text; // Update UI with full text for consistency
+                      block.innerHTML+= delta.content;
+                      if (chunkCounter === 6) {
+                        block.innerHTML = text;
+  
+                      }
+                      if (chunkCounter === 80) {
+                        block.innerHTML = text;
+  
+                      }
                     }
                   }
                 } catch (error) {
