@@ -3010,7 +3010,28 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           type = 'audio/wav';
         }
 
-        let blob = await fetch(src).then(r => r.blob());
+        function blobUrlToBlob(blobUrl) {
+          return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', blobUrl, true);
+            xhr.responseType = 'blob';
+            
+            xhr.onload = function() {
+              if (this.status === 200) {
+                resolve(this.response);
+              } else {
+                reject(new Error(`Failed to convert blob URL to blob: ${this.status}`));
+              }
+            };
+            
+            xhr.onerror = function() {
+              reject(new Error('XHR error while converting blob URL to blob'));
+            };
+            
+            xhr.send();
+          });
+        }
+        let blob = await blobUrlToBlob(src);
         let file = new File([blob], `media.${type.split('/')[1]}`, { type });
         let url = await this.uploadFile(file, false,false);
         element.src = url;
