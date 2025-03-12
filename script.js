@@ -2158,6 +2158,7 @@ ${audioResponse.transcript || ''}
 
       // Auto-save on content changes
       if (this.editor) {
+
         this.editor.addEventListener('input', () => {
           this.delayedSaveNote();
           this.updateTableOfContents();
@@ -2303,6 +2304,11 @@ ${audioResponse.transcript || ''}
           // }
 
           this.editor.lastKey = e.key;
+        });
+
+        this.editor.addEventListener('drop', (e) => {
+          this.clearNotes();
+          this.showToast('Dropped file(s) detected. they will save to cloud.');
         });
       }
     } catch (error) {
