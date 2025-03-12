@@ -1817,7 +1817,7 @@ ${audioResponse.transcript || ''}
       const formatButtons = document.querySelectorAll('.formatting-tools button[data-command]');
 
       // Setup file upload and media capture handlers
-      if (uploadModal && uploadFileBtn && closeUploadBtn  &&
+      if (uploadModal && uploadFileBtn && closeUploadBtn &&
         fileInput && selectFileBtn && uploadBtn && previewArea && filePreview) {
 
         uploadFileBtn.onclick = () => {
@@ -1951,7 +1951,7 @@ ${audioResponse.transcript || ''}
         uploadBtn.onclick = async () => {
           const file = fileInput.files[0];
           if (file) {
-            await this.uploadFile(file,true,true);
+            await this.uploadFile(file, true, true);
             uploadModal.style.display = 'none';
           }
         };
@@ -2125,18 +2125,18 @@ ${audioResponse.transcript || ''}
       if (saveNoteBtn) {
         saveNoteBtn.addEventListener('click', async () => {
           try {
-           await this.cleanNote();
+            await this.cleanNote();
 
             this.saveNote();
 
-    
+
           } catch (error) {
             console.error('Error saving note:', error);
 
             this.saveNote();
           }
-          
-          
+
+
 
         });
       }
@@ -2156,8 +2156,10 @@ ${audioResponse.transcript || ''}
 
         this.editor.addEventListener('paste', () => {
           this.delayedSaveNote();
-          this.cleanNote();
+          setTimeout(() => {
+            this.cleanNote();
 
+          }, 1000);
         });
 
         // Handle keyboard shortcuts
@@ -2978,7 +2980,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         let data = src.split(',')[1];
         let blob = utils.base64ToBlob(src);
         let file = new File([blob], `media.${type.split('/')[1]}`, { type });
-        let url = await this.uploadFile(file, false,false);
+        let url = await this.uploadFile(file, false, false);
         element.src = url;
       }
       //if src start with blob, upload to server and replace src with url
@@ -2987,74 +2989,74 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
         try {
           let type = 'image/jpeg';
-        //set type from src file extension
-        if (src.endsWith('.png')) {
-          type = 'image/png';
-        }
-        if (src.endsWith('.jpg')) {
-          type = 'image/jpeg';
-        }
-        if (src.endsWith('.jpeg')) {
-          type = 'image/jpeg';
-        }
-        if (src.endsWith('.gif')) {
-          type = 'image/gif';
-        }
-        if (src.endsWith('.webp')) {
+          //set type from src file extension
+          if (src.endsWith('.png')) {
+            type = 'image/png';
+          }
+          if (src.endsWith('.jpg')) {
+            type = 'image/jpeg';
+          }
+          if (src.endsWith('.jpeg')) {
+            type = 'image/jpeg';
+          }
+          if (src.endsWith('.gif')) {
+            type = 'image/gif';
+          }
+          if (src.endsWith('.webp')) {
 
-          type = 'image/webp';
-        }
-        if (src.endsWith('.mp4')) {
-          type = 'video/mp4';
-        }
-        if (src.endsWith('.webm')) {
-          type = 'video/webm';
-        }
-        if (src.endsWith('.ogg')) {
-          type = 'video/ogg';
-        }
-        if (src.endsWith('.mp3')) {
-          type = 'audio/mp3';
-        }
-        if (src.endsWith('.wav')) {
-          type = 'audio/wav';
-        }
+            type = 'image/webp';
+          }
+          if (src.endsWith('.mp4')) {
+            type = 'video/mp4';
+          }
+          if (src.endsWith('.webm')) {
+            type = 'video/webm';
+          }
+          if (src.endsWith('.ogg')) {
+            type = 'video/ogg';
+          }
+          if (src.endsWith('.mp3')) {
+            type = 'audio/mp3';
+          }
+          if (src.endsWith('.wav')) {
+            type = 'audio/wav';
+          }
 
-        function blobUrlToBlob(blobUrl) {
-          return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', blobUrl, true);
-            xhr.responseType = 'blob';
-            
-            xhr.onload = function() {
-              if (this.status === 200) {
-                resolve(this.response);
-              } else {
-                reject(new Error(`Failed to convert blob URL to blob: ${this.status}`));
-              }
-            };
-            
-            xhr.onerror = function() {
-              reject(new Error('XHR error while converting blob URL to blob'));
-            };
-            
-            xhr.send();
-          });
-        }
-        let blob = await blobUrlToBlob(src);
-        let file = new File([blob], `media.${type.split('/')[1]}`, { type });
-        let url = await this.uploadFile(file, false,false);
-        if(url){
-          element.src = url;
-          element.after(document.createTextNode(url));
-        }
-        
+          function blobUrlToBlob(blobUrl) {
+            return new Promise((resolve, reject) => {
+              const xhr = new XMLHttpRequest();
+              xhr.open('GET', blobUrl, true);
+              xhr.responseType = 'blob';
+
+              xhr.onload = function () {
+                if (this.status === 200) {
+                  resolve(this.response);
+                } else {
+                  reject(new Error(`Failed to convert blob URL to blob: ${this.status}`));
+                }
+              };
+
+              xhr.onerror = function () {
+                reject(new Error('XHR error while converting blob URL to blob'));
+              };
+
+              xhr.send();
+            });
+          }
+          let blob = await blobUrlToBlob(src);
+          let file = new File([blob], `media.${type.split('/')[1]}`, { type });
+          let url = await this.uploadFile(file, false, false);
+          if (url) {
+            element.src = url;
+            element.after(document.createTextNode(url));
+          }
+
         } catch (error) {
           console.error('error cleaning blob url', error);
-          this.showToast('error cleaning blob url'+error.toString());
-          
+          this.showToast('error cleaning blob url' + error.toString());
+
         }
-        
+
       }
     });
   }
