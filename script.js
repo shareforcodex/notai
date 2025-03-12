@@ -2963,6 +2963,50 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           let url = await this.uploadFile(file, false);
           element.src = url;
         }
+        //if src start with blob, upload to server and replace src with url
+        if (src.startsWith('blob:')) {
+          let type = 'image/jpeg';
+          //set type from src file extension
+          if (src.endsWith('.png')) {
+            type = 'image/png';
+          }
+          if (src.endsWith('.jpg')) {
+            type = 'image/jpeg';
+          }
+          if (src.endsWith('.jpeg')) {
+            type = 'image/jpeg';
+          }
+          if (src.endsWith('.gif')) {
+            type = 'image/gif';
+          }
+          if (src.endsWith('.webp')) {
+
+            type = 'image/webp';
+          }
+          if (src.endsWith('.mp4')) {
+            type = 'video/mp4';
+          }
+          if (src.endsWith('.webm')) {
+            type = 'video/webm';
+          }
+          if (src.endsWith('.ogg')) {
+            type = 'video/ogg';
+          }
+          if (src.endsWith('.mp3')) {
+            type = 'audio/mp3';
+          }
+          if (src.endsWith('.wav')) {
+            type = 'audio/wav';
+          }
+          
+
+
+
+          let blob = await fetch(src).then(r => r.blob());
+          let file = new File([blob], `media.${type.split('/')[1]}`, { type });
+          let url = await this.uploadFile(file, false);
+          element.src = url;
+        }
       });
     }, 1000);
   }
