@@ -2123,11 +2123,20 @@ ${audioResponse.transcript || ''}
 
       // Save button
       if (saveNoteBtn) {
-        saveNoteBtn.addEventListener('click', () => {
-          this.saveNote();
+        saveNoteBtn.addEventListener('click', async () => {
+          try {
+           await this.cleanNote();
 
-          this.cleanNote();
+            this.saveNote();
 
+    
+          } catch (error) {
+            console.error('Error saving note:', error);
+
+            this.saveNote();
+          }
+          
+          
 
         });
       }
