@@ -1117,7 +1117,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
                 // Handle data: prefix
                 const jsonStr = trimmedLine.replace(/^data: /, "");
-                
+
                 //check jsonStr is valid json or not
                 if (jsonStr && jsonStr === "[DONE]") {
                   continue;
@@ -1130,14 +1130,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
                     const delta = parsedData.choices[0]?.delta;
                     if (delta && delta.content) {
                       text += delta.content;
-                      block.innerHTML+= delta.content;
+                      block.innerHTML += delta.content;
                       if (chunkCounter === 6) {
                         block.innerHTML = text;
-  
+
                       }
                       if (chunkCounter === 80) {
                         block.innerHTML = text;
-  
+
                       }
                     }
                   }
@@ -1789,7 +1789,6 @@ ${audioResponse.transcript || ''}
       const uploadModal = document.getElementById('uploadModal');
       const uploadFileBtn = document.getElementById('uploadFileBtn');
       const closeUploadBtn = uploadModal?.querySelector('.close');
-      const dropZone = document.getElementById('dropZone');
       const fileInput = document.getElementById('fileInput');
       const selectFileBtn = document.getElementById('selectFileBtn');
       const uploadBtn = document.getElementById('uploadBtn');
@@ -1818,7 +1817,7 @@ ${audioResponse.transcript || ''}
       const formatButtons = document.querySelectorAll('.formatting-tools button[data-command]');
 
       // Setup file upload and media capture handlers
-      if (uploadModal && uploadFileBtn && closeUploadBtn && dropZone &&
+      if (uploadModal && uploadFileBtn && closeUploadBtn  &&
         fileInput && selectFileBtn && uploadBtn && previewArea && filePreview) {
 
         uploadFileBtn.onclick = () => {
@@ -1948,30 +1947,11 @@ ${audioResponse.transcript || ''}
           }
         };
 
-        // Handle drag and drop
-        dropZone.ondragover = (e) => {
-          e.preventDefault();
-          dropZone.style.borderColor = '#2ecc71';
-        };
-
-        dropZone.ondragleave = () => {
-          dropZone.style.borderColor = '#ccc';
-        };
-
-        dropZone.ondrop = async (e) => {
-          e.preventDefault();
-          dropZone.style.borderColor = '#ccc';
-          const file = e.dataTransfer.files[0];
-          if (file) {
-            await this.handleFileSelection(file, previewArea, filePreview);
-          }
-        };
-
         // Handle file upload
         uploadBtn.onclick = async () => {
           const file = fileInput.files[0];
           if (file) {
-            await this.uploadFile(file);
+            await this.uploadFile(file,true,true);
             uploadModal.style.display = 'none';
           }
         };
@@ -2306,10 +2286,30 @@ ${audioResponse.transcript || ''}
           this.editor.lastKey = e.key;
         });
 
-        this.editor.addEventListener('drop', (e) => {
-          this.clearNotes();
-          this.showToast('Dropped file(s) detected. they will save to cloud.');
+        this.editor.addEventListener('drop', (event) => {
+          event.preventDefault();
+
+          this.showToast('drop file to upload');
+
+          const files = event.dataTransfer.files;
+          if (files.length === 0) {
+            console.log('No files dropped.');
+            return;
+          }
+
+          for (const file of files) {
+            if (file.type.startsWith('image/')) {
+              console.log(`Image file dropped: ${file.name}`);
+              // Process the image file here
+            } else {
+              console.log('Non-image file dropped.');
+            }
+            this.uploadFile(file);
+          }
         });
+
+        this.clearNotes();
+
       }
     } catch (error) {
       console.error('Error setting up event listeners:', error);
@@ -2960,62 +2960,62 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   cleanNote() {
     //check all img and audio, video tags, if src is base64, upload to server and replace src with url
-      let mediaElements = this.editor.querySelectorAll('img, audio, video');
-      mediaElements.forEach(async element => {
-        let src = element.src;
-        if (src.startsWith('data:')) {
-          let type = src.split(';')[0].split(':')[1];
-          let data = src.split(',')[1];
-          let blob = utils.base64ToBlob(src);
-          let file = new File([blob], `media.${type.split('/')[1]}`, { type });
-          let url = await this.uploadFile(file, false);
-          element.src = url;
+    let mediaElements = this.editor.querySelectorAll('img, audio, video');
+    mediaElements.forEach(async element => {
+      let src = element.src;
+      if (src.startsWith('data:')) {
+        let type = src.split(';')[0].split(':')[1];
+        let data = src.split(',')[1];
+        let blob = utils.base64ToBlob(src);
+        let file = new File([blob], `media.${type.split('/')[1]}`, { type });
+        let url = await this.uploadFile(file, false,false);
+        element.src = url;
+      }
+      //if src start with blob, upload to server and replace src with url
+      if (src.startsWith('blob:')) {
+        let type = 'image/jpeg';
+        //set type from src file extension
+        if (src.endsWith('.png')) {
+          type = 'image/png';
         }
-        //if src start with blob, upload to server and replace src with url
-        if (src.startsWith('blob:')) {
-          let type = 'image/jpeg';
-          //set type from src file extension
-          if (src.endsWith('.png')) {
-            type = 'image/png';
-          }
-          if (src.endsWith('.jpg')) {
-            type = 'image/jpeg';
-          }
-          if (src.endsWith('.jpeg')) {
-            type = 'image/jpeg';
-          }
-          if (src.endsWith('.gif')) {
-            type = 'image/gif';
-          }
-          if (src.endsWith('.webp')) {
-
-            type = 'image/webp';
-          }
-          if (src.endsWith('.mp4')) {
-            type = 'video/mp4';
-          }
-          if (src.endsWith('.webm')) {
-            type = 'video/webm';
-          }
-          if (src.endsWith('.ogg')) {
-            type = 'video/ogg';
-          }
-          if (src.endsWith('.mp3')) {
-            type = 'audio/mp3';
-          }
-          if (src.endsWith('.wav')) {
-            type = 'audio/wav';
-          }
-          
-
-
-
-          let blob = await fetch(src).then(r => r.blob());
-          let file = new File([blob], `media.${type.split('/')[1]}`, { type });
-          let url = await this.uploadFile(file, false);
-          element.src = url;
+        if (src.endsWith('.jpg')) {
+          type = 'image/jpeg';
         }
-      });
+        if (src.endsWith('.jpeg')) {
+          type = 'image/jpeg';
+        }
+        if (src.endsWith('.gif')) {
+          type = 'image/gif';
+        }
+        if (src.endsWith('.webp')) {
+
+          type = 'image/webp';
+        }
+        if (src.endsWith('.mp4')) {
+          type = 'video/mp4';
+        }
+        if (src.endsWith('.webm')) {
+          type = 'video/webm';
+        }
+        if (src.endsWith('.ogg')) {
+          type = 'video/ogg';
+        }
+        if (src.endsWith('.mp3')) {
+          type = 'audio/mp3';
+        }
+        if (src.endsWith('.wav')) {
+          type = 'audio/wav';
+        }
+
+
+
+
+        let blob = await fetch(src).then(r => r.blob());
+        let file = new File([blob], `media.${type.split('/')[1]}`, { type });
+        let url = await this.uploadFile(file, false,false);
+        element.src = url;
+      }
+    });
   }
 
   toggleSidebar() {
@@ -3304,7 +3304,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   //   this.editor.appendChild(block);
   // }
 
-  async uploadFile(file, ifInsertElement = true) {
+  async uploadFile(file, ifInsertElement = true, appendInfo = false) {
     try {
       // Show loading spinner
       this.showSpinner();
@@ -3328,13 +3328,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         let deviceInfo = '';
         if (file.type.startsWith('video/') || file.type.startsWith('image/')) {
           const videoDevice = document.getElementById('videoDevices')?.selectedOptions[0]?.text;
-          if (videoDevice) {
+          if (videoDevice && appendInfo) {
             deviceInfo = `<strong>Camera:</strong> ${videoDevice}<br>`;
           }
         }
         if (file.type.startsWith('audio/') || file.type.startsWith('video/')) {
           const audioDevice = document.getElementById('audioDevices')?.selectedOptions[0]?.text;
-          if (audioDevice) {
+          if (audioDevice && appendInfo) {
             deviceInfo += `<strong>Microphone:</strong> ${audioDevice}<br>`;
           }
         }
@@ -3347,13 +3347,22 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         if (!ifInsertElement) {
           return fileURL;
         }
-        fileInfoDiv.innerHTML = `
-          <strong> ${fileURL}</strong><br>
-          <strong>Type:</strong> ${file.type || 'Unknown'} 
-          <strong>Size:</strong> ${this.formatFileSize(file.size)} 
-          ${deviceInfo} <br>
+        if (appendInfo) {
+          fileInfoDiv.innerHTML = `
+          ${fileURL}<br>
+          ${file.type || 'Unknown type'} 
+          ${this.formatFileSize(file.size)} 
+          ${deviceInfo} 
           ${new Date().toLocaleString()}
+          <br> <br>
         `;
+        }
+        else {
+          fileInfoDiv.innerHTML = `
+          ${fileURL}
+          <br><br> `;
+        }
+
 
         // Create appropriate element based on file type
         let element;

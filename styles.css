@@ -782,17 +782,11 @@ pre code {
 }
 
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+   margin: 0;
+   padding: 0;
 }
 
-.close {
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
+
 
 .close:hover {
     color: #555;
@@ -889,7 +883,7 @@ pre code {
     border: none;
 }
 
-.save-settings-btn {
+.upload-container-btn {
     position: relative;
     bottom: 0;
     padding: 10px 20px;
@@ -901,9 +895,7 @@ pre code {
     font-size: 16px;
 }
 
-.save-settings-btn:hover {
-    background-color: #27ae60;
-}
+
 
 /* Comment styles */
 .commented-text {
@@ -1309,39 +1301,10 @@ pre code {
     max-width: 600px;
 }
 
-#dropZone {
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    text-align: center;
-    background-color: #f9f9f9;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
 
-#dropZone:hover {
-    background-color: #f0f0f0;
-    border-color: #2ecc71;
-}
 
-#dropZone.dragover {
-    background-color: #e8f5e9;
-    border-color: #2ecc71;
-}
 
-#selectFileBtn {
-    background-color: #2ecc71;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease;
-}
 
-#selectFileBtn:hover {
-    background-color: #27ae60;
-}
 
 #previewArea {
 
