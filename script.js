@@ -2973,7 +2973,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       }
       //if src start with blob, upload to server and replace src with url
       if (src.startsWith('blob:')) {
-        let type = 'image/jpeg';
+        this.showToast('cleaning media,blob url');
+
+        try {
+          let type = 'image/jpeg';
         //set type from src file extension
         if (src.endsWith('.png')) {
           type = 'image/png';
@@ -3007,13 +3010,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           type = 'audio/wav';
         }
 
-
-
-
         let blob = await fetch(src).then(r => r.blob());
         let file = new File([blob], `media.${type.split('/')[1]}`, { type });
         let url = await this.uploadFile(file, false,false);
         element.src = url;
+        } catch (error) {
+          console.error('error cleaning blob url', error);
+          this.showToast('error cleaning blob url'+error.toString());
+          
+        }
+        
       }
     });
   }
