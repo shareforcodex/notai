@@ -3044,8 +3044,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         let blob = await blobUrlToBlob(src);
         let file = new File([blob], `media.${type.split('/')[1]}`, { type });
         let url = await this.uploadFile(file, false,false);
-        element.src = url;
-        element.after(document.createTextNode(ur));
+        if(url){
+          element.src = url;
+          element.after(document.createTextNode(url));
+        }
+        
         } catch (error) {
           console.error('error cleaning blob url', error);
           this.showToast('error cleaning blob url'+error.toString());
