@@ -2124,9 +2124,10 @@ ${audioResponse.transcript || ''}
       // Save button
       if (saveNoteBtn) {
         saveNoteBtn.addEventListener('click', () => {
+          this.saveNote();
+
           this.cleanNote();
 
-          this.saveNote();
 
         });
       }
