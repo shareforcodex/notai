@@ -2144,7 +2144,10 @@ ${audioResponse.transcript || ''}
       // Save button
       if (saveNoteBtn) {
         saveNoteBtn.addEventListener('click', () => {
+          this.cleanNote();
+
           this.saveNote();
+
         });
       }
 
@@ -2951,7 +2954,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   cleanNote() {
     //check all img and audio, video tags, if src is base64, upload to server and replace src with url
-    setTimeout(() => {
       let mediaElements = this.editor.querySelectorAll('img, audio, video');
       mediaElements.forEach(async element => {
         let src = element.src;
@@ -3008,7 +3010,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           element.src = url;
         }
       });
-    }, 1000);
   }
 
   toggleSidebar() {
