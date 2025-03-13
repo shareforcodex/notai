@@ -2915,8 +2915,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
         // Show saved state
         spinnerIcon.style.display = "none";
-        saveIcon.style.display = "inline-block";
-        spanText.textContent = "V";
+        saveNoteBtn.querySelector('.fa-save').style.display = "none";
+        spanText.textContent = "⌄";
 
         return;
       }
@@ -2943,6 +2943,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         spinnerIcon.style.display = "none";
         saveIcon.style.display = "inline-block";
         spanText.textContent = "^";
+        saveNoteBtn.querySelector('.fa-save').style.display = "none";
+
 
       } else {
         // Show error state
