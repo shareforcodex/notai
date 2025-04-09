@@ -1834,6 +1834,8 @@ ${audioResponse.transcript || ''}
           if (videoPreview.srcObject) {
             videoPreview.srcObject.getTracks().forEach(track => track.stop());
           }
+        this.stopMediaTracks();
+
         };
 
         if (captureVideoBtn) {
@@ -3467,6 +3469,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   }
 
   // Add media device handling methods
+  stoptrackTimeoutid = 0;
   async setupMediaDevices() {
     try {
       globalDevices.mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -3515,7 +3518,34 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       console.error('Error enumerating devices:', error);
       this.showToast('Error accessing media devices');
     }
+    clearTimeout(this.stoptrackTimeoutid)
+    // this.stoptrackTimeoutid= setTimeout(() => {
+    //   this.stopMediaTracks();
+    // }, 120000);
+    
+    //add a one time event listener to stop media tracks when unfocused tab
+    
+   
   }
+
+   stopMediaTracks() {
+    // Check if the stream exists and has tracks
+    if (globalDevices.mediaStream && globalDevices.mediaStream.getTracks) {
+      console.log("Stopping media stream tracks...");
+      globalDevices.mediaStream.getTracks().forEach(track => {
+        track.stop(); // Stop each track (video and audio)
+        console.log(`Track stopped: ${track.kind} - ${track.label}`);
+      });
+      console.log("All tracks stopped.");
+  
+      // Optional: Clear the reference to the stream object
+      // This helps with garbage collection and prevents accidental reuse.
+      globalDevices.mediaStream = null;
+    } else {
+      console.log("No active media stream to stop.");
+    }
+  }
+  
 
   async startMediaStream(videoDeviceId = null, includeAudio = false) {
     try {
@@ -3700,6 +3730,17 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     }
   }
 }
+
+window.addEventListener('blur', () => {
+  editor.stopMediaTracks();
+}, { once: true });
+
+document.addEventListener("visibilitychange", ()=>{
+  if (document.hidden) {
+    editor.stopMediaTracks();
+  }
+});
+
 
 // Initialize the editor and load folders
 document.addEventListener("DOMContentLoaded", async () => {
