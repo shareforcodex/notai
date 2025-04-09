@@ -171,17 +171,23 @@ iframe {
 
 
 
+
 .sidebar {
+    background: lightpink;
+    left: 50px;
+    top: 500px;
     font-size: small;
-    width: 30vw;
-    max-width: 200px;
+    width: 80vw;
+    max-width: 500px;
     background-color: #f7f7f7;
     border-right: 1px solid #e0e0e0;
     padding-left: 10px;
     position: fixed;
-    height: 100vh;
+    height: 50vh;
     overflow-y: auto;
     z-index: 100;
+    /* give a dark shadow */
+    box-shadow: 0 -9px 20px 2px rgb(18 0 0 / 30%);
 }
 
 .sidebar.hidden {
@@ -189,7 +195,7 @@ iframe {
 }
 
 .main-content {
-    margin-left: 30vw;
+    margin-left: 2vw;
 
 }
 
@@ -198,14 +204,9 @@ iframe {
 }
 
 .sidebar-header {
-    position: relative;
-    right: 10px;
     height: 40px;
-    width: 110%;
-    background-color: white;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
+    width: 100%;
+    background-color: #f5f5f5;
 }
 
 .sidebar-actions {
@@ -359,7 +360,6 @@ iframe {
     padding-top: 20px;
     overflow: auto;
     font-size: small;
-    max-height: 50vh;
     scrollbar-width: none;
 }
 
@@ -1474,11 +1474,9 @@ pre code {
 }
 
 #newFolderBtn {
-    margin-left: 5px;
+    font-size: large;
     padding: 5px 10px;
     background: none;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
+    border: 0px;
     cursor: pointer;
-    transition: background-color 0.2s;
 }
