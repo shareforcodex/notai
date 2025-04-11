@@ -1270,7 +1270,7 @@ ${audioResponse.transcript || ''}
       alert('Please select or create a block first');
       return;
     }
-    this.handleAIAction('ask', 'this is chat history :\n' + context.contextText + '\n\n  current query:\n' + context.currentText, true);
+    this.handleAIAction('ask', 'this is our chat history,only reference it when need :\n <history>' + context.contextText + '\n</history>\n\n\n' + context.currentText, true);
   }
 
   setupAISettings() {
