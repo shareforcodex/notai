@@ -2705,52 +2705,148 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     }
   }
 
-  async loadNotes(folderId = "1733485657799jj0.5911120915160637") {  // Set default folder ID
-    const endpoint = `/folders/${folderId}/notes`;  // Always use folder-specific endpoint
-    const notes = await this.apiRequest("GET", endpoint);
+  async loadNotes(folderId = "1733485657799jj0.5911120915160637") {
+    try {
+      // First try to get from cache
+      const cache = await caches.open('folders-cache');
+      const cachedResponse = await cache.match(`folder-${folderId}`);
+      let cachedNotes = null;
+      
+      if (cachedResponse) {
+        cachedNotes = await cachedResponse.json();
+        // Update UI with cached data first
+        this.updateNotesList(cachedNotes, folderId);
+        console.log('Loaded notes from cache');
+      }
 
-    if (Array.isArray(notes)) {
-      const pagesList = document.getElementById("pagesList");
-      pagesList.innerHTML = "";
-      notes.forEach((note) => {
-        // Only show notes that belong to this folder
-        if (note.folder_id === folderId) {
-          const noteElement = document.createElement("div");
-          noteElement.className = "page-item";
-          noteElement.textContent = note.title || "Untitled";
-          noteElement.onclick = () => this.loadNote(note.note_id);
-          pagesList.appendChild(noteElement);
+      // Then fetch from remote
+      const notes = await this.apiRequest("GET", `/folders/${folderId}/notes`);
+      
+      if (Array.isArray(notes)) {
+        // Check if remote data is different from cache
+        if (!cachedNotes || JSON.stringify(notes) !== JSON.stringify(cachedNotes)) {
+          // Update UI with remote data
+          this.updateNotesList(notes, folderId);
+          
+          // Update cache
+          await cache.put(
+            `folder-${folderId}`, 
+            new Response(JSON.stringify(notes))
+          );
+          console.log('Updated notes from remote and cached');
         }
-      });
+      } else if (!cachedNotes) {
+        // If remote fails and no cache, show error
+        console.error("Failed to load notes");
+        this.showToast('Failed to load notes');
+      }
+    } catch (error) {
+      console.error('Error loading notes:', error);
+      this.showToast('Error loading notes');
     }
   }
 
+  // Helper method to update the notes list UI
+  updateNotesList(notes, folderId) {
+    const pagesList = document.getElementById("pagesList");
+    pagesList.innerHTML = "";
+    
+    notes.forEach((note) => {
+      if (note.folder_id === folderId) {
+        const noteElement = document.createElement("div");
+        noteElement.className = "page-item";
+        noteElement.textContent = note.title || "Untitled";
+        noteElement.onclick = () => this.loadNote(note.note_id);
+        pagesList.appendChild(noteElement);
+      }
+    });
+  }
+
   async loadNote(note_id) {
-    const note = await this.apiRequest("GET", `/notes/${note_id}`);
-    if (note && !note.error) {
-      this.editor.innerHTML = note.content || "";
-      document.getElementById("noteTitle").textContent = note.title || "";
-      // Update the current note ID
-      this.currentNoteId = note_id;
-      this.currentNoteTitle = note.title; // Store the title for later use
-      this.lastUpdated = note.last_updated; // Store last_updated timestamp
+    try {
+      // First try to get from cache
+      const cachedNote = await this.getNoteFromCache(note_id);
+      if (cachedNote) {
+        // Update UI with cached data
+        this.updateNoteUI(cachedNote);
+        console.log('Loaded note from cache');
+      }
 
-      // Add to recent notes
-      this.addToRecentNotes(note_id, note.title);
-
-      // Update table of contents after loading note
-      this.updateTableOfContents();
-
-      //set img tags to lazyloading in editor
-      const mediaElements = this.editor.querySelectorAll('img, iframe, video, audio');
-      mediaElements.forEach(element => {
-        element.setAttribute('loading', 'lazy');
-        if (element.tagName === 'VIDEO' || element.tagName === 'AUDIO') {
-          element.setAttribute('preload', 'none');
+      // Then fetch from remote
+      const note = await this.apiRequest("GET", `/notes/${note_id}`);
+      if (note && !note.error) {
+        // Check if remote content is different from cache
+        if (!cachedNote || 
+            note.content !== cachedNote.content || 
+            note.last_updated !== cachedNote.last_updated) {
+          
+          // Update UI with remote data
+          this.updateNoteUI(note);
+          
+          // Update cache
+          await this.updateNoteCache(note_id, note);
+          console.log('Updated note from remote and cached');
         }
-      });
-    } else {
-      console.error("Failed to load note:", note.error);
+      } else {
+        console.error("Failed to load note:", note.error);
+        // If remote fails but we have cache, keep using cache
+        if (!cachedNote) {
+          this.showToast('Failed to load note');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading note:', error);
+      this.showToast('Error loading note');
+    }
+  }
+
+  // Helper method to update UI with note data
+  updateNoteUI(note) {
+    this.editor.innerHTML = note.content || "";
+    document.getElementById("noteTitle").textContent = note.title || "";
+    this.currentNoteId = note.note_id;
+    this.currentNoteTitle = note.title;
+    this.lastUpdated = note.last_updated;
+
+    // Add to recent notes
+    this.addToRecentNotes(note.note_id, note.title);
+
+    // Update table of contents
+    this.updateTableOfContents();
+
+    // Set lazy loading for media elements
+    const mediaElements = this.editor.querySelectorAll('img, iframe, video, audio');
+    mediaElements.forEach(element => {
+      element.setAttribute('loading', 'lazy');
+      if (element.tagName === 'VIDEO' || element.tagName === 'AUDIO') {
+        element.setAttribute('preload', 'none');
+      }
+    });
+  }
+
+  // Helper method to get note from cache
+  async getNoteFromCache(note_id) {
+    try {
+      const cache = await caches.open('notes-cache');
+      const response = await cache.match(`note-${note_id}`);
+      if (response) {
+        return await response.json();
+      }
+      return null;
+    } catch (error) {
+      console.error('Error reading from cache:', error);
+      return null;
+    }
+  }
+
+  // Helper method to update note in cache
+  async updateNoteCache(note_id, note) {
+    try {
+      const cache = await caches.open('notes-cache');
+      const response = new Response(JSON.stringify(note));
+      await cache.put(`note-${note_id}`, response);
+    } catch (error) {
+      console.error('Error updating cache:', error);
     }
   }
 
@@ -3076,13 +3172,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   }
 
   async loadFolderContents(folderId, folderElement) {
-    // Check if content already exists
+    // Check if content already exists in DOM
     let contentContainer = folderElement.nextElementSibling;
-    if (
-      contentContainer &&
-      contentContainer.classList.contains("folder-contents")
-    ) {
-      // Toggle visibility by removing the container
+    if (contentContainer && contentContainer.classList.contains("folder-contents")) {
       contentContainer.remove();
       folderElement.classList.remove("open");
       return;
@@ -3094,39 +3186,85 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     contentContainer = document.createElement("div");
     contentContainer.className = "folder-contents";
 
-    // Load notes in this folder first
-    const notes = await this.apiRequest("GET", `/folders/${folderId}/notes`);
+    try {
+      // First try to get from cache
+      const cache = await caches.open('folders-cache');
+      const cachedResponse = await cache.match(`folder-${folderId}`);
+      let cachedData = null;
+
+      if (cachedResponse) {
+        cachedData = await cachedResponse.json();
+        // Render cached data first
+        this.renderFolderContents(cachedData.notes, cachedData.folders, contentContainer);
+        // Insert content container after the folder element
+        folderElement.after(contentContainer);
+      }
+
+      // Then fetch from remote
+      const [notes, folders] = await Promise.all([
+        this.apiRequest("GET", `/folders/${folderId}/notes`),
+        this.apiRequest("GET", `/folders/${folderId}/contents`)
+      ]);
+
+      const remoteData = { notes, folders };
+
+      // Check if remote data is different from cache
+      if (!cachedData || JSON.stringify(remoteData) !== JSON.stringify(cachedData)) {
+        // Update cache
+        await cache.put(
+          `folder-${folderId}`,
+          new Response(JSON.stringify(remoteData))
+        );
+
+        // Update UI with new data
+        contentContainer.innerHTML = ''; // Clear existing content
+        this.renderFolderContents(notes, folders, contentContainer);
+        
+        if (!cachedData) {
+          // If there was no cached data, insert container now
+          folderElement.after(contentContainer);
+        }
+      }
+
+    } catch (error) {
+      console.error('Error loading folder contents:', error);
+      if (!contentContainer.hasChildNodes()) {
+        contentContainer.innerHTML = '<div class="error">Error loading contents</div>';
+        folderElement.after(contentContainer);
+      }
+    }
+  }
+
+  // Helper method to render folder contents
+  renderFolderContents(notes, folders, container) {
+    // Render notes
     if (Array.isArray(notes)) {
       notes.forEach((note) => {
         const noteElement = document.createElement("div");
         noteElement.className = "page-item folder-note";
         noteElement.innerHTML = `
-                    <i class="fas fa-file-alt"></i>
-                    <span>${note.title || "Untitled"}</span>
-                `;
+          <i class="fas fa-file-alt"></i>
+          <span>${note.title || "Untitled"}</span>
+        `;
         noteElement.onclick = () => this.loadNote(note.note_id);
-        contentContainer.appendChild(noteElement);
+        container.appendChild(noteElement);
       });
     }
 
-    // Load and show sub-folders
-    const folders = await this.apiRequest(
-      "GET",
-      `/folders/${folderId}/contents`
-    );
+    // Render folders
     if (Array.isArray(folders)) {
       folders.forEach((folder) => {
         const subFolderElement = document.createElement("div");
         subFolderElement.className = "folder-item sub-folder";
         subFolderElement.innerHTML = `
-                    <div class="folder-content">
-                        <i class="fas fa-folder"></i>
-                        <span>${folder.folder_name}</span>
-                        <button class="add-note-btn" title="Add note to folder">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                `;
+          <div class="folder-content">
+            <i class="fas fa-folder"></i>
+            <span>${folder.folder_name}</span>
+            <button class="add-note-btn" title="Add note to folder">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        `;
 
         // Add click handler for the folder
         subFolderElement.querySelector(".folder-content").onclick = (e) => {
@@ -3141,12 +3279,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           this.createNewNote(folder.folder_id);
         };
 
-        contentContainer.appendChild(subFolderElement);
+        container.appendChild(subFolderElement);
       });
     }
-
-    // Insert content container after the folder element
-    folderElement.after(contentContainer);
   }
 
   setupTableOfContents() {

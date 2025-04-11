@@ -135,7 +135,6 @@ iframe {
 
 
 #folders {
-    max-height: 40vh;
     scrollbar-width: none;
     overflow: auto;
 }
@@ -190,7 +189,7 @@ iframe {
     box-shadow: 0 -9px 20px 2px rgb(18 0 0 / 30%);
 }
 
-.sidebar.hidden {
+.hidden {
     display: none;
 }
 
