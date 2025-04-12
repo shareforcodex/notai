@@ -4,7 +4,6 @@
 
 
 * {
-    margin: 0;
     padding: 0;
     box-sizing: border-box;
     scrollbar-width: thin;
@@ -16,6 +15,17 @@ body {
     margin: 0 !important;
     padding: 0 !important;
 }
+
+
+  
+  button ,input, textarea {
+    padding: 6px ;
+    border-radius: 4px ;
+    background-color: white ;
+    color: black ;
+    border: 1px solid lightgray ;
+  
+  }
 
 .code-copy-btn {
     position: fixed;
