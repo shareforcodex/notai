@@ -1178,74 +1178,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
         else {
           let responseObject = await response.json();
-          response = responseObject;
-          const aiResponse = response.choices[0].message.content || '';
-          let audioResponse = response.choices[0].message.audio;
-
-          if (useComment) {
-            // Add this response to the comment
-            const currentComment = commentedSpan.getAttribute("data-comment") || "";
-            let newResponse = `<h4 onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });" style="position: sticky; top: 0; background: white; z-index: 100; padding: 0px 0; margin: 0; font-size: small; text-decoration: underline;">${modelName}</h4>
-<div style="display:block">
-${(aiResponse)}`;
-
-            // Add audio player if audio response is available
-            if (audioResponse && audioResponse.data) {
-              newResponse += `<audio controls style="width: 90%; margin-top: 10px;">
-  <source src="data:audio/wav;base64,${audioResponse.data}" type="audio/wav">
-  Your browser does not support the audio element.
-</audio>`;
-            }
-
-            newResponse += '</div>';
-            const updatedComment = currentComment ? currentComment + newResponse + '---\n' : newResponse;
-            commentedSpan.setAttribute("data-comment", updatedComment);
-
-            // Show or update tooltip for all responses
-            const tooltip = document.getElementById('commentTooltip');
-            // this.showCommentTooltip(commentedSpan.innerHTML);
-            // Add highlight effect to AI-generated comment
-            document.querySelector('.comment-tooltip').classList.add('highlight');
-            setTimeout(() => {
-              document.querySelector('.comment-tooltip').classList.remove('highlight');
-            }, 1000);
-
-          } else {
+          console.log(responseObject);
+          // Handle the response
+          block.innerHTML = responseObject.choices[0].message.content + '<br><br> by ' + modelName;
+          this.cleanNote();
+          this.delayedSaveNote();
 
 
-            let blockContent = `<h4 style="margin: 0; padding: 5px 0;"></h4>${(aiResponse)}
-              <br>
-              <br>
-by ${modelName}`;
-
-            // Add audio player if audio response is available
-            if (audioResponse && audioResponse.data) {
-              blockContent += `<audio controls style="width: 90%; margin-top: 10px;">
-  <source src="data:audio/wav;base64,${audioResponse.data}" type="audio/wav">
-  Your browser does not support the audio element.
-</audio> <br>
-${audioResponse.transcript || ''}
-`;
-            }
-
-            block.innerHTML = blockContent;
-
-            setTimeout(() => {
-              block.classList.remove('highlight');
-            }, 1500);
-
-
-          }
-
-          // Increment completed responses counter
-          completedResponses++;
-
-          // If all responses are complete, save the note
-          if (completedResponses === totalResponses) {
-            this.delayedSaveNote(true);
-            this.cleanNote();
-          }
-        }
+         }
       }).catch(error => {
         console.error(`Error with ${modelName} request:`, error);
         this.showToast(`Error with ${modelName}: ${error || ' error'}`);
@@ -1837,7 +1777,7 @@ ${audioResponse.transcript || ''}
           if (videoPreview.srcObject) {
             videoPreview.srcObject.getTracks().forEach(track => track.stop());
           }
-        this.stopMediaTracks();
+          this.stopMediaTracks();
 
         };
 
@@ -2714,7 +2654,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       const cache = await caches.open('folders-cache');
       const cachedResponse = await cache.match(`folder-${folderId}`);
       let cachedNotes = null;
-      
+
       if (cachedResponse) {
         cachedNotes = await cachedResponse.json();
         // Update UI with cached data first
@@ -2724,16 +2664,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
       // Then fetch from remote
       const notes = await this.apiRequest("GET", `/folders/${folderId}/notes`);
-      
+
       if (Array.isArray(notes)) {
         // Check if remote data is different from cache
         if (!cachedNotes || JSON.stringify(notes) !== JSON.stringify(cachedNotes)) {
           // Update UI with remote data
           this.updateNotesList(notes, folderId);
-          
+
           // Update cache
           await cache.put(
-            `folder-${folderId}`, 
+            `folder-${folderId}`,
             new Response(JSON.stringify(notes))
           );
           console.log('Updated notes from remote and cached');
@@ -2753,7 +2693,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   updateNotesList(notes, folderId) {
     const pagesList = document.getElementById("pagesList");
     pagesList.innerHTML = "";
-    
+
     notes.forEach((note) => {
       if (note.folder_id === folderId) {
         const noteElement = document.createElement("div");
@@ -2766,7 +2706,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   }
 
   async loadNote(note_id) {
-    this.currentNoteId= note_id;
+    this.saveNote();
+    this.currentNoteId = note_id;
     console.log('Loading note:', note_id);
     try {
       // First try to get from cache
@@ -2781,16 +2722,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       const note = await this.apiRequest("GET", `/notes/${note_id}`);
       if (note && !note.error) {
         // Check if remote content is different from cache
-        if (!cachedNote || 
-            note.content !== cachedNote.content || 
-            note.last_updated !== cachedNote.last_updated) {
-          
-          
-          
+        if (!cachedNote ||
+          note.content !== cachedNote.content ||
+          note.last_updated !== cachedNote.last_updated) {
+
+
+
           // Update cache
           await this.updateNoteCache(note_id, note);
           console.log('Updated note from remote and cached');
-          
+
           //check if currentnote id changed
           if (this.currentNoteId !== note.note_id) {
             console.log('currentNoteId changed, skipping update');
@@ -2799,7 +2740,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           // Update UI with remote data
           this.updateNoteUI(note);
 
-          
+
         }
       } else {
         console.error("Failed to load note:", note.error);
@@ -2995,10 +2936,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       return;
     }
 
+    // Get current title from the title element
+    const currentTitle = document.getElementById("noteTitle").textContent.trim() || "Untitled";
+    this.currentNoteTitle = currentTitle;
+    let targetNoteId = this.currentNoteId;
+    let targetNotecontent= this.editor.innerHTML;
+    let targetlastUpdated = this.lastUpdated;
+
     const saveBtn = document.getElementById("saveNoteBtn");
     const saveIcon = saveBtn.querySelector(".fa-save");
     const spinnerIcon = saveBtn.querySelector(".fa-spinner");
     const spanText = saveBtn.querySelector("span");
+
 
     try {
       // Show spinner, hide save icon
@@ -3019,7 +2968,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       }
       // Server has newer version - load it
       //need convert last_updated to number to compare, the last_updated is string like 2025-01-01 02:25:51
-      if (currentNote && new Date(currentNote.last_updated).getTime() > new Date(this.lastUpdated).getTime()) {
+      if (currentNote && new Date(currentNote.last_updated).getTime() > new Date(targetlastUpdated).getTime()) {
         //if user change to anothe note , do nothing
         if (this.currentNoteId !== currentNote.note_id) {
           return;
@@ -3038,13 +2987,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       }
 
 
-      // Get current title from the title element
-      const currentTitle = document.getElementById("noteTitle").textContent.trim() || "Untitled";
-      this.currentNoteTitle = currentTitle;
+      
 
       const result = await this.apiRequest("POST", `/notes`, {
-        note_id: this.currentNoteId,
-        content: this.editor.innerHTML,
+        note_id: targetNoteId,
+        content: targetNotecontent,
         title: currentTitle,
       }, false, true);
 
@@ -3237,7 +3184,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         // Update UI with new data
         contentContainer.innerHTML = ''; // Clear existing content
         this.renderFolderContents(notes, folders, contentContainer);
-        
+
         if (!cachedData) {
           // If there was no cached data, insert container now
           folderElement.after(contentContainer);
@@ -3675,13 +3622,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     // this.stoptrackTimeoutid= setTimeout(() => {
     //   this.stopMediaTracks();
     // }, 120000);
-    
+
     //add a one time event listener to stop media tracks when unfocused tab
-    
-   
+
+
   }
 
-   stopMediaTracks() {
+  stopMediaTracks() {
     // Check if the stream exists and has tracks
     if (globalDevices.mediaStream && globalDevices.mediaStream.getTracks) {
       console.log("Stopping media stream tracks...");
@@ -3690,7 +3637,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         console.log(`Track stopped: ${track.kind} - ${track.label}`);
       });
       console.log("All tracks stopped.");
-  
+
       // Optional: Clear the reference to the stream object
       // This helps with garbage collection and prevents accidental reuse.
       globalDevices.mediaStream = null;
@@ -3698,7 +3645,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       console.log("No active media stream to stop.");
     }
   }
-  
+
 
   async startMediaStream(videoDeviceId = null, includeAudio = false) {
     try {
@@ -3888,7 +3835,7 @@ window.addEventListener('blur', () => {
   editor.stopMediaTracks();
 }, { once: true });
 
-document.addEventListener("visibilitychange", ()=>{
+document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     editor.stopMediaTracks();
   }

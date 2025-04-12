@@ -13,7 +13,8 @@
 body {
     overscroll-behavior: none;
     /* Prevent pull-to-refresh and overscroll glow */
-
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .code-copy-btn {
