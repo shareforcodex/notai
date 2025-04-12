@@ -1185,7 +1185,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           this.delayedSaveNote();
 
 
-         }
+        }
       }).catch(error => {
         console.error(`Error with ${modelName} request:`, error);
         this.showToast(`Error with ${modelName}: ${error || ' error'}`);
@@ -2940,7 +2940,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const currentTitle = document.getElementById("noteTitle").textContent.trim() || "Untitled";
     this.currentNoteTitle = currentTitle;
     let targetNoteId = this.currentNoteId;
-    let targetNotecontent= this.editor.innerHTML;
+    let targetNotecontent = this.editor.innerHTML;
     let targetlastUpdated = this.lastUpdated;
 
     const saveBtn = document.getElementById("saveNoteBtn");
@@ -2987,7 +2987,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       }
 
 
-      
+
 
       const result = await this.apiRequest("POST", `/notes`, {
         note_id: targetNoteId,
@@ -3841,6 +3841,22 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    caches.open('app-cache').then(cache => {
+      return cache.addAll([
+        './',
+        './index.html',
+        './styles.css',
+        './script.js',
+        './icons/notai-192x192.png',
+        './icons/notai-512x512.png',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
+        'https://corsp.suisuy.eu.org?https://cdn.jsdelivr.net/npm/marked/marked.min.js',
+      ]);
+    })
+  }, 10000);
+})
 
 // Initialize the editor and load folders
 document.addEventListener("DOMContentLoaded", async () => {
@@ -3925,22 +3941,26 @@ document.querySelector('#updateAppBtn').addEventListener('click', () => {
   caches.delete('app-cache').then(() => {
     console.log('Cache deleted');
     //remove service worker
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-      registrations.forEach(registration => {
-        registration.unregister();
-      });
-    });
-    console.log('Service worker unregistered');
-    //reload 
-    window.location.reload();
-  
-  });
+    
 
-  //unregister service worker
+  });
   navigator.serviceWorker.getRegistrations().then(registrations => {
     registrations.forEach(registration => {
-      registration.unregister();
+      registration.unregister().then((res) => {
+        if (res) {
+          console.log('Service worker unregistered');
+          //confirm reload
+
+          if (confirm(' Reload the page to update?')) {
+            window.location.reload();
+          }
+        }
+
+      }
+      );
+
     });
   });
-  window.location.reload();
+
+ 
 });
