@@ -2763,6 +2763,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   }
 
   async loadNote(note_id) {
+    this.currentNoteId= note_id;
+    console.log('Loading note:', note_id);
     try {
       // First try to get from cache
       const cachedNote = await this.getNoteFromCache(note_id);
@@ -2780,12 +2782,21 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             note.content !== cachedNote.content || 
             note.last_updated !== cachedNote.last_updated) {
           
-          // Update UI with remote data
-          this.updateNoteUI(note);
+          
           
           // Update cache
           await this.updateNoteCache(note_id, note);
           console.log('Updated note from remote and cached');
+          
+          //check if currentnote id changed
+          if (this.currentNoteId !== note.note_id) {
+            console.log('currentNoteId changed, skipping update');
+            return;
+          }
+          // Update UI with remote data
+          this.updateNoteUI(note);
+
+          
         }
       } else {
         console.error("Failed to load note:", note.error);
@@ -3006,6 +3017,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       // Server has newer version - load it
       //need convert last_updated to number to compare, the last_updated is string like 2025-01-01 02:25:51
       if (currentNote && new Date(currentNote.last_updated).getTime() > new Date(this.lastUpdated).getTime()) {
+        //if user change to anothe note , do nothing
+        if (this.currentNoteId !== currentNote.note_id) {
+          return;
+        }
         this.editor.innerHTML = currentNote.content;
         document.getElementById("noteTitle").textContent = currentNote.title;
         this.lastUpdated = currentNote.last_updated;
