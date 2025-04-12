@@ -314,6 +314,8 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     this.setupCodeCopyButton();
 
     this.editor.addEventListener('pointerdown', (e) => {
+      this.currentBlock?.classList?.remove('currentBlock');
+
       this.currentBlock = this.getCurrentOtterBlock(e.target);
 
       if (e.target.classList.contains('block')) {
@@ -321,6 +323,7 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
 
       console.log('current blcok', this.currentBlock)
       this.currentBlock?.classList?.add('highlight');
+      this.currentBlock?.classList?.add('currentBlock');
       setTimeout(() => {
         this.currentBlock?.classList?.remove('highlight');
       }, 1500);

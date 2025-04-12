@@ -139,9 +139,10 @@ iframe {
     overflow: auto;
 }
 
+
 .block {
     padding: 10px 0px 0px 5px;
-    max-height: 400px;
+    max-height: 500px;
     min-height: 100px;
     overflow: auto;
     scrollbar-color: rgb(236, 234, 234) white;
@@ -152,9 +153,7 @@ iframe {
     scrollbar-width: thin;
 }
 
-.current-block {
-    max-height: 600px;
-}
+
 
 
 .editor-container {
