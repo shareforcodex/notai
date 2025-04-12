@@ -3922,10 +3922,18 @@ window.addEventListener('pointerup', () => {
 
 document.querySelector('#updateAppBtn').addEventListener('click', () => {
   //remove all caches
-  caches.keys().then(cacheNames => {
-    cacheNames.forEach(cacheName => {
-      caches.delete(cacheName);
+  caches.delete('app-cache').then(() => {
+    console.log('Cache deleted');
+    //remove service worker
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      registrations.forEach(registration => {
+        registration.unregister();
+      });
     });
+    console.log('Service worker unregistered');
+    //reload 
+    window.location.reload();
+  
   });
 
   //unregister service worker
