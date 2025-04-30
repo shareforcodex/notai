@@ -3074,7 +3074,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         let blob = utils.base64ToBlob(src);
         let file = new File([blob], `media.${type.split('/')[1]}`, { type });
         let url = await this.uploadFile(file, false, false);
-        element.src = url;
+        if(url){
+          element.src = url;
+
+        }
       }
       //if src start with blob, upload to server and replace src with url
       if (src.startsWith('blob:')) {
