@@ -994,8 +994,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         messages: [
           {
             role: "system",
-            content: this.aiSettings.systemPrompt,
-          },
+            content: 
+            this.aiSettings.systemPrompt+
+            (modelName.includes('audio')?"\n\n you are in audio mode now,do not use html to reply me, only use image or video tag if needed, use <br> tag for newline":"")          },
           {
             role: "user",
             content: content
@@ -1084,6 +1085,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         //if model name include gpt-4o-audio or gpt-4o-mini-audio, set enable_stream to false;
         modelName.includes('gpt-4o-audio') ? enable_stream = false : enable_stream = enable_stream;
         modelName.includes('gpt-4o-mini-audio') ? enable_stream = false : enable_stream = enable_stream;
+        modelName.includes('openai-audio') ? enable_stream = false : enable_stream = enable_stream;
+
 
         if (enable_stream) {
           //the text will be in eventstream like {"id":"chatcmpl-b2RL2SeSw6wgjYjgB5qKfURWtXI1w","choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}],"created":1740386280,"model":"gemini-2.0-flash","object":"chat.completion.chunk"}	
@@ -1179,8 +1182,20 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         else {
           let responseObject = await response.json();
           console.log(responseObject);
-          // Handle the response
-          block.innerHTML = responseObject.choices[0].message.content + '<br><br> by ' + modelName;
+          // Handle the response for audio output , the audio is in responseObject.choices[0].message.audio, it has properties data: kjasbase64, transcript: "text"
+          if(responseObject.choices[0].message.audio) {
+            let audio = responseObject.choices[0].message.audio;
+            let audioUrl = 'data:audio/wav;base64,' + audio.data;
+            block.innerHTML = `<audio controls src="${audioUrl}" type="audio/wav"></audio>
+            <br><br> ${audio.transcript} 
+            <br><br> by ${modelName}`;
+                        
+          }
+          else{
+            block.innerHTML = responseObject.choices[0].message.content + '<br><br> by ' + modelName;
+          
+          }
+
           this.cleanNote();
           this.delayedSaveNote();
 
@@ -2504,11 +2519,21 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
   }
 
   async checkAuthAndLoadNotes() {
+    let defaultNote= null;
+    //get defaultNote from local, if not found then fetch notes and get it
+    const defaultNoteFromLocal = localStorage.getItem('defaultNote');
+    if (defaultNoteFromLocal) {
+      defaultNote = JSON.parse(defaultNoteFromLocal);
+      await this.loadNote(defaultNote.note_id);
+    }
+    
     if (currentUser.userId && currentUser.credentials) {
       const notes = await this.apiRequest("GET", `/folders/1733485657799jj0.5911120915160637/notes`);
       if (!notes.error) {
         // Check for default note
-        const defaultNote = notes.find((note) => note.title === "default_note");
+         defaultNote = notes.find((note) => note.title === "default_note");
+         //save to localstorage
+          localStorage.setItem('defaultNote', JSON.stringify(defaultNote));
         if (!defaultNote) {
           // Create default note if it doesn't exist
           const result = await this.apiRequest("POST", "/notes", {
@@ -3961,6 +3986,10 @@ document.querySelector('#updateAppBtn').addEventListener('click', () => {
 
     });
   });
+  setTimeout(() => {
+    window.location.reload();
+    
+  }, 3000);
 
  
 });
