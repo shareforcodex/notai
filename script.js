@@ -2520,20 +2520,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
   async checkAuthAndLoadNotes() {
     let defaultNote= null;
-    //get defaultNote from local, if not found then fetch notes and get it
-    const defaultNoteFromLocal = localStorage.getItem('defaultNote');
-    if (defaultNoteFromLocal) {
-      defaultNote = JSON.parse(defaultNoteFromLocal);
-      await this.loadNote(defaultNote.note_id);
-    }
+    this.loadNote("default_note_" + currentUser.userId);
+    
+
     
     if (currentUser.userId && currentUser.credentials) {
       const notes = await this.apiRequest("GET", `/folders/1733485657799jj0.5911120915160637/notes`);
       if (!notes.error) {
         // Check for default note
          defaultNote = notes.find((note) => note.title === "default_note");
-         //save to localstorage
-          localStorage.setItem('defaultNote', JSON.stringify(defaultNote));
+         
+
+
         if (!defaultNote) {
           // Create default note if it doesn't exist
           const result = await this.apiRequest("POST", "/notes", {
