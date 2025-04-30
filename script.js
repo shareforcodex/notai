@@ -996,7 +996,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
             role: "system",
             content: 
             this.aiSettings.systemPrompt+
-            (modelName.includes('audio')?"\n\n you are in audio mode now,do not use html to reply me, only use image or video tag if needed, use <br> tag for newline":"")          },
+            (modelName.includes('audio')?"\n\n you are in audio mode now, you are talent voice actor, you can sing and speak in various tone,do not use html to reply me, only use image or video tag if needed, use <br> tag for newline":"")          },
           {
             role: "user",
             content: content
