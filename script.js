@@ -2547,12 +2547,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           });
           if (result.success) {
             await this.loadNotes();  // Will load notes from default folder
-            await this.loadNote("default_note_" + currentUser.userId);
+            //only load default note when current note is default note
+            if(this.currentNoteId === "default_note_" + currentUser.userId){
+              await this.loadNote("default_note_" + currentUser.userId);
+            }
           }
         } else {
           // Load notes from default folder and then load the default note
           await this.loadNotes();
-          await this.loadNote(defaultNote.note_id);
+          //only load default note when current note is default note
+          if(this.currentNoteId === "default_note_" + currentUser.userId){
+            await this.loadNote("default_note_" + currentUser.userId);
+          }
         }
       } else {
         this.logout();
@@ -2782,6 +2788,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   // Helper method to update UI with note data
   updateNoteUI(note) {
+    //if this.editor.innerHTML is same as note.content ,do nothing
     this.editor.innerHTML = note.content || "";
     document.getElementById("noteTitle").textContent = note.title || "";
     this.currentNoteId = note.note_id;
