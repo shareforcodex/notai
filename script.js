@@ -2738,7 +2738,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   async loadNote(note_id) {
     this.saveNote();
-    this.currentNoteId = note_id;
     console.log('Loading note:', note_id);
     try {
       // First try to get from cache
@@ -2788,7 +2787,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   // Helper method to update UI with note data
   updateNoteUI(note) {
-    //if this.editor.innerHTML is same as note.content ,do nothing
     this.editor.innerHTML = note.content || "";
     document.getElementById("noteTitle").textContent = note.title || "";
     this.currentNoteId = note.note_id;
