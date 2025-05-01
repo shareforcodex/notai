@@ -3984,10 +3984,12 @@ document.querySelector('#updateAppBtn').addEventListener('click', () => {
         if (res) {
           console.log('Service worker unregistered');
           //confirm reload
-
-          if (confirm(' Reload the page to update?')) {
-            window.location.reload();
-          }
+          setTimeout(() => {
+            if (confirm(' Reload the page to update?')) {
+              window.location.reload();
+            }
+          }, 2000);
+          
         }
 
       }
