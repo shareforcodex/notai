@@ -3144,7 +3144,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           let url = await this.uploadFile(file, false, false);
           if (url) {
             element.src = url;
-            element.after(document.createTextNode(url));
+            // element.after(document.createTextNode(url));
           }
 
         } catch (error) {
@@ -3516,7 +3516,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         }
         if (appendInfo) {
           fileInfoDiv.innerHTML = `
-          ${fileURL}<br>
+          <a href="${fileURL}" target="_blank">link</a><br>
           ${file.type || 'Unknown type'} 
           ${this.formatFileSize(file.size)} 
           ${deviceInfo} 
@@ -3526,8 +3526,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         }
         else {
           fileInfoDiv.innerHTML = `
-          ${fileURL}
-          <br><br> `;
+          <a href="${fileURL}" target="_blank">link</a><br>
+          `;
+
         }
 
 
@@ -3928,6 +3929,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       event.preventDefault(); // Prevent default behavior
       document.activeElement.blur(); // Unfocus the contenteditable area
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      midiaURLContainer.innerHTML = target.src;
+      midiaURLContainer.classList.remove('hidden');
+      
+    }
+    else if(target.id === 'midiaURLContainer'){
+      //copy innerhtml to clipboard and show toast copyed
+      navigator.clipboard.writeText(midiaURLContainer.innerHTML).then(() => {
+        editor.showToast('Copied to clipboard', 'success');
+        midiaURLContainer.classList.add('hidden');
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+        editor.showToast('Failed to copy', 'error');
+      });
+    }
+    else{
+      midiaURLContainer.classList.add('hidden');
     }
   });
 });
