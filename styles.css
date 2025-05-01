@@ -124,8 +124,15 @@ h3 {
 
 video, img {
     max-width: 90%;
-     height: 300px !important; 
+     max-height: 300px !important; 
 }
+img:hover {
+    width: auto !important;
+    max-width: fit-content;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
+    transition: all 0.5s ease;
+}
+
 audio {
     width: 90%;
 }
@@ -1511,4 +1518,9 @@ pre code {
     
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     z-index: 1000;
+}
+
+.adapt_img {
+    width: auto !important;
+    max-width: 10000px !important;
 }

@@ -3935,7 +3935,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       // target.style.maxWidth = '100%';
       // target.style.maxHeight = '100000px';
       // target.style.width = 'auto';
-      // target.style.height = 'auto';
+      // target.classList.add('adapt_img');
+      // setTimeout(() => {
+      //   target.classList.remove('adapt_img');
+
+      // }, 5000);
 
       if(target.tagName === 'IMG'){
         //create image tag to diplay the image
