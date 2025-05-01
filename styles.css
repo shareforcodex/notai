@@ -1501,3 +1501,14 @@ pre code {
     overflow-wrap: break-word;
 
 }
+
+#imgDisplay {
+    position: fixed;
+    top: 50px;
+    left: 50px;
+    max-width: 100000px;
+    max-height: 100000px;
+    
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+}

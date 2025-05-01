@@ -3931,6 +3931,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       midiaURLContainer.innerHTML = target.src;
       midiaURLContainer.classList.remove('hidden');
+      //set height and width to auto , maxwidth 100%,maxheight to 100000px
+      // target.style.maxWidth = '100%';
+      // target.style.maxHeight = '100000px';
+      // target.style.width = 'auto';
+      // target.style.height = 'auto';
+
+      if(target.tagName === 'IMG'){
+        //create image tag to diplay the image
+        imgDisplay.src = target.src;
+        //imgDisplay.classList.remove('hidden');
+        
+      }
+        
+      else if(target.tagName === 'VIDEO'){
+        
+      }
+      else if(target.tagName === 'AUDIO'){
+        
+      }
       
     }
     else if(target.id === 'midiaURLContainer'){
@@ -3945,6 +3964,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     else{
       midiaURLContainer.classList.add('hidden');
+      imgDisplay.classList.add('hidden');
     }
   });
 });
