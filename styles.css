@@ -127,8 +127,6 @@ video, img {
      max-height: 300px !important; 
 }
 img:hover {
-    width: auto !important;
-    max-width: fit-content;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
     transition: all 0.5s ease;
 }
