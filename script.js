@@ -3875,18 +3875,21 @@ document.addEventListener("visibilitychange", () => {
 window.addEventListener('load', () => {
   setTimeout(() => {
     caches.open('app-cache').then(cache => {
-      return cache.addAll([
+      cache.addAll([
         './',
         './index.html',
         './styles.css',
         './script.js',
         './icons/notai-192x192.png',
         './icons/notai-512x512.png',
-        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
-        'https://corsp.suisuy.eu.org?https://cdn.jsdelivr.net/npm/marked/marked.min.js',
+        
       ]);
+
+      console.log('App cache updated');
+      cache.addAll(['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
+        'https://corsp.suisuy.eu.org?https://cdn.jsdelivr.net/npm/marked/marked.min.js',])
     })
-  }, 10000);
+  }, 5000);
 })
 
 // Initialize the editor and load folders
