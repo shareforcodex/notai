@@ -2559,7 +2559,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
           }
         }
       } else {
-        this.logout();
+        //this.logout();
       }
     } else {
       this.logout();
