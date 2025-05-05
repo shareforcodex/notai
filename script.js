@@ -3929,7 +3929,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       event.preventDefault(); // Prevent default behavior
       document.activeElement.blur(); // Unfocus the contenteditable area
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      midiaURLContainer.innerHTML = target.src;
+      let url = target.src;
+      //if url more than 200 characters, remove the rest of the url
+      if (url.length > 200) {
+        url = url.substring(0, 200) + '...';
+      }
+      midiaURLContainer.innerText = url;
       midiaURLContainer.classList.remove('hidden');
       //set height and width to auto , maxwidth 100%,maxheight to 100000px
       // target.style.maxWidth = '100%';
