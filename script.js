@@ -3930,9 +3930,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.activeElement.blur(); // Unfocus the contenteditable area
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       let url = target.src;
-      //if url more than 200 characters, remove the rest of the url
+      //if url more than 200 characters, remove the rest of the url and append last 10 at the end 
       if (url.length > 200) {
-        url = url.substring(0, 200) + '...';
+        url = url.substring(0, 200) + '...' + url.slice(-10);
       }
       midiaURLContainer.innerText = url;
       midiaURLContainer.classList.remove('hidden');
