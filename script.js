@@ -2563,12 +2563,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             }
           }
         } else {
+            await this.loadNote("default_note_" + currentUser.userId);
+
           // Load notes from default folder and then load the default note
           await this.loadNotes();
-          //only load default note when current note is default note
-          if(this.currentNoteId === "default_note_" + currentUser.userId){
-            await this.loadNote("default_note_" + currentUser.userId);
-          }
+          
         }
       } else {
         //this.logout();
