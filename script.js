@@ -11,6 +11,11 @@ let globalDevices = {
 
 
 let utils = {
+  getCurrentTimeString() {
+  const now = new Date();
+  const pad = n => n.toString().padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+},
   underlineSelectedText() {
     if (window.getSelection) {
       const selection = window.getSelection();
@@ -291,7 +296,7 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
 
     // Add title auto-save
     const titleElement = document.getElementById("noteTitle");
-    titleElement.addEventListener("input", () => this.delayedSaveNote());
+    titleElement.addEventListener('input', () => this.delayedSaveNote());
     this.currentBlock = null;
     this.content = ""; // Store markdown content
     this.isSourceView = false;
@@ -2110,8 +2115,15 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       if (this.editor) {
 
         this.editor.addEventListener('input', () => {
+
           this.delayedSaveNote();
           this.updateTableOfContents();
+          setTimeout(() => {
+          this.lastUpdated=utils.getCurrentTimeString();
+          //log last updated time
+          console.log('Last updated time by input:', this.lastUpdated);
+
+          }, 5000);
         });
 
         this.editor.addEventListener('paste', () => {
