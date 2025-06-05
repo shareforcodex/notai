@@ -870,6 +870,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
   }
 
   async handleAIAction(action, text, includeCurrentBlockMedia = false) {
+
+    this.lastUpdated= utils.getCurrentTimeString();
+          //log last updated time
+    console.log('handleaiaction update this.lastupdated:', this.lastUpdated);
+
     const useComment = text.split(' ').length < 3;
 
     let customTool = null;
@@ -1203,8 +1208,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
           this.cleanNote();
           this.delayedSaveNote();
-
-
+          
         }
       }).catch(error => {
         console.error(`Error with ${modelName} request:`, error);
@@ -2121,7 +2125,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           setTimeout(() => {
           this.lastUpdated=utils.getCurrentTimeString();
           //log last updated time
-          console.log('Last updated time by input:', this.lastUpdated);
+          console.log(' this.editor.addEventListener input update this.lastupdated  :', this.lastUpdated);
 
           }, 5000);
         });
@@ -2801,6 +2805,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     this.currentNoteId = note.note_id;
     this.currentNoteTitle = note.title;
     this.lastUpdated = note.last_updated;
+    //log last updated time
+    console.log('updateNoteUI() Note this.lastupdated at:', this.lastUpdated);
 
     // Add to recent notes
     this.addToRecentNotes(note.note_id, note.title);
@@ -2958,11 +2964,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   //save delay for 10s, if called again, reset the timer
   delayedSaveNote() {
-    console.log('delayedSaveNote start ');
+    console.log('delayedSaveNote() start ');
 
     clearTimeout(this.autoSaveTimeout);
     this.autoSaveTimeout = setTimeout(() => {
-      console.log('delayedSaveNote saveNote ');
+      console.log('delayedSaveNote saveNote() start ');
 
       this.saveNote();
     }, 10000);
@@ -3015,6 +3021,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         this.editor.innerHTML = currentNote.content;
         document.getElementById("noteTitle").textContent = currentNote.title;
         this.lastUpdated = currentNote.last_updated;
+        //log why update this.lastupdated
+        console.log('saveNote() note from the server is newer currentNote.last_updated:', currentNote.last_updated);
         this.currentNoteTitle = currentNote.title;
 
         // Show saved state
