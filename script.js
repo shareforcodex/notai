@@ -318,6 +318,8 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     this.loadFolders();
     this.setupCodeCopyButton();
 
+    //timeout id and interval id 
+    this.inputToUpdateLastUpdatedTimeoutID = 0;
     this.editor.addEventListener('pointerdown', (e) => {
       this.currentBlock?.classList?.remove('currentBlock');
 
@@ -2120,13 +2122,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
         this.editor.addEventListener('input', () => {
 
-          this.delayedSaveNote();
-          this.updateTableOfContents();
-          setTimeout(() => {
+          
+          clearTimeout(this.inputToUpdateLastUpdatedTimeoutID);
+          this.inputToUpdateLastUpdatedTimeoutID= setTimeout(() => {
           this.lastUpdated=utils.getCurrentTimeString();
           //log last updated time
           console.log(' this.editor.addEventListener input update this.lastupdated  :', this.lastUpdated);
-
+            this.delayedSaveNote();
+          this.updateTableOfContents();
           }, 5000);
         });
 
