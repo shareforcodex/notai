@@ -2149,26 +2149,63 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           //log rect
           console.log('rect', rect);
 
-          //if key is enter and last key is enter too, show a button at cursor location, when click, do a quick ask
-          if (e.key === 'Enter') {
-
+          // Prioritize quick ask on Cmd/Ctrl + Enter
+          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
-            utils.insertTextAtCursor('\n', 50);
-
+            this.handleQuickAsk();
+            this.editor.lastKey = e.key;
+            return;
           }
-          else {
+
+          // If Enter is pressed inside a heading (h1–h4) and the caret is at the end,
+          // create a normal block after the heading and move the caret there.
+          if (e.key === 'Enter') {
+            const selection = window.getSelection();
+            if (selection && selection.rangeCount > 0) {
+              const range = selection.getRangeAt(0);
+              const startNode = range.startContainer.nodeType === Node.ELEMENT_NODE
+                ? range.startContainer
+                : range.startContainer.parentElement;
+              const heading = startNode && startNode.closest ? startNode.closest('h1,h2,h3,h4') : null;
+
+              if (heading) {
+                // Check if caret is at the end of the heading
+                const endRange = document.createRange();
+                endRange.selectNodeContents(heading);
+                endRange.collapse(false);
+                const atEndOfHeading = range.collapsed && range.compareBoundaryPoints(Range.START_TO_START, endRange) === 0;
+
+                if (atEndOfHeading) {
+                  e.preventDefault();
+                  const newBlock = document.createElement('div');
+                  newBlock.innerHTML = '<br>';
+                  if (heading.nextSibling) {
+                    heading.parentNode.insertBefore(newBlock, heading.nextSibling);
+                  } else {
+                    heading.parentNode.appendChild(newBlock);
+                  }
+                  // Place caret at the start of the new block
+                  const newRange = document.createRange();
+                  newRange.setStart(newBlock, 0);
+                  newRange.collapse(true);
+                  selection.removeAllRanges();
+                  selection.addRange(newRange);
+                  this.editor.lastKey = e.key;
+                  return;
+                }
+              }
+            }
+
+            // Default behavior elsewhere: insert a newline character
+        
+
+          } else {
             rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
             let button = document.querySelector('#quickAskBtn');
-
 
             button.style.top = '';
             button.style.left = '';
 
-          }
-
-          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault();
-            this.handleQuickAsk();
           }
 
           //check if ol already exist, if exist, remove it
@@ -3354,25 +3391,89 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     if (!selectedText) return;
 
-    // Replace the selected content with plain text
-    const textNode = document.createTextNode(selectedText);
-    range.deleteContents();
-    range.insertNode(textNode);
+    // Insert a temporary span with the raw text at the selection
+    const tempSpan = document.createElement('span');
+    tempSpan.textContent = selectedText; // ensures plain text
+    tempSpan.setAttribute('data-plain-temp', '1');
 
-    // Remove any parent elements that are not div tags
-    let parent = textNode.parentElement;
-    while (parent && parent.tagName.toLowerCase() !== 'div') {
-      const grandparent = parent.parentElement;
-      if (grandparent) {
-        grandparent.replaceChild(textNode, parent);
-        parent = textNode.parentElement;
-      } else {
-        break;
+    // Replace selection contents with the temp span
+    range.deleteContents();
+    range.insertNode(tempSpan);
+
+    // Select the temp span's contents
+    const tempRange = document.createRange();
+    tempRange.selectNodeContents(tempSpan);
+    selection.removeAllRanges();
+    selection.addRange(tempRange);
+
+    // Remove inline formatting (bold/italic/links/etc.) within the selected span
+    try {
+      document.execCommand('removeFormat');
+    } catch (_) {}
+
+    // If inside a heading (h1–h4), split the heading so only the selection becomes plain text
+    const heading = tempSpan.closest && tempSpan.closest('h1,h2,h3,h4');
+    if (heading) {
+      const level = heading.tagName.toLowerCase();
+
+      // Build fragments for the parts before and after the selection within the heading
+      const beforeRange = document.createRange();
+      beforeRange.selectNodeContents(heading);
+      beforeRange.setEndBefore(tempSpan);
+      const hasBefore = beforeRange.toString().length > 0;
+      const beforeFrag = hasBefore ? beforeRange.cloneContents() : null;
+
+      const afterRange = document.createRange();
+      afterRange.selectNodeContents(heading);
+      afterRange.setStartAfter(tempSpan);
+      const hasAfter = afterRange.toString().length > 0;
+      const afterFrag = hasAfter ? afterRange.cloneContents() : null;
+
+      const parent = heading.parentNode;
+      const nextSibling = heading.nextSibling;
+
+      // Remove original heading
+      parent.removeChild(heading);
+
+      // Insert before-heading portion (still a heading)
+      if (hasBefore) {
+        const beforeHeading = document.createElement(level);
+        beforeHeading.appendChild(beforeFrag);
+        parent.insertBefore(beforeHeading, nextSibling);
       }
+
+      // Insert the selected portion as plain text block
+      const plainDiv = document.createElement('div');
+      plainDiv.textContent = tempSpan.textContent;
+      parent.insertBefore(plainDiv, nextSibling);
+
+      // Insert after-heading portion (still a heading)
+      if (hasAfter) {
+        const afterHeading = document.createElement(level);
+        afterHeading.appendChild(afterFrag);
+        parent.insertBefore(afterHeading, nextSibling);
+      }
+
+      // Place cursor at end of the inserted plain text block
+      const newSel = window.getSelection();
+      const caretRange = document.createRange();
+      caretRange.selectNodeContents(plainDiv);
+      caretRange.collapse(false);
+      newSel.removeAllRanges();
+      newSel.addRange(caretRange);
+      return;
     }
 
-    // Clear the selection
+    // Otherwise, not inside a heading: replace the temp span with a pure text node
+    const plainTextNode = document.createTextNode(tempSpan.textContent);
+    tempSpan.parentNode.replaceChild(plainTextNode, tempSpan);
+
+    // Place caret after the inserted plain text
+    const afterRange = document.createRange();
+    afterRange.setStartAfter(plainTextNode);
+    afterRange.collapse(true);
     selection.removeAllRanges();
+    selection.addRange(afterRange);
   }
 
   showToast(message, type = 'error') {
