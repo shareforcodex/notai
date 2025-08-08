@@ -595,7 +595,7 @@ iframe {
 }
 
 .showcomment{
-    position: fixed;
+    position: fixed !important;
     bottom: 10px;
     left: 10px;
     background-color: white;

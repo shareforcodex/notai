@@ -1663,23 +1663,24 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
   // Inject edit/delete controls into a response group element
   attachGroupControls(groupEl) {
     try {
-      if (!groupEl || groupEl.querySelector('.group-controls')) return;
-      // Position container
-      //if (!groupEl.style.position) groupEl.style.position = 'relative';
-
+            if (!groupEl || groupEl.querySelector('.group-controls')) return;
+      // Position container so controls are anchored to this block
+      if (getComputedStyle(groupEl).position === 'static') groupEl.style.position = 'relative';
+ 
       const controls = document.createElement('div');
       controls.className = 'group-controls';
       controls.setAttribute('contenteditable', 'false');
       controls.style.position = 'absolute';
-      controls.style.top = '4px';
-      controls.style.right = '4px';
+      controls.style.top = '6px';
+      controls.style.right = '8px';
       controls.style.display = 'flex';
       controls.style.gap = '6px';
-      controls.style.zIndex = '10';
-      controls.style.background = 'rgba(0,0,0,0.05)';
-      controls.style.border = '1px solid #ccc';
+      controls.style.zIndex = '1000';
+      controls.style.background = 'rgba(255,255,255,0.85)';
+      controls.style.border = '1px solid #d1d5db';
       controls.style.borderRadius = '6px';
-      controls.style.padding = '2px 4px';
+      controls.style.padding = '2px 6px';
+      controls.style.boxShadow = '0 1px 2px rgba(0,0,0,0.08)';
 
       const toggleBtn = document.createElement('button');
       toggleBtn.type = 'button';
@@ -1688,6 +1689,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       toggleBtn.style.border = 'none';
       toggleBtn.style.background = 'transparent';
       toggleBtn.style.padding = '2px 6px';
+      toggleBtn.style.fontSize = '12px';
 
       const deleteBtn = document.createElement('button');
       deleteBtn.type = 'button';
@@ -1697,6 +1699,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       deleteBtn.style.background = 'transparent';
       deleteBtn.style.padding = '2px 6px';
       deleteBtn.style.color = '#b91c1c';
+      deleteBtn.style.fontSize = '12px';
 
       // Toggle editability
       toggleBtn.addEventListener('click', (e) => {
