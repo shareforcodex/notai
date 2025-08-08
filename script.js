@@ -1131,11 +1131,75 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
         // The element to write AI content into
         contentEl = content;
-      }
-      else {
-        block = this.addNewBlock();
-        contentEl = block;
-      }
+              }
+        else {
+          // Ensure a single parent ask group with tabs for normal mode
+          let askGroup = this.currentAskGroup;
+          if (!askGroup) {
+            askGroup = this.addNewBlock();
+            askGroup.classList.add('ask-group');
+            askGroup.innerHTML = '';
+            this.currentAskGroup = askGroup;
+            // Clear the reference after a short delay so subsequent actions create a new group
+            setTimeout(() => { if (this.currentAskGroup === askGroup) this.currentAskGroup = null; }, 2000);
+          }
+
+          // Setup tabs and contents containers inside ask group
+          let tabsBar = askGroup.querySelector('.ask-tabs');
+          let contentsWrap = askGroup.querySelector('.ask-contents');
+          if (!tabsBar) {
+            tabsBar = document.createElement('div');
+            tabsBar.className = 'ask-tabs';
+            tabsBar.style.display = 'flex';
+            tabsBar.style.gap = '8px';
+            tabsBar.style.margin = '6px 0';
+            tabsBar.style.flexWrap = 'wrap';
+            askGroup.appendChild(tabsBar);
+          }
+          if (!contentsWrap) {
+            contentsWrap = document.createElement('div');
+            contentsWrap.className = 'ask-contents';
+            askGroup.appendChild(contentsWrap);
+          }
+
+          // Tab and content per model
+          let content = contentsWrap.querySelector(`.ask-content[data-model="${modelName}"]`);
+          let tabBtn = tabsBar.querySelector(`button[data-model="${modelName}"]`);
+          if (!tabBtn) {
+            tabBtn = document.createElement('button');
+            tabBtn.textContent = modelName;
+            tabBtn.setAttribute('data-model', modelName);
+            tabBtn.style.padding = '4px 8px';
+            tabBtn.style.border = '1px solid #999';
+            tabBtn.style.borderRadius = '4px';
+            tabBtn.style.background = '#f3f4f6';
+            tabBtn.style.cursor = 'pointer';
+            tabBtn.addEventListener('click', () => {
+              tabsBar.querySelectorAll('button').forEach(b => { b.classList.remove('active'); b.style.background = '#f3f4f6';});
+              contentsWrap.querySelectorAll('.ask-content').forEach(c => c.style.display = 'none');
+              tabBtn.classList.add('active');
+              tabBtn.style.background = '#e5e7eb';
+              const target = contentsWrap.querySelector(`.ask-content[data-model="${modelName}"]`);
+              if (target) target.style.display = 'block';
+            });
+            tabsBar.appendChild(tabBtn);
+          }
+          if (!content) {
+            content = document.createElement('div');
+            content.className = 'ask-content';
+            content.setAttribute('data-model', modelName);
+            content.style.display = 'none';
+            content.style.padding = '6px 0';
+            contentsWrap.appendChild(content);
+          }
+
+          if (!tabsBar.querySelector('button.active')) {
+            tabBtn.click();
+          }
+
+          contentEl = content;
+          block = askGroup; // keep reference compatibility
+        }
 
       request.then(async response => {
         if (response.error) {
