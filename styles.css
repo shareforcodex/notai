@@ -513,6 +513,11 @@ iframe {
     display: block;
 }
 
+/* When toolbar is locked by JS, prevent hover from opening until mouse leaves */
+.toolbar.dropdowns-locked .dropdown:hover .dropdown-content {
+    display: none;
+}
+
 .formatting-tools button {
     padding: 5px 10px;
     background: none;

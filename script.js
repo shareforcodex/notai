@@ -1630,8 +1630,17 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     }
   }
 
-  updateAIToolbar() {
-    const actionsContainer = this.aiToolbar.querySelector('.ai-actions');
+     hideAllDropdowns() {
+     try {
+       // Clear inline styles so CSS hover works later
+       document.querySelectorAll('.toolbar .dropdown .dropdown-content').forEach(dc => dc.style.display = '');
+       // Lock dropdowns temporarily until mouse leaves toolbar or user clicks button again
+       if (this.toolbar) this.toolbar.classList.add('dropdowns-locked');
+     } catch (_) {}
+   }
+
+   updateAIToolbar() {
+     const actionsContainer = this.aiToolbar.querySelector('.ai-actions');
     actionsContainer.innerHTML = `
       <button data-ai-action="ask"><i class="fas fa-question-circle"></i> Ask</button>
       <button data-ai-action="correct"><i class="fas fa-check-circle"></i> Correct</button>
@@ -2030,8 +2039,21 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         }
       }, true);
 
-      // Get all required elements
-      const uploadModal = document.getElementById('uploadModal');
+             // Allow dropdowns to re-open after mouse leaves the toolbar
+       if (this.toolbar) {
+         this.toolbar.addEventListener('mouseleave', () => {
+           this.toolbar.classList.remove('dropdowns-locked');
+         });
+         // Also unlock when user clicks any dropdown toggle button
+         this.toolbar.addEventListener('click', (e) => {
+           if (e.target.closest && e.target.closest('.dropdown .dropbtn')) {
+             this.toolbar.classList.remove('dropdowns-locked');
+           }
+         }, true);
+       }
+
+       // Get all required elements
+       const uploadModal = document.getElementById('uploadModal');
       const uploadFileBtn = document.getElementById('uploadFileBtn');
       const closeUploadBtn = uploadModal?.querySelector('.close');
       const fileInput = document.getElementById('fileInput');
@@ -2328,16 +2350,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       }
 
       // Format buttons
-      formatButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-          const command = button.dataset.command;
-          if (command.startsWith('h')) {
-            this.formatBlock(command);
-          } else {
-            this.executeCommand(command);
-          }
-        });
-      });
+             formatButtons.forEach((button) => {
+         button.addEventListener('click', () => {
+           const command = button.dataset.command;
+           if (command.startsWith('h')) {
+             this.formatBlock(command);
+           } else {
+             this.executeCommand(command);
+           }
+           // Hide any open dropdowns after action
+           this.hideAllDropdowns();
+         });
+       });
 
       // Text color
       if (textColorInput) {
@@ -2412,9 +2436,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       }
 
       // Plain text button
-      if (plainTextBtn) {
-        plainTextBtn.addEventListener('click', () => this.convertToPlainText());
-      }
+             if (plainTextBtn) {
+         plainTextBtn.addEventListener('click', () => { this.convertToPlainText(); this.hideAllDropdowns(); });
+       }
 
       // Auto-save on content changes
       if (this.editor) {
@@ -2726,17 +2750,21 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
   executeCommand(command, value = null) {
     // Snapshot before formatting command
     this.recordSnapshot('execCommand:' + command);
-    document.execCommand(command, false, value);
-    // Snapshot after if content changed (coalescing handled by recordSnapshot)
-    this.recordSnapshot('execCommand:after:' + command);
-    this.editor.focus();
+         document.execCommand(command, false, value);
+     // Snapshot after if content changed (coalescing handled by recordSnapshot)
+     this.recordSnapshot('execCommand:after:' + command);
+     this.editor.focus();
+     // Hide menus if any open
+     this.hideAllDropdowns();
   }
 
   formatBlock(tag) {
     this.recordSnapshot('formatBlock:' + tag);
-    document.execCommand("formatBlock", false, `<${tag}>`);
-    this.recordSnapshot('formatBlock:after:' + tag);
-  }
+         document.execCommand("formatBlock", false, `<${tag}>`);
+     this.recordSnapshot('formatBlock:after:' + tag);
+     // Hide menus if any open
+     this.hideAllDropdowns();
+   }
 
   addNewBlock() {
     const selection = window.getSelection();
