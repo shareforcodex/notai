@@ -999,6 +999,40 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       }] : [])
     ] : prompt
 
+    // Prepare a single comment group container if in comment mode
+    let commentGroup = null;
+    let commentId = null;
+    if (useComment) {
+      let underlinedElem = utils.underlineSelectedText();
+      if (!underlinedElem && selection && selection.anchorNode) {
+        const anchor = selection.anchorNode.nodeType === Node.ELEMENT_NODE ? selection.anchorNode : selection.anchorNode.parentElement;
+        const existingU = anchor && anchor.closest ? anchor.closest('u') : null;
+        if (existingU) underlinedElem = existingU;
+      }
+      commentId = 'comment' + (underlinedElem ? underlinedElem.id : Date.now());
+      let commentContainer = document.getElementById('commentContainer');
+      if (!commentContainer) {
+        commentContainer = document.createElement('div');
+        commentContainer.id = 'commentContainer';
+        commentContainer.classList.add('commentContainer');
+        this.editor.appendChild(commentContainer);
+      }
+      // Ensure container is the last child for visibility
+      this.editor.appendChild(commentContainer);
+
+      commentGroup = document.getElementById(commentId);
+      if (!commentGroup) {
+        commentGroup = document.createElement('div');
+        commentGroup.id = commentId;
+        commentGroup.classList.add('comment', 'block', 'comment-group');
+        commentContainer.appendChild(commentGroup);
+        commentGroup.innerHTML = `<h4 style="margin: 0; padding: 5px 0;">${commentGroup.id}</h4>`;
+        commentGroup.after(document.createElement('br'));
+        commentGroup.before(document.createElement('br'));
+      }
+      commentGroup.classList.add('showcomment');
+    }
+
     // Make parallel requests to selected models
     const requests = selectedModels.map(modelName => {
       const modelConfig = this.aiSettings.models.find(m => m.model_id === modelName);
@@ -1036,46 +1070,72 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
       let request = this.apiRequest('POST', '', requestBody, true);
       let block = null;
+      let contentEl = null;
       if (useComment) {
-        let underlinedElem = utils.underlineSelectedText();
-
-        //get commentContainer with the id, if not exsit create it, it a div, append at bottom of editor, then move block into it, make block id to comment+selection text
-        let commentContainer = document.getElementById('commentContainer');
-        if (!commentContainer) {
-          commentContainer = document.createElement('div');
-          commentContainer.id = 'commentContainer';
-          commentContainer.classList.add('commentContainer');
-          this.editor.appendChild(commentContainer);
+        // Ensure a tabs bar and contents wrapper exist in the comment group
+        let tabsBar = commentGroup.querySelector('.comment-tabs');
+        let contentsWrap = commentGroup.querySelector('.comment-contents');
+        if (!tabsBar) {
+          tabsBar = document.createElement('div');
+          tabsBar.className = 'comment-tabs';
+          tabsBar.style.display = 'flex';
+          tabsBar.style.gap = '8px';
+          tabsBar.style.margin = '6px 0';
+          tabsBar.style.flexWrap = 'wrap';
+          commentGroup.appendChild(tabsBar);
         }
-        //move  commentContainer to last child of the editor
-        this.editor.appendChild(commentContainer);
-
-        //get block from commentContainer, if not exsit ,addnewblock
-        let commentId = 'comment' + underlinedElem.id;
-        block = document.getElementById(commentId);
-        if (!block) {
-          block = document.createElement('div');
-          block.id = commentId;
-          block.classList.add('comment');
-          block.classList.add('block');
-          commentContainer.appendChild(block);
-          block.innerHTML = `<h4 style="margin: 0; padding: 5px 0;"></h4>${block.id}`;
-          block.after(document.createElement('br'));
-          block.before(document.createElement('br'));
+        if (!contentsWrap) {
+          contentsWrap = document.createElement('div');
+          contentsWrap.className = 'comment-contents';
+          commentGroup.appendChild(contentsWrap);
         }
-        block.classList.add('showcomment');
 
+        // Create a tab and a content container per model
+        let content = contentsWrap.querySelector(`.comment-content[data-model="${modelName}"]`);
+        let tabBtn = tabsBar.querySelector(`button[data-model="${modelName}"]`);
+        if (!tabBtn) {
+          tabBtn = document.createElement('button');
+          tabBtn.textContent = modelName;
+          tabBtn.setAttribute('data-model', modelName);
+          tabBtn.style.padding = '4px 8px';
+          tabBtn.style.border = '1px solid #999';
+          tabBtn.style.borderRadius = '4px';
+          tabBtn.style.background = '#f3f4f6';
+          tabBtn.style.cursor = 'pointer';
+          tabBtn.addEventListener('click', () => {
+            // deactivate all tabs and hide all contents
+            tabsBar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            tabsBar.querySelectorAll('button').forEach(b => b.style.background = '#f3f4f6');
+            contentsWrap.querySelectorAll('.comment-content').forEach(c => c.style.display = 'none');
+            // activate this tab
+            tabBtn.classList.add('active');
+            tabBtn.style.background = '#e5e7eb';
+            const target = contentsWrap.querySelector(`.comment-content[data-model="${modelName}"]`);
+            if (target) target.style.display = 'block';
+          });
+          tabsBar.appendChild(tabBtn);
+        }
+        if (!content) {
+          content = document.createElement('div');
+          content.className = 'comment-content';
+          content.setAttribute('data-model', modelName);
+          content.style.display = 'none';
+          content.style.padding = '6px 0';
+          contentsWrap.appendChild(content);
+        }
+
+        // If no tab is active yet, activate this one by default
+        if (!tabsBar.querySelector('button.active')) {
+          tabBtn.click();
+        }
+
+        // The element to write AI content into
+        contentEl = content;
       }
       else {
         block = this.addNewBlock();
+        contentEl = block;
       }
-
-      // Create a new block for longer responses
-      //  const block = document.createElement("div");
-      //  block.className = "block";
-      //  block.classList.add('highlight');
-      //  let blankLine = document.createElement('br');
-
 
       request.then(async response => {
         if (response.error) {
@@ -1148,13 +1208,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
                     const delta = parsedData.choices[0]?.delta;
                     if (delta && delta.content) {
                       text += delta.content;
-                      block.innerHTML += delta.content;
+                      contentEl.innerHTML += delta.content;
                       if (chunkCounter === 6) {
-                        block.innerHTML = text;
+                        contentEl.innerHTML = text;
 
                       }
                       if (chunkCounter === 80) {
-                        block.innerHTML = text;
+                        contentEl.innerHTML = text;
 
                       }
                     }
@@ -1185,7 +1245,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           }
 
           // Final update of the UI
-          block.innerHTML = text + '<br><br> by ' + modelName;
+          contentEl.innerHTML = text + '<br><br> by ' + modelName;
           console.log(text);
 
           this.delayedSaveNote();
@@ -1198,13 +1258,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           if(responseObject.choices[0].message.audio) {
             let audio = responseObject.choices[0].message.audio;
             let audioUrl = 'data:audio/wav;base64,' + audio.data;
-            block.innerHTML = `<audio controls src="${audioUrl}" type="audio/wav"></audio>
+            contentEl.innerHTML = `<audio controls src="${audioUrl}" type="audio/wav"></audio>
             <br><br> ${audio.transcript} 
             <br><br> by ${modelName}`;
                         
           }
           else{
-            block.innerHTML = responseObject.choices[0].message.content + '<br><br> by ' + modelName;
+            contentEl.innerHTML = responseObject.choices[0].message.content + '<br><br> by ' + modelName;
           
           }
 
