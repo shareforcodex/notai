@@ -294,6 +294,9 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     this.setupCommentSystem();
     this.updateAIToolbar(); // Load custom AI buttons
 
+    // Seed history with initial content after DOM is ready
+    setTimeout(() => this.resetHistoryWithCurrentContent(), 0)
+
     // Add title auto-save
     const titleElement = document.getElementById("noteTitle");
     titleElement.addEventListener('input', () => this.delayedSaveNote());
@@ -317,6 +320,9 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     this.checkAuthAndLoadNotes();
     this.loadFolders();
     this.setupCodeCopyButton();
+
+    // Initialize undo/redo history
+    this.initializeHistory();
 
     //timeout id and interval id 
     this.inputToUpdateLastUpdatedTimeoutID = 0;
@@ -1912,8 +1918,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       const formatButtons = document.querySelectorAll('.formatting-tools button[data-command]');
 
       // Setup file upload and media capture handlers
-      if (uploadModal && uploadFileBtn && closeUploadBtn &&
-        fileInput && selectFileBtn && uploadBtn && previewArea && filePreview) {
+              if (uploadModal && uploadFileBtn && closeUploadBtn &&
+          fileInput && selectFileBtn && uploadBtn && previewArea && filePreview) {
+
+          // Mobile-friendly Undo/Redo buttons in + insert dropdown
+          const undoBtn = document.getElementById('undoBtn');
+          const redoBtn = document.getElementById('redoBtn');
+          if (undoBtn) undoBtn.addEventListener('click', () => this.undo());
+          if (redoBtn) redoBtn.addEventListener('click', () => this.redo());
 
         uploadFileBtn.onclick = () => {
           uploadModal.style.display = 'block';
@@ -2218,6 +2230,23 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         });
       }
 
+      // Keyboard shortcuts for undo/redo
+      this.editor.addEventListener('keydown', (e) => {
+        // Cmd/Ctrl+Z => undo, Shift+Cmd/Ctrl+Z or Cmd/Ctrl+Y => redo
+        const isMac = navigator.platform.toUpperCase().includes('MAC');
+        const meta = isMac ? e.metaKey : e.ctrlKey;
+        if (meta && !e.altKey && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+          e.preventDefault();
+          this.undo();
+          return;
+        }
+        if (meta && (!e.altKey) && (e.key.toLowerCase() === 'z' && e.shiftKey || e.key.toLowerCase() === 'y')) {
+          e.preventDefault();
+          this.redo();
+          return;
+        }
+      });
+
       // Save button
       if (saveNoteBtn) {
         saveNoteBtn.addEventListener('click', async () => {
@@ -2246,17 +2275,55 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       // Auto-save on content changes
       if (this.editor) {
 
+        // Fine-grained history via beforeinput to capture intent types
+        this.editor.addEventListener('beforeinput', (e) => {
+          // Types that should snapshot prior state
+          const type = e.inputType || '';
+          const now = Date.now();
+          const typingTypes = new Set([
+            'insertText', 'insertCompositionText'
+          ]);
+          const mergeableDelete = new Set([
+            'deleteContentBackward', 'deleteContentForward'
+          ]);
+          const structuralTypes = new Set([
+            'insertParagraph', 'insertLineBreak', 'insertFromPaste', 'insertFromPasteAsQuotation',
+            'formatBold', 'formatItalic', 'formatUnderline', 'formatStrikeThrough',
+            'formatBlock', 'formatRemove', 'historyUndo', 'historyRedo'
+          ]);
+
+          // Coalesce continuous typing/deleting within 1s; snapshot on boundary changes
+          const shouldCoalesce = typingTypes.has(type) || mergeableDelete.has(type);
+          const boundaryChange = type !== this.lastInputType || (now - this.lastInputTime) > 1000;
+          if (shouldCoalesce && boundaryChange) {
+            this.recordSnapshot('typing-start:' + type);
+          } else if (!shouldCoalesce) {
+            // Non-typing actions always snapshot before
+            this.recordSnapshot('before:' + type);
+          }
+          this.lastInputType = type;
+          this.lastInputTime = now;
+        }, { capture: true });
+
+        // Input: after DOM is mutated, ensure we have a post snapshot for structural edits
         this.editor.addEventListener('input', () => {
 
-          
           clearTimeout(this.inputToUpdateLastUpdatedTimeoutID);
           this.inputToUpdateLastUpdatedTimeoutID= setTimeout(() => {
           this.lastUpdated=utils.getCurrentTimeString();
-          //log last updated time
           console.log(' this.editor.addEventListener input update this.lastupdated  :', this.lastUpdated);
             this.delayedSaveNote();
           this.updateTableOfContents();
           }, 5000);
+
+          // For non-typing input or explicit structural changes, take a post snapshot
+          // Detect lastInputType captured in beforeinput
+          const structuralPostTypes = new Set([
+            'insertParagraph', 'insertLineBreak', 'insertFromPaste', 'insertFromPasteAsQuotation'
+          ]);
+          if (structuralPostTypes.has(this.lastInputType)) {
+            this.recordSnapshot('after:' + this.lastInputType);
+          }
         });
 
         this.editor.addEventListener('paste', () => {
@@ -2513,12 +2580,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
   }
 
   executeCommand(command, value = null) {
+    // Snapshot before formatting command
+    this.recordSnapshot('execCommand:' + command);
     document.execCommand(command, false, value);
+    // Snapshot after if content changed (coalescing handled by recordSnapshot)
+    this.recordSnapshot('execCommand:after:' + command);
     this.editor.focus();
   }
 
   formatBlock(tag) {
+    this.recordSnapshot('formatBlock:' + tag);
     document.execCommand("formatBlock", false, `<${tag}>`);
+    this.recordSnapshot('formatBlock:after:' + tag);
   }
 
   addNewBlock() {
@@ -2960,6 +3033,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   async loadNote(note_id) {
     this.saveNote();
     console.log('Loading note:', note_id);
+    // Break history continuity when switching notes
+    this.initializeHistory();
     try {
       // First try to get from cache
       const cachedNote = await this.getNoteFromCache(note_id);
@@ -3013,6 +3088,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     this.currentNoteId = note.note_id;
     this.currentNoteTitle = note.title;
     this.lastUpdated = note.last_updated;
+    // Reset history baseline for this note
+    this.resetHistoryWithCurrentContent();
     //log last updated time
     console.log('updateNoteUI() Note this.lastupdated at:', this.lastUpdated);
 
@@ -4151,6 +4228,139 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       this.showToast('Error accessing microphone');
       return null;
     }
+  }
+
+  // History helpers for undo/redo and selection capture/restore
+  initializeHistory() {
+    this.undoStack = [];
+    this.redoStack = [];
+    this.maxHistory = 100;
+    this.lastInputTime = 0;
+    this.lastInputType = '';
+  }
+
+  resetHistoryWithCurrentContent() {
+    this.undoStack = [];
+    this.redoStack = [];
+    this.recordSnapshot('init');
+  }
+
+  getNodePathFromRoot(node, root) {
+    const path = [];
+    let current = node;
+    while (current && current !== root) {
+      const parent = current.parentNode;
+      if (!parent) break;
+      const index = Array.prototype.indexOf.call(parent.childNodes, current);
+      path.unshift(index);
+      current = parent;
+    }
+    return path;
+  }
+
+  getNodeByPath(path, root) {
+    let current = root;
+    for (const index of path) {
+      if (!current || !current.childNodes || !current.childNodes[index]) return null;
+      current = current.childNodes[index];
+    }
+    return current || null;
+  }
+
+  captureSelection() {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return null;
+    }
+    const range = selection.getRangeAt(0);
+    const startPath = this.getNodePathFromRoot(range.startContainer, this.editor);
+    const endPath = this.getNodePathFromRoot(range.endContainer, this.editor);
+    return {
+      startPath,
+      startOffset: range.startOffset,
+      endPath,
+      endOffset: range.endOffset,
+    };
+  }
+
+  restoreSelection(saved) {
+    try {
+      if (!saved) return;
+      const startNode = this.getNodeByPath(saved.startPath, this.editor);
+      const endNode = this.getNodeByPath(saved.endPath, this.editor);
+      if (!startNode || !endNode) throw new Error('selection nodes not found');
+      const range = document.createRange();
+      range.setStart(startNode, Math.min(saved.startOffset ?? 0, startNode.nodeType === Node.TEXT_NODE ? (startNode.nodeValue?.length || 0) : (startNode.childNodes?.length || 0)));
+      range.setEnd(endNode, Math.min(saved.endOffset ?? 0, endNode.nodeType === Node.TEXT_NODE ? (endNode.nodeValue?.length || 0) : (endNode.childNodes?.length || 0)));
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    } catch (_) {
+      // Fallback: place caret at end
+      const selection = window.getSelection();
+      const range = document.createRange();
+      if (this.editor.lastChild) {
+        const endNode = this.editor.lastChild;
+        if (endNode.nodeType === Node.TEXT_NODE) {
+          range.setStart(endNode, endNode.nodeValue?.length || 0);
+        } else {
+          range.selectNodeContents(endNode);
+          range.collapse(false);
+        }
+      } else {
+        range.selectNodeContents(this.editor);
+        range.collapse(false);
+      }
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  }
+
+  recordSnapshot(reason = '') {
+    if (!this.editor) return;
+    const currentContent = this.editor.innerHTML;
+    const last = this.undoStack[this.undoStack.length - 1];
+    if (last && last.content === currentContent) return; // avoid duplicates
+
+    const snapshot = {
+      content: currentContent,
+      selection: this.captureSelection(),
+      reason,
+      ts: Date.now(),
+    };
+    this.undoStack.push(snapshot);
+    if (this.undoStack.length > this.maxHistory) {
+      this.undoStack.shift();
+    }
+    // New action invalidates redo stack
+    this.redoStack = [];
+  }
+
+  undo() {
+    if (!this.undoStack || this.undoStack.length <= 1) return; // need prior state
+    const current = this.undoStack.pop();
+    const previous = this.undoStack[this.undoStack.length - 1];
+    if (!previous) return;
+    // Push current to redo
+    this.redoStack.push(current);
+    // Restore previous
+    this.editor.innerHTML = previous.content;
+    this.restoreSelection(previous.selection);
+    // Save after undo to cache/save system but avoid creating a new history entry
+    this.delayedSaveNote();
+  }
+
+  redo() {
+    if (!this.redoStack || this.redoStack.length === 0) return;
+    const next = this.redoStack.pop();
+    // Push current to undo
+    const currentSnapshot = { content: this.editor.innerHTML, selection: this.captureSelection(), reason: 'pre-redo', ts: Date.now() };
+    this.undoStack.push(currentSnapshot);
+    // Apply redo state
+    this.editor.innerHTML = next.content;
+    this.restoreSelection(next.selection);
+    // Save after redo
+    this.delayedSaveNote();
   }
 }
 
