@@ -1672,7 +1672,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
   // Inject edit/delete controls into a response group element
   attachGroupControls(groupEl) {
     try {
-            if (!groupEl || groupEl.querySelector('.group-controls')) return;
+            if (!groupEl) return;
+      // If controls already exist (e.g., after reload), remove them so we can reattach fresh listeners
+      const existingControls = groupEl.querySelector('.group-controls');
+      if (existingControls) existingControls.remove();
       // Position container so controls are anchored to this block
       if (getComputedStyle(groupEl).position === 'static') groupEl.style.position = 'relative';
  
@@ -1741,6 +1744,9 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       controls.appendChild(toggleBtn);
       controls.appendChild(deleteBtn);
       groupEl.appendChild(controls);
+
+      // Mark that controls have been attached
+      groupEl.dataset.controlsAttached = '1';
     } catch (err) {
       console.error('attachGroupControls error', err);
     }
@@ -1748,9 +1754,22 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
   // Ensure all existing groups have controls (useful after loading content)
   ensureGroupControls() {
-    try {
-      const groups = this.editor.querySelectorAll('.ask-group, .comment-group');
-      groups.forEach((g) => this.attachGroupControls(g));
+         try {
+       const groups = this.editor.querySelectorAll('.ask-group, .comment-group');
+       groups.forEach((g) => this.attachGroupControls(g));
+       // Also watch for newly inserted groups
+       const obs = new MutationObserver((mutations) => {
+         for (const m of mutations) {
+           m.addedNodes.forEach((node) => {
+             if (!(node instanceof HTMLElement)) return;
+             if (node.classList && (node.classList.contains('ask-group') || node.classList.contains('comment-group'))) {
+               this.attachGroupControls(node);
+             }
+             node.querySelectorAll && node.querySelectorAll('.ask-group, .comment-group').forEach((el) => this.attachGroupControls(el));
+           });
+         }
+       });
+       obs.observe(this.editor, { childList: true, subtree: true });
 
       // Ensure a default active tab + content is visible
       groups.forEach((g) => {
@@ -3262,6 +3281,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
      this.lastUpdated = note.last_updated;
      // Ensure AI blocks have controls even when loading from storage
      this.ensureGroupControls();
+     // Re-attach after a tick to cover late-rendered content
+     setTimeout(() => this.ensureGroupControls(), 0);
      // Reset history baseline for this note
      this.resetHistoryWithCurrentContent();
      //log last updated time
@@ -3285,17 +3306,20 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   // Helper method to get note from cache
   async getNoteFromCache(note_id) {
-    try {
-      const cache = await caches.open('notes-cache');
-      const response = await cache.match(`note-${note_id}`);
-      if (response) {
-        return await response.json();
-      }
-      return null;
-    } catch (error) {
-      console.error('Error reading from cache:', error);
-      return null;
-    }
+         try {
+       const cache = await caches.open('notes-cache');
+       const response = await cache.match(`note-${note_id}`);
+       if (response) {
+         const data = await response.json();
+         // After reading from cache, ensure controls are attached if content will be used
+         setTimeout(() => this.ensureGroupControls(), 0);
+         return data;
+       }
+       return null;
+     } catch (error) {
+       console.error('Error reading from cache:', error);
+       return null;
+     }
   }
 
   // Helper method to update note in cache
