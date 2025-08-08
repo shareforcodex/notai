@@ -1026,18 +1026,20 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       // Ensure container is the last child for visibility
       this.editor.appendChild(commentContainer);
 
-      commentGroup = document.getElementById(commentId);
-      if (!commentGroup) {
-        commentGroup = document.createElement('div');
-        commentGroup.id = commentId;
-        commentGroup.classList.add('comment', 'block', 'comment-group');
-        commentContainer.appendChild(commentGroup);
-        commentGroup.setAttribute('contenteditable','false');
-        commentGroup.innerHTML = `<h4 style="margin: 0; padding: 5px 0;">${commentGroup.id}</h4>`;
-        commentGroup.after(document.createElement('br'));
-        commentGroup.before(document.createElement('br'));
-      }
-      commentGroup.classList.add('showcomment');
+             commentGroup = document.getElementById(commentId);
+       if (!commentGroup) {
+         commentGroup = document.createElement('div');
+         commentGroup.id = commentId;
+         commentGroup.classList.add('comment', 'block', 'comment-group');
+         commentContainer.appendChild(commentGroup);
+         commentGroup.setAttribute('contenteditable','false');
+         commentGroup.innerHTML = `<h4 style="margin: 0; padding: 5px 28px 0 0;">${commentGroup.id}</h4>`;
+         commentGroup.after(document.createElement('br'));
+         commentGroup.before(document.createElement('br'));
+       }
+       // Ensure edit/delete controls are present
+       this.attachGroupControls(commentGroup);
+       commentGroup.classList.add('showcomment');
     }
 
     // Make parallel requests to selected models
@@ -1079,23 +1081,28 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       let block = null;
       let contentEl = null;
       if (useComment) {
-        // Ensure a tabs bar and contents wrapper exist in the comment group
-        let tabsBar = commentGroup.querySelector('.comment-tabs');
-        let contentsWrap = commentGroup.querySelector('.comment-contents');
-        if (!tabsBar) {
-          tabsBar = document.createElement('div');
-          tabsBar.className = 'comment-tabs';
-          tabsBar.style.display = 'flex';
-          tabsBar.style.gap = '8px';
-          tabsBar.style.margin = '6px 0';
-          tabsBar.style.flexWrap = 'wrap';
-          commentGroup.appendChild(tabsBar);
-        }
-        if (!contentsWrap) {
-          contentsWrap = document.createElement('div');
-          contentsWrap.className = 'comment-contents';
-          commentGroup.appendChild(contentsWrap);
-        }
+               // Ensure a tabs bar and contents wrapper exist in the comment group
+       let tabsBar = commentGroup.querySelector('.comment-tabs');
+       let contentsWrap = commentGroup.querySelector('.comment-contents');
+       if (!tabsBar) {
+         tabsBar = document.createElement('div');
+         tabsBar.className = 'comment-tabs';
+         tabsBar.style.display = 'flex';
+         tabsBar.style.gap = '8px';
+         tabsBar.style.margin = '6px 0';
+         tabsBar.style.flexWrap = 'wrap';
+         commentGroup.appendChild(tabsBar);
+       }
+       if (!contentsWrap) {
+         contentsWrap = document.createElement('div');
+         contentsWrap.className = 'comment-contents';
+         commentGroup.appendChild(contentsWrap);
+       }
+       // Show the comment block immediately near selection
+       try {
+         const uId = underlinedElem ? underlinedElem.id : (commentGroup.id || '').replace(/^comment/, '');
+         this.showCommentTooltip(uId, { clientX: this.lastPointerPosition.x, clientY: this.lastPointerPosition.y });
+       } catch(_) {}
 
         // Create a tab and a content container per model
         let content = contentsWrap.querySelector(`.comment-content[data-model="${modelName}"]`);
@@ -1142,15 +1149,17 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         else {
           // Ensure a single parent ask group with tabs for normal mode
           let askGroup = this.currentAskGroup;
-          if (!askGroup) {
-            askGroup = this.addNewBlock();
-            askGroup.classList.add('ask-group');
-            askGroup.setAttribute('contenteditable','false');
-            askGroup.innerHTML = '';
-            this.currentAskGroup = askGroup;
-            // Clear the reference after a short delay so subsequent actions create a new group
-            setTimeout(() => { if (this.currentAskGroup === askGroup) this.currentAskGroup = null; }, 2000);
-          }
+                     if (!askGroup) {
+             askGroup = this.addNewBlock();
+             askGroup.classList.add('ask-group');
+             askGroup.setAttribute('contenteditable','false');
+             askGroup.innerHTML = '';
+             // Add edit/delete controls to the ask group
+             this.attachGroupControls(askGroup);
+             this.currentAskGroup = askGroup;
+             // Clear the reference after a short delay so subsequent actions create a new group
+             setTimeout(() => { if (this.currentAskGroup === askGroup) this.currentAskGroup = null; }, 2000);
+           }
 
           // Setup tabs and contents containers inside ask group
           let tabsBar = askGroup.querySelector('.ask-tabs');
@@ -1461,7 +1470,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
             <input type="text" class="tool-name" placeholder="Tool Name" value="${tool.name}" style="width: 300px; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
             <button class="remove-tool" data-index="${index}" style="margin-left: 10px; padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;"><i class="fas fa-trash"></i></button>
           </div>
-          <div style="position: relative;">
+          <div >
             <textarea class="tool-prompt" placeholder="Prompt Template" >${tool.prompt}</textarea>
             <small style="display: block; margin-top: 4px; color: #6c757d;">Use {text} where you want the selected text to be inserted</small>
           </div>
@@ -1649,6 +1658,114 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         await this.handleAIAction(action, selectedText);
       });
     });
+  }
+
+  // Inject edit/delete controls into a response group element
+  attachGroupControls(groupEl) {
+    try {
+      if (!groupEl || groupEl.querySelector('.group-controls')) return;
+      // Position container
+      //if (!groupEl.style.position) groupEl.style.position = 'relative';
+
+      const controls = document.createElement('div');
+      controls.className = 'group-controls';
+      controls.setAttribute('contenteditable', 'false');
+      controls.style.position = 'absolute';
+      controls.style.top = '4px';
+      controls.style.right = '4px';
+      controls.style.display = 'flex';
+      controls.style.gap = '6px';
+      controls.style.zIndex = '10';
+      controls.style.background = 'rgba(0,0,0,0.05)';
+      controls.style.border = '1px solid #ccc';
+      controls.style.borderRadius = '6px';
+      controls.style.padding = '2px 4px';
+
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.textContent = 'Edit';
+      toggleBtn.style.cursor = 'pointer';
+      toggleBtn.style.border = 'none';
+      toggleBtn.style.background = 'transparent';
+      toggleBtn.style.padding = '2px 6px';
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.style.cursor = 'pointer';
+      deleteBtn.style.border = 'none';
+      deleteBtn.style.background = 'transparent';
+      deleteBtn.style.padding = '2px 6px';
+      deleteBtn.style.color = '#b91c1c';
+
+      // Toggle editability
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isEditable = groupEl.getAttribute('contenteditable') === 'true';
+        if (isEditable) {
+          groupEl.setAttribute('contenteditable', 'false');
+          toggleBtn.textContent = 'Edit';
+        } else {
+          groupEl.setAttribute('contenteditable', 'true');
+          toggleBtn.textContent = 'Lock';
+          groupEl.focus();
+        }
+      });
+
+      // Delete whole block
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const ok = confirm('Delete this AI response block?');
+        if (ok) {
+          const prev = groupEl.previousSibling;
+          const next = groupEl.nextSibling;
+          if (prev && prev.nodeName === 'BR') prev.remove();
+          if (next && next.nodeName === 'BR') next.remove();
+          groupEl.remove();
+          this.delayedSaveNote();
+        }
+      });
+
+      controls.appendChild(toggleBtn);
+      controls.appendChild(deleteBtn);
+      groupEl.appendChild(controls);
+    } catch (err) {
+      console.error('attachGroupControls error', err);
+    }
+  }
+
+  // Ensure all existing groups have controls (useful after loading content)
+  ensureGroupControls() {
+    try {
+      const groups = this.editor.querySelectorAll('.ask-group, .comment-group');
+      groups.forEach((g) => this.attachGroupControls(g));
+
+      // Ensure a default active tab + content is visible
+      groups.forEach((g) => {
+        const isAsk = g.classList.contains('ask-group');
+        const tabsSel = isAsk ? '.ask-tabs' : '.comment-tabs';
+        const contentSel = isAsk ? '.ask-content' : '.comment-content';
+        const wrapSel = isAsk ? '.ask-contents' : '.comment-contents';
+        const tabsBar = g.querySelector(tabsSel);
+        const contentsWrap = g.querySelector(wrapSel);
+        if (!tabsBar || !contentsWrap) return;
+
+        const buttons = Array.from(tabsBar.querySelectorAll('button[data-model]'));
+        const anyActive = buttons.some(b => b.classList.contains('active'));
+        if (!anyActive && buttons.length > 0) {
+          const first = buttons[0];
+          buttons.forEach(b => { b.classList.remove('active'); b.style.background = '#f3f4f6'; });
+          first.classList.add('active');
+          first.style.background = '#e5e7eb';
+          const model = first.getAttribute('data-model');
+          contentsWrap.querySelectorAll(contentSel).forEach(c => (c.style.display = 'none'));
+          const target = contentsWrap.querySelector(`${contentSel}[data-model="${model}"]`);
+          if (target) target.style.display = 'block';
+        }
+      });
+    } catch (err) {
+      console.error('ensureGroupControls error', err);
+    }
   }
 
   setupCommentSystem() {
@@ -1885,6 +2002,30 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       document.body.addEventListener('pointerdown', () => this.idleSync());
       document.body.addEventListener('keypress', () => this.idleSync());
 
+      // Delegated tab switching for ask/comment groups (works after reload)
+      this.editor.addEventListener('click', (e) => {
+        const btn = e.target.closest && e.target.closest('.ask-tabs button, .comment-tabs button');
+        if (!btn || !this.editor.contains(btn)) return;
+        const group = btn.closest('.ask-group, .comment-group');
+        if (!group) return;
+        const isAsk = group.classList.contains('ask-group');
+        const tabsBar = btn.parentElement;
+        const contentsWrap = group.querySelector(isAsk ? '.ask-contents' : '.comment-contents');
+        const contentSel = isAsk ? '.ask-content' : '.comment-content';
+        const model = btn.getAttribute('data-model');
+
+        // update buttons
+        tabsBar.querySelectorAll('button').forEach(b => { b.classList.remove('active'); b.style.background = '#f3f4f6'; });
+        btn.classList.add('active');
+        btn.style.background = '#e5e7eb';
+
+        // show target content
+        if (contentsWrap) {
+          contentsWrap.querySelectorAll(contentSel).forEach(c => (c.style.display = 'none'));
+          const target = contentsWrap.querySelector(`${contentSel}[data-model="${model}"]`);
+          if (target) target.style.display = 'block';
+        }
+      }, true);
 
       // Get all required elements
       const uploadModal = document.getElementById('uploadModal');
@@ -3082,16 +3223,18 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   }
 
   // Helper method to update UI with note data
-  updateNoteUI(note) {
-    this.editor.innerHTML = note.content || "";
-    document.getElementById("noteTitle").textContent = note.title || "";
-    this.currentNoteId = note.note_id;
-    this.currentNoteTitle = note.title;
-    this.lastUpdated = note.last_updated;
-    // Reset history baseline for this note
-    this.resetHistoryWithCurrentContent();
-    //log last updated time
-    console.log('updateNoteUI() Note this.lastupdated at:', this.lastUpdated);
+     updateNoteUI(note) {
+     this.editor.innerHTML = note.content || "";
+     document.getElementById("noteTitle").textContent = note.title || "";
+     this.currentNoteId = note.note_id;
+     this.currentNoteTitle = note.title;
+     this.lastUpdated = note.last_updated;
+     // Ensure AI blocks have controls even when loading from storage
+     this.ensureGroupControls();
+     // Reset history baseline for this note
+     this.resetHistoryWithCurrentContent();
+     //log last updated time
+     console.log('updateNoteUI() Note this.lastupdated at:', this.lastUpdated);
 
     // Add to recent notes
     this.addToRecentNotes(note.note_id, note.title);
