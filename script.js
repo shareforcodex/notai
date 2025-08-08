@@ -1026,6 +1026,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         commentGroup.id = commentId;
         commentGroup.classList.add('comment', 'block', 'comment-group');
         commentContainer.appendChild(commentGroup);
+        commentGroup.setAttribute('contenteditable','false');
         commentGroup.innerHTML = `<h4 style="margin: 0; padding: 5px 0;">${commentGroup.id}</h4>`;
         commentGroup.after(document.createElement('br'));
         commentGroup.before(document.createElement('br'));
@@ -1138,6 +1139,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           if (!askGroup) {
             askGroup = this.addNewBlock();
             askGroup.classList.add('ask-group');
+            askGroup.setAttribute('contenteditable','false');
             askGroup.innerHTML = '';
             this.currentAskGroup = askGroup;
             // Clear the reference after a short delay so subsequent actions create a new group
@@ -2285,6 +2287,17 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           // create a normal block after the heading and move the caret there.
           if (e.key === 'Enter') {
             const selection = window.getSelection();
+            const anchorEl = selection && selection.anchorNode ? (selection.anchorNode.nodeType === Node.ELEMENT_NODE ? selection.anchorNode : selection.anchorNode.parentElement) : null;
+
+            // If we're inside a non-editable group (comment/ask), ignore custom enter behavior
+            const nonEditableGroup = anchorEl && anchorEl.closest ? anchorEl.closest('.comment-group, .ask-group') : null;
+            if (nonEditableGroup) {
+              e.preventDefault();
+              utils.insertTextAtCursor('\n', 50);
+              this.editor.lastKey = e.key;
+              return;
+            }
+
             if (selection && selection.rangeCount > 0) {
               const range = selection.getRangeAt(0);
               const startNode = range.startContainer.nodeType === Node.ELEMENT_NODE
@@ -2308,7 +2321,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
                   } else {
                     heading.parentNode.appendChild(newBlock);
                   }
-                  // Place caret at the start of the new block
                   const newRange = document.createRange();
                   newRange.setStart(newBlock, 0);
                   newRange.collapse(true);
@@ -2320,8 +2332,40 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
               }
             }
 
-            // Default behavior elsewhere: insert a newline character
-        
+            // Default: inside normal blocks, just newline not new block
+            e.preventDefault();
+            // If caret is at the end of an inline formatted element (b/i/u/span/etc.),
+            // break out of that element and insert a line break outside it
+            try {
+              const sel = window.getSelection();
+              if (sel && sel.rangeCount) {
+                const r = sel.getRangeAt(0);
+                const node = r.startContainer.nodeType === Node.ELEMENT_NODE ? r.startContainer : r.startContainer.parentElement;
+                const inline = node && node.closest ? node.closest('b,strong,i,em,u,mark,s,code,span[style]') : null;
+                if (inline) {
+                  const endR = document.createRange();
+                  endR.selectNodeContents(inline);
+                  endR.collapse(false);
+                  const atEnd = r.collapsed && r.compareBoundaryPoints(Range.START_TO_START, endR) === 0;
+                  if (atEnd) {
+                    const br = document.createElement('br');
+                    inline.parentNode.insertBefore(br, inline.nextSibling);
+                    const after = document.createRange();
+                    after.setStartAfter(br);
+                    after.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(after);
+                    // Clear active formatting for the new line
+                    document.execCommand('removeFormat');
+                    this.editor.lastKey = e.key;
+                    return;
+                  }
+                }
+              }
+            } catch (_) {}
+
+            utils.insertTextAtCursor('\n', 50);
+            try { document.execCommand('removeFormat'); } catch (_) {}
 
           } else {
             rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
