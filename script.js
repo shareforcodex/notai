@@ -202,7 +202,9 @@ you can put a head h2 with 2 to 5 words at start to summary the doc, aligned at 
 
 use inline style to avoid affect parent element, make the html doc looks beautiful, clean and mordern, make style like MDN site.  
 
-you can use image to show the concept when needed, like show a word definition via image, the img get api is simple, put the prompt after https://image.pollinations.ai/prompt/(you prompt for image here) , so you can just put it in a img tag, don't set any style of the img tag.
+you can use image to show the concept when needed, like show a word definition via image, the img get api is simple, put the prompt after https://image.pollinations.ai/prompt/(you prompt for image here)??model=kontext , so you can just put it in a img tag, don't set any style of the img tag.
+
+you can use audio tag too, when use asked you response in voice, use this get api https://text.pollinations.ai/(text prompt here)?model=openai-audio&voice=coral put it in audio tag, it will return audio response for the text prompt, don't set any style of the audio tag.  if user request TTS, you can use this api https://text.pollinations.ai/you are TTS engin now, just repeat this: (put the text you want to say here)?model=openai-audio&voice=coral
 
 when in voice mode, you need not wrap text in html tags like div br span ..., just use markdown response me,only need simple img,audio,video tag for showing media when need
 
@@ -1687,7 +1689,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       controls.style.right = '8px';
       controls.style.display = 'flex';
       controls.style.gap = '6px';
-      controls.style.zIndex = '1000';
       controls.style.background = 'rgba(255,255,255,0.85)';
       controls.style.border = '1px solid #d1d5db';
       controls.style.borderRadius = '6px';
