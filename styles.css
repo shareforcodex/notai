@@ -123,8 +123,8 @@ h3 {
 }
 
 video, img {
-    max-width: 90%;
-     max-height: 300px !important; 
+    width: auto !important;
+    height: 300px !important; 
 }
 img:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
