@@ -1113,19 +1113,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
           tabBtn = document.createElement('button');
           tabBtn.textContent = modelName;
           tabBtn.setAttribute('data-model', modelName);
-          tabBtn.style.padding = '4px 8px';
-          tabBtn.style.border = '1px solid #999';
-          tabBtn.style.borderRadius = '4px';
-          tabBtn.style.background = '#f3f4f6';
-          tabBtn.style.cursor = 'pointer';
+          tabBtn.className = 'model-tab';
           tabBtn.addEventListener('click', () => {
             // deactivate all tabs and hide all contents
             tabsBar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-            tabsBar.querySelectorAll('button').forEach(b => b.style.background = '#f3f4f6');
             contentsWrap.querySelectorAll('.comment-content').forEach(c => c.style.display = 'none');
             // activate this tab
             tabBtn.classList.add('active');
-            tabBtn.style.background = '#e5e7eb';
             const target = contentsWrap.querySelector(`.comment-content[data-model="${modelName}"]`);
             if (target) target.style.display = 'block';
           });
@@ -1188,16 +1182,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
             tabBtn = document.createElement('button');
             tabBtn.textContent = modelName;
             tabBtn.setAttribute('data-model', modelName);
-            tabBtn.style.padding = '4px 8px';
-            tabBtn.style.border = '1px solid #999';
-            tabBtn.style.borderRadius = '4px';
-            tabBtn.style.background = '#f3f4f6';
-            tabBtn.style.cursor = 'pointer';
+            tabBtn.className = 'model-tab';
             tabBtn.addEventListener('click', () => {
-              tabsBar.querySelectorAll('button').forEach(b => { b.classList.remove('active'); b.style.background = '#f3f4f6';});
+              tabsBar.querySelectorAll('button').forEach(b => { b.classList.remove('active'); });
               contentsWrap.querySelectorAll('.ask-content').forEach(c => c.style.display = 'none');
               tabBtn.classList.add('active');
-              tabBtn.style.background = '#e5e7eb';
               const target = contentsWrap.querySelector(`.ask-content[data-model="${modelName}"]`);
               if (target) target.style.display = 'block';
             });
@@ -1689,30 +1678,30 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       controls.style.right = '8px';
       controls.style.display = 'flex';
       controls.style.gap = '6px';
-      controls.style.background = 'rgba(255,255,255,0.85)';
-      controls.style.border = '1px solid #d1d5db';
-      controls.style.borderRadius = '6px';
-      controls.style.padding = '2px 6px';
-      controls.style.boxShadow = '0 1px 2px rgba(0,0,0,0.08)';
+      controls.style.background = 'transparent';
+      controls.style.border = 'none';
+      controls.style.borderRadius = '8px';
+      controls.style.padding = '0';
+      controls.style.boxShadow = 'none';
 
       const toggleBtn = document.createElement('button');
       toggleBtn.type = 'button';
-      toggleBtn.textContent = 'Edit';
+      toggleBtn.innerHTML = '<span aria-label="Edit" title="Edit" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;">✏️</span>';
       toggleBtn.style.cursor = 'pointer';
       toggleBtn.style.border = 'none';
       toggleBtn.style.background = 'transparent';
-      toggleBtn.style.padding = '2px 6px';
-      toggleBtn.style.fontSize = '12px';
+      toggleBtn.style.padding = '0';
+      toggleBtn.style.fontSize = '14px';
 
       const deleteBtn = document.createElement('button');
       deleteBtn.type = 'button';
-      deleteBtn.textContent = 'Delete';
+      deleteBtn.innerHTML = '<span aria-label="Delete" title="Delete" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;">🗑️</span>';
       deleteBtn.style.cursor = 'pointer';
       deleteBtn.style.border = 'none';
       deleteBtn.style.background = 'transparent';
-      deleteBtn.style.padding = '2px 6px';
+      deleteBtn.style.padding = '0';
       deleteBtn.style.color = '#b91c1c';
-      deleteBtn.style.fontSize = '12px';
+      deleteBtn.style.fontSize = '14px';
 
       // Toggle editability
       toggleBtn.addEventListener('click', (e) => {
@@ -1720,10 +1709,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         const isEditable = groupEl.getAttribute('contenteditable') === 'true';
         if (isEditable) {
           groupEl.setAttribute('contenteditable', 'false');
-          toggleBtn.textContent = 'Edit';
+          toggleBtn.innerHTML = '<span aria-label="Edit" title="Edit" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;">✏️</span>';
         } else {
           groupEl.setAttribute('contenteditable', 'true');
-          toggleBtn.textContent = 'Lock';
+          toggleBtn.innerHTML = '<span aria-label="Lock" title="Lock" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;">🔒</span>';
           groupEl.focus();
         }
       });
@@ -1782,13 +1771,17 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         const contentsWrap = g.querySelector(wrapSel);
         if (!tabsBar || !contentsWrap) return;
 
+        // Normalize any existing legacy-styled buttons
+        tabsBar.querySelectorAll('button[data-model]').forEach(b => {
+          b.classList.add('model-tab');
+          b.removeAttribute('style');
+        });
         const buttons = Array.from(tabsBar.querySelectorAll('button[data-model]'));
         const anyActive = buttons.some(b => b.classList.contains('active'));
         if (!anyActive && buttons.length > 0) {
           const first = buttons[0];
-          buttons.forEach(b => { b.classList.remove('active'); b.style.background = '#f3f4f6'; });
+          buttons.forEach(b => { b.classList.remove('active'); });
           first.classList.add('active');
-          first.style.background = '#e5e7eb';
           const model = first.getAttribute('data-model');
           contentsWrap.querySelectorAll(contentSel).forEach(c => (c.style.display = 'none'));
           const target = contentsWrap.querySelector(`${contentSel}[data-model="${model}"]`);
@@ -2047,9 +2040,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         const model = btn.getAttribute('data-model');
 
         // update buttons
-        tabsBar.querySelectorAll('button').forEach(b => { b.classList.remove('active'); b.style.background = '#f3f4f6'; });
+        tabsBar.querySelectorAll('button').forEach(b => { b.classList.remove('active'); });
         btn.classList.add('active');
-        btn.style.background = '#e5e7eb';
 
         // show target content
         if (contentsWrap) {
