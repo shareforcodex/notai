@@ -582,6 +582,9 @@ iframe {
 }
 
 .note-title {
+    overflow: auto;
+    white-space: nowrap;
+    max-width: 80vw;
     padding: 0px 10px 0 5px;
     font-weight: bold;
     background-color: #f5f5f5;
@@ -589,23 +592,83 @@ iframe {
     display: inline-block;
 }
 
+/* Recent notes container spans remaining window width */
+.recent-notes {
+    flex: 1;
+    width: 100%;
+    min-width: 0; /* allow flex child to shrink */
+    display: flex;
+    align-items: center;
+    overflow: visible;
+    gap: 6px;
+}
+
+.recent-tabs-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+    max-width: 100%;
+}
+
 .recent-note {
     display: inline-block;
-    padding: 4px 12px;
-    margin: 0 4px;
+    margin: 0 6px;
     font-size: 14px;
     color: #666;
     background-color: #f5f5f5;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    vertical-align: middle;
+    /* border-radius: 4px; */
+    /* cursor: pointer; */
+    /* transition: all 0.2s ease; */
+    /* vertical-align: middle; */
+    width: 20vw;
+    overflow: hidden;
 }
 
 .recent-note:hover {
     background-color: #e0e0e0;
     color: #333;
 }
+
+/* Dropdown for overflow notes */
+.recent-dropdown 
+{ 
+    position: absolute; 
+    right: 20px;
+    display: inline-block; 
+}
+.recent-dropdown-btn {
+    padding: 4px 10px;
+    font-size: 14px;
+    color: #444;
+    background-color: #f5f5f5;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.recent-dropdown-btn:hover { background-color: #eaeaea; }
+
+.recent-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: -20px;
+    z-index: 1000;
+    display: none;
+    min-width: 220px;
+    max-height: 60vh;
+    overflow: auto;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+.recent-dropdown-item {
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+}
+.recent-dropdown-item:hover { background-color: #f7f7f7; }
 
 .note-title[placeholder]:empty:before {
     content: attr(placeholder);

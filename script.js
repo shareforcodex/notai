@@ -3340,8 +3340,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       timestamp: new Date().toISOString()
     });
 
-    // Keep only the last 5 notes
-    recentNotes = recentNotes.slice(0, 5);
+    // Keep only the last 30 notes
+    recentNotes = recentNotes.slice(0, 30);
 
     // Save back to localStorage
     localStorage.setItem('recentNotes', JSON.stringify(recentNotes));
@@ -3355,31 +3355,92 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     const recentNotes = JSON.parse(localStorage.getItem('recentNotes') || '[]');
     const recentContainer = document.getElementById('recentNotes');
 
-    // Clear existing recent notes
+    if (!recentContainer) return;
+
+    // Clear existing recent notes UI
     recentContainer.innerHTML = '';
 
     // Filter out current note from display
     const filteredNotes = recentNotes.filter(note => note.id !== this.currentNoteId);
 
-    // Add recent notes next to the title
-    filteredNotes.forEach(note => {
+    // Split into primary (up to 3) and overflow
+    const primaryNotes = filteredNotes.slice(0, 2);
+    const overflowNotes = filteredNotes.slice(0, 30);
+
+    // Container for left-side visible tabs
+    const tabsWrap = document.createElement('div');
+    tabsWrap.className = 'recent-tabs-wrap';
+    recentContainer.appendChild(tabsWrap);
+
+    const makeNoteEl = (note) => {
       const noteEl = document.createElement('span');
       noteEl.className = 'recent-note';
       noteEl.setAttribute('data-note-id', note.id);
       noteEl.textContent = note.title;
       noteEl.title = new Date(note.timestamp).toLocaleString();
-
       noteEl.addEventListener('click', () => {
         // Store current note before switching
         if (this.currentNoteId && this.currentNoteTitle) {
           this.addToRecentNotes(this.currentNoteId, this.currentNoteTitle);
         }
-        // Load the clicked note
         this.loadNote(note.id);
       });
+      return noteEl;
+    };
 
-      recentContainer.appendChild(noteEl);
-    });
+    primaryNotes.forEach(n => tabsWrap.appendChild(makeNoteEl(n)));
+
+    // Build overflow dropdown if needed
+    if (overflowNotes.length > 0) {
+      const dd = document.createElement('div');
+      dd.className = 'recent-dropdown';
+
+      const btn = document.createElement('button');
+      btn.className = 'recent-dropdown-btn';
+      btn.type = 'button';
+      btn.textContent = `(${overflowNotes.length}) ▾`;
+
+      const menu = document.createElement('div');
+      menu.className = 'recent-dropdown-menu';
+
+      overflowNotes.forEach(n => {
+        const item = document.createElement('div');
+        item.className = 'recent-dropdown-item';
+        item.textContent = n.title;
+        item.title = new Date(n.timestamp).toLocaleString();
+        item.addEventListener('click', () => {
+          if (this.currentNoteId && this.currentNoteTitle) {
+            this.addToRecentNotes(this.currentNoteId, this.currentNoteTitle);
+          }
+          this.loadNote(n.id);
+          menu.style.display = 'none';
+        });
+        menu.appendChild(item);
+      });
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = menu.style.display === 'block';
+        menu.style.display = isOpen ? 'none' : 'block';
+      });
+
+      // Global outside-click closer (install once)
+      if (!this._boundCloseRecentDropdown) {
+        this._boundCloseRecentDropdown = (e) => {
+          document.querySelectorAll('.recent-dropdown-menu').forEach(m => {
+            const host = m.parentElement;
+            if (host && !host.contains(e.target)) {
+              m.style.display = 'none';
+            }
+          });
+        };
+        document.addEventListener('click', this._boundCloseRecentDropdown, true);
+      }
+
+      dd.appendChild(btn);
+      dd.appendChild(menu);
+      recentContainer.append(dd);
+    }
   }
 
   async createNewNote(folderId = null) {
