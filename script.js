@@ -4736,7 +4736,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         setTimeout(() => {
         editor.editor.setAttribute("contenteditable", "true");
           
-        }, 50);
+        }, 1000);
         break;
       }
       }
