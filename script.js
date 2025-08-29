@@ -4676,7 +4676,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     //window.location.href = 'auth.html';
   }
   // Delegate click event to parent element
-  document.body.addEventListener('click', (event) => {
+  document.body.addEventListener('pointerdown', (event) => {
     const target = event.target;
     if (target.tagName === 'IMG' || target.tagName === 'VIDEO' || target.tagName === 'AUDIO') {
       event.preventDefault(); // Prevent default behavior
@@ -4727,6 +4727,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     else{
       midiaURLContainer.classList.add('hidden');
       imgDisplay.classList.add('hidden');
+    }
+    let blockElem = target;
+    while (blockElem && blockElem !== document.body) {
+      if (blockElem.classList && blockElem.classList.contains('block')) {
+      if (!blockElem.isContentEditable) {
+        editor.editor.setAttribute("contenteditable", "false");
+        setTimeout(() => {
+        editor.editor.setAttribute("contenteditable", "true");
+          
+        }, 50);
+        break;
+      }
+      }
+      blockElem = blockElem.parentElement;
     }
   });
 });
