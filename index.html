@@ -2,21 +2,34 @@
 <html lang="en">
 
 <head>
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Free notai</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="./icons/notai-192x192.png" type="image/x-icon">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://corsp.suisuy.eu.org?https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+
+
+    <!-- Import CodeMirror from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" />
+
+    <!-- premitter -->
+    <script src="https://cdn.jsdelivr.net/npm/prettier@2.3.2/standalone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prettier@2.3.2/parser-html.js"></script>
+
+
+
 </head>
 
 <body>
     <div class="editor-container">
-        <button id="toggleSidebar" class="toggle-sidebar-btn">
-            <i class="fas fa-bars"></i>
-        </button>
-        <div class="sidebar">
+
+        <div class="sidebar hidden" >
             <div class="sidebar-header">
                 <div class="auth-buttons">
                     <button id="logoutBtn" style="display: none;" onclick="window.editor.logout()"><i
@@ -28,8 +41,7 @@
                         <button id="createFolderBtn"><i class="fas fa-check"></i></button>
                         <button id="cancelFolderBtn"><i class="fas fa-times"></i></button>
                     </div>
-                    <button id="newFolderBtn"><i class="fas fa-folder-plus"></i></button>
-                    <button id="newPageBtn"><i class="fas fa-file-plus"></i></button>
+                    <button id="newFolderBtn">+</button>
                 </div>
             </div>
             <div id="folders"></div>
@@ -40,16 +52,26 @@
                 </button>
                 <div id="tocList" style="display: none;"></div>
             </div>
+
+            <div style="height: 200px;"></div>
+
         </div>
         <div class="main-content">
             <div class="toolbar">
                 <div class="formatting-tools">
+
+                    <button id="toggleSidebar" class="toggle-sidebar-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <div class="dropdown user-settings">
                         <button class="dropbtn"><i class="fas fa-user-cog"></i></button>
                         <div class="dropdown-content">
+                            <button id="updateAppBtn"> <i class="fa fa-refresh" aria-hidden="true"></i>
+                                Update App v0.3</button>
                             <button id="userProfileBtn"><i class="fas fa-user"></i> Profile</button>
                             <button id="aiSettingsBtn"><i class="fas fa-cog"></i> AI Settings</button>
-                            <button id="logoutBtn" onclick="window.editor.logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                            <button id="logoutBtn" onclick="window.editor.logout()"><i class="fas fa-sign-out-alt"></i>
+                                Logout</button>
                         </div>
                     </div>
 
@@ -71,19 +93,43 @@
                                 </div>
                                 <div class="settings-section">
                                     <h3 id="default-prompts">Default Prompts</h3>
-                                    <p class="help-text">Use {text} in your prompt templates where you want the selected text inserted.</p>
+                                    <div class="prompt-item system-prompt"
+                                        style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px;">
+                                        <label
+                                            style="display: block; font-weight: bold; color: #007bff; margin-bottom: 10px;">System
+                                            Prompt:</label>
+                                        <div style=" gap: 10px; align-items: flex-start;">
+                                            <textarea id="systemPrompt"
+                                                placeholder="Enter system prompt that will be prepended before all AI messages"
+                                                style="width: 100%; min-height: 100px; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-family: monospace; resize: vertical;"></textarea>
+                                            <br>
+                                            <button id="resetSystemPrompt" class="reset-btn"
+                                                style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">
+                                                <i class="fas fa-undo"></i> Reset
+                                            </button>
+                                        </div>
+                                        <small class="help-text"
+                                            style="display: block; margin-top: 8px; color: #6c757d;">This prompt will be
+                                            used as the system message for all AI interactions.<b>if the app broken, try
+                                                to reset the system prompt</b></small>
+                                    </div>
+                                    <p class="help-text">Use {text} in your prompt templates where you want the selected
+                                        text inserted.</p>
                                     <div class="prompt-settings">
                                         <div class="prompt-item">
                                             <label>Ask Button:</label>
-                                            <input type="text" id="askPrompt" placeholder="Enter prompt template">
+                                            <textarea class="tool-prompt" id="askPrompt"
+                                                placeholder="Enter prompt template"></textarea>
                                         </div>
                                         <div class="prompt-item">
                                             <label>Correct Button:</label>
-                                            <input type="text" id="correctPrompt" placeholder="Enter prompt template">
+                                            <textarea class="tool-prompt" id="correctPrompt"
+                                                placeholder="Enter prompt template"></textarea>
                                         </div>
                                         <div class="prompt-item">
                                             <label>Translate Button:</label>
-                                            <input type="text" id="translatePrompt" placeholder="Enter prompt template">
+                                            <textarea class="tool-prompt" id="translatePrompt"
+                                                placeholder="Enter prompt template"></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -95,10 +141,20 @@
                                     </button>
                                 </div>
                                 <div class="settings-section">
-                                  <h3 id="models">Models</h3>
-                                  <small>Provide a Model Name, a unique Model ID, the Model URL (API endpoint), and optionally an API Key. For consistency, it's recommended to use the same value for Name and ID.</small>
-                                  <div id="modelSettingsContainer"></div>
-                                  <button id="addModelBtn" class="add-tool-btn"><i class="fas fa-plus"></i> Add Model</button>
+                                    <h3 id="models">Models</h3>
+                                    <small>Provide a Model Name, a unique Model ID, the Model URL (API endpoint), and
+                                        optionally an API Key. For consistency, it's recommended to use the same value
+                                        for Name and ID.</small>
+                                    <div id="modelSettingsContainer"></div>
+                                    <button id="addModelBtn" class="add-tool-btn"><i class="fas fa-plus"></i> Add
+                                        Model</button>
+                                </div>
+                                <div class="settings-section">
+                                    <h3>Streaming Settings</h3>
+                                    <label>
+                                        <input type="checkbox" id="enableStreamCheckbox" />
+                                        Enable Streaming
+                                    </label>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -133,17 +189,17 @@
                         </div>
                     </div>
 
-                    <div class="dropdown">
-                        <button class="dropbtn"><i class="fas fa-plus"></i> </button>
-                        <div class="dropdown-content">
-                            <button data-command="createLink"><i class="fas fa-link"></i> Link</button>
-                            <button id="insertImage"><i class="fas fa-image"></i> Image</button>
-                            <button id="insertAudio"><i class="fas fa-music"></i> Audio</button>
-                            <button id="insertVideo"><i class="fas fa-video"></i> Video</button>
-                            <button id="insertIframe"><i class="fas fa-window-maximize"></i> Embed</button>
-                            <button id="addComment"><i class="fas fa-comment"></i> Add Comment</button>
+                                            <div class="dropdown">
+                            <button class="dropbtn"><i class="fas fa-plus"></i> </button>
+                            <div class="dropdown-content">
+                                <button id="undoBtn"><i class="fas fa-undo"></i> Undo</button>
+                                <button id="redoBtn"><i class="fas fa-redo"></i> Redo</button>
+                                <button id="uploadFileBtn"><i class="fas fa-upload"></i> Upload File</button>
+                                <button data-command="createLink"><i class="fas fa-link"></i> Link</button>
+                                <button id="insertIframe"><i class="fas fa-window-maximize"></i> Embed webpage</button>
+                                <button id="addComment"><i class="fas fa-comment"></i> Add Comment</button>
+                            </div>
                         </div>
-                    </div>
                     <!-- Comment tooltip -->
                     <div id="commentTooltip" class="comment-tooltip" style="display: none;">
                         <div class="tooltip-header">
@@ -161,15 +217,18 @@
                     <button id="saveNoteBtn">
                         <i class="fas fa-save"></i>
                         <i class="fas fa-spinner fa-spin" style="display: none;"></i>
-                        <span>Save</span>
+                        <span></span>
                     </button>
                 </div>
             </div>
-            <div id="noteTitle" class="note-title" contenteditable="true" placeholder="Untitled Note"></div>
+            <div style="display: flex; align-items: center; gap: 10px; background-color: #f5f5f5;">
+                <div id="noteTitle" class="note-title" contenteditable="true" placeholder="Untitled"></div>
+                <div id="recentNotes" class="recent-notes"
+                    style="display: inline-flex; align-items: center; margin-left: 10px;"></div>
+            </div>
             <div id="editor" class="editor" contenteditable="true">
                 <div class="block">
-                    <button class="pin-block-btn"><i class="fas fa-thumbtack"></i></button>
-                    <p>Start writing here...</p>
+                    loading...
                 </div>
             </div>
             <textarea id="sourceView" class="editor source-view" style="display: none;"></textarea>
@@ -221,25 +280,97 @@
     </button>
     <script src="script.js"></script>
     <div id="toastContainer" class="toast-container"></div>
-<!-- Profile Modal -->
-<div id="profileModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Profile</h2>
-            <span class="close">&times;</span>
-        </div>
-        <div class="modal-body">
-            <p>User ID: <span id="currentUserId"></span></p>
-        </div>
-        <div class="modal-footer">
-            <button class="close-profile-btn">Close</button>
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Profile</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>User ID: <span id="currentUserId"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button class="close-profile-btn">Close</button>
+            </div>
         </div>
     </div>
-</div>
     <div id="loadingSpinner" class="spinner" style="display: none;">
         <div class="double-bounce1"></div>
         <div class="double-bounce2"></div>
     </div>
+    <button id="codeCopyBtn" class="code-copy-btn" style="display: none;">
+        <i class="fas fa-copy"></i>
+    </button>
+
+    <div id="midiaURLContainer" class="hidden"> </div>
+    <img id="imgDisplay" src="" alt="Image Preview" class="hidden">
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="file" id="fileInput" style="display: none;" accept="*/*">
+                <button id="selectFileBtn" class="upload-container-btn">Select File</button>
+                <button id="uploadBtn" class="upload-container-btn">Upload</button>
+                <button class="close upload-container-btn">Close</button>
+            </div>
+            <div class="modal-body">
+                
+
+                <div class="media-capture-controls">
+
+                    <div class="capture-buttons">
+                        <button id="capturePhotoBtn" class="capture-btn">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                        <button id="shootPhotoBtn" class="capture-btn" style="display: none;">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                        <button id="captureVideoBtn" class="capture-btn">
+                            <i class="fas fa-video"></i>
+                        </button>
+                        <button id="captureAudioBtn" class="capture-btn">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                    </div>
+                    <div class="device-selectors">
+                        <select id="videoDevices" class="device-select">
+                            <option value="">Select Camera</option>
+                        </select>
+                        <select id="audioDevices" class="device-select">
+                            <option value="">Select Microphone</option>
+                        </select>
+                    </div>
+                    <div id="mediaPreview">
+                        <video id="videoPreview" autoplay playsinline style="display: none;"></video>
+                        <canvas id="photoCanvas" style="display: none;"></canvas>
+                        <div id="audioRecordingControls" style="display: none;">
+                            <span id="recordingTime">00:00</span>
+                            <button id="stopRecordingBtn" style="display: none;">Stop Recording</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="previewArea" style="display: none; margin-top: 20px;">
+                    <h3>Preview:</h3>
+                    <div id="filePreview" style="max-width: 100%; margin-top: 10px;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js').then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                }).catch(error => {
+                    console.error('Service Worker registration failed:', error);
+                });
+            });
+        }
+    </script>
 </body>
 
 </html>
