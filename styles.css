@@ -11,6 +11,17 @@ body {
     padding: 0 !important;
 }
 
+/* Use border-box sizing everywhere to avoid overflow from padding/borders */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Prevent horizontal panning/blank space on mobile */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 
   
 button ,input, textarea {
@@ -120,7 +131,8 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     line-height: 1.6;
     scrollbar-color: lightblue white;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     scrollbar-width: thin;
     height: 95vh;
     width: 100vw;
@@ -187,6 +199,8 @@ iframe {
 
     /* Light gray */
     scrollbar-width: thin;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 
@@ -199,6 +213,7 @@ iframe {
     scrollbar-color: lightblue white;
 
     scrollbar-width: thin;
+    overflow-x: hidden;
 }
 
 
@@ -230,6 +245,7 @@ iframe {
 
 .main-content {
     margin-left: 2vw;
+    min-width: 0; /* prevent flex overflow */
 
 }
 
@@ -604,6 +620,9 @@ iframe {
     scrollbar-color: rgb(219, 248, 219) white;
     scrollbar-width: thin;
     transition: width 0.3s ease;
+    overflow-x: hidden;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 [contenteditable=true]:empty:before {
@@ -794,6 +813,18 @@ pre code {
 }
 
 @media (max-width: 480px) {}
+
+/* Mobile-safe media sizing and wrapping */
+@media (max-width: 768px) {
+    .editor img,
+    .editor video {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    .editor iframe {
+        max-width: 100% !important;
+    }
+}
 
 /* Modal Styles */
 .modal {
