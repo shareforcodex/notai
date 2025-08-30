@@ -4676,7 +4676,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     //window.location.href = 'auth.html';
   }
   // Delegate click event to parent element
-  document.body.addEventListener('pointerdown', (event) => {
+  document.body.addEventListener('click', (event) => {
     const target = event.target;
     if (target.tagName === 'IMG' || target.tagName === 'VIDEO' || target.tagName === 'AUDIO') {
       event.preventDefault(); // Prevent default behavior
@@ -4728,6 +4728,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       midiaURLContainer.classList.add('hidden');
       imgDisplay.classList.add('hidden');
     }
+    
+  });
+
+  // Prevent editing when clicking on non-editable blocks to prevent poping up keyboard on ios
+  document.body.addEventListener('pointerdown', (event) => {
+    const target = event.target;
     let blockElem = target;
     while (blockElem && blockElem !== document.body) {
       if (blockElem.classList && blockElem.classList.contains('block')) {
@@ -4736,13 +4742,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         setTimeout(() => {
         editor.editor.setAttribute("contenteditable", "true");
           
-        }, 1000);
+        }, 500);
         break;
       }
       }
       blockElem = blockElem.parentElement;
     }
   });
+
+
 });
 // Add event listener for topbar pin button
 document.getElementById('topbarPinBtn').addEventListener('pointerdown', (e) => {
