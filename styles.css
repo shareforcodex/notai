@@ -621,7 +621,7 @@ iframe {
     /* cursor: pointer; */
     /* transition: all 0.2s ease; */
     /* vertical-align: middle; */
-    width: 20vw;
+    max-width: 20vw;
     overflow: hidden;
 }
 
