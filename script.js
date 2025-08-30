@@ -4732,6 +4732,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // Prevent editing when clicking on non-editable blocks to prevent poping up keyboard on ios
+  let setEditableTimeoutID=0;
   document.body.addEventListener('pointerdown', (event) => {
     const target = event.target;
     let blockElem = target;
@@ -4739,7 +4740,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (blockElem.classList && blockElem.classList.contains('block')) {
       if (!blockElem.isContentEditable) {
         editor.editor.setAttribute("contenteditable", "false");
-        setTimeout(() => {
+        clearTimeout(setEditableTimeoutID);
+        setEditableTimeoutID=setTimeout(() => {
         editor.editor.setAttribute("contenteditable", "true");
           
         }, 500);
