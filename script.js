@@ -3001,7 +3001,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
   async checkAuthAndLoadNotes() {
     let defaultNote= null;
-    this.loadNote("default_note_" + currentUser.userId);
+    // Load default note on initial startup only if nothing is selected yet
+    if (!this.currentNoteId) {
+      this.loadNote("default_note_" + currentUser.userId);
+    }
     
 
     
@@ -3032,11 +3035,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
             }
           }
         } else {
-            await this.loadNote("default_note_" + currentUser.userId);
-
-          // Load notes from default folder and then load the default note
+          // Only load the default note if it's still the active/empty selection
+          const defaultNoteId = "default_note_" + currentUser.userId;
+          if (!this.currentNoteId || this.currentNoteId === defaultNoteId) {
+            await this.loadNote(defaultNoteId);
+          }
+          // Always refresh the notes list
           await this.loadNotes();
-          
         }
       } else {
         //this.logout();
