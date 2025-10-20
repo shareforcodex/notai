@@ -3362,6 +3362,13 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
     if (!recentContainer) return;
 
+    // Remember dropdown state before rebuilding UI so we don't interrupt user interactions
+    const existingDropdownMenus = recentContainer.querySelectorAll('.recent-dropdown-menu');
+    const dropdownWasOpen = Array.from(existingDropdownMenus).some(menu => menu.style.display === 'block');
+    const focusWithinDropdown = document.activeElement &&
+      recentContainer.contains(document.activeElement) &&
+      document.activeElement.closest('.recent-dropdown');
+
     // Clear existing recent notes UI
     recentContainer.innerHTML = '';
 
@@ -3445,6 +3452,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       dd.appendChild(btn);
       dd.appendChild(menu);
       recentContainer.append(dd);
+
+      // Restore dropdown state/focus if the user was interacting with it during a refresh
+      if (dropdownWasOpen) {
+        menu.style.display = 'block';
+      }
+      if (focusWithinDropdown) {
+        setTimeout(() => btn.focus(), 0);
+      }
     }
   }
 
