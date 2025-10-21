@@ -299,13 +299,25 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
     // Seed history with initial content after DOM is ready
     setTimeout(() => this.resetHistoryWithCurrentContent(), 0)
 
+    const toggleButton = document.getElementById('toggleEditableBtn');
+    const toggleIcon = toggleButton ? toggleButton.querySelector('i') : null;
+    if (toggleButton && toggleIcon) {
+      toggleIcon.className = 'fas fa-lock';
+      toggleButton.title = 'Unlock Editor';
+    }
+
     // Add title auto-save
     const titleElement = document.getElementById("noteTitle");
     titleElement.addEventListener('input', () => this.delayedSaveNote());
     this.currentBlock = null;
     this.content = ""; // Store markdown content
     this.isSourceView = false;
-    this.isEditable = true;
+    this.isEditable = false;
+    this.noteLockingEnabled = true;
+    this.activeEditableBlock = null;
+    this.commentContainerHTML = '';
+    this.commentContainerMounted = false;
+    this.commentContainerElement = null;
     this.autoSaveTimeout = null;
     this.audioRecordType = 'audio/webm';
     //check if the browser support webm, if not , use mp4
@@ -328,6 +340,11 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
 
     //timeout id and interval id 
     this.inputToUpdateLastUpdatedTimeoutID = 0;
+    this.editor.setAttribute('contenteditable', 'false');
+    this.editor.addEventListener('click', (e) => this.handleEditorClick(e));
+    this.editor.addEventListener('focusout', (e) => this.handleEditorFocusOut(e), true);
+    this.editor.addEventListener('keydown', (e) => this.handleEditorKeydown(e), true);
+
     this.editor.addEventListener('pointerdown', (e) => {
       this.currentBlock?.classList?.remove('currentBlock');
 
@@ -356,7 +373,11 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
           node = node.parentElement;
         }
 
-        document.querySelector('.showcomment')?.classList.remove('showcomment');
+        const active = this.commentContainerElement ? this.commentContainerElement.querySelector('.showcomment') : null;
+        if (active) {
+          active.classList.remove('showcomment');
+          this.updateCommentContainerVisibility();
+        }
         this.showCommentTooltip(e.target.id, e);
       }
       else {
@@ -367,9 +388,16 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
           }
           node = node.parentElement;
         }
-        document.querySelectorAll('.showcomment').forEach(element => {
-          element.classList.remove('showcomment');
-        });
+        let removed = false;
+        if (this.commentContainerElement) {
+          this.commentContainerElement.querySelectorAll('.showcomment').forEach(element => {
+            element.classList.remove('showcomment');
+            removed = true;
+          });
+        }
+        if (removed) {
+          this.updateCommentContainerVisibility();
+        }
 
 
       }
@@ -651,13 +679,344 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
   // Insert content into the editor, converting newlines to <br>
   insertContent(text) {
-    this.editor.innerHTML += this.convertNewlinesToBreaks(text);
+    const html = this.convertNewlinesToBreaks(text);
+    if (document.activeElement && document.activeElement.isContentEditable) {
+      try {
+        document.execCommand('insertHTML', false, html);
+        return;
+      } catch (_) {}
+    }
+
+    const targetBlock = this.activeEditableBlock || this.editor.querySelector('[data-note-block="true"]');
+    if (targetBlock) {
+      const wasLocked = targetBlock.getAttribute('contenteditable') !== 'true';
+      if (wasLocked && this.noteLockingEnabled) {
+        this.unlockBlock(targetBlock);
+      }
+      targetBlock.insertAdjacentHTML('beforeend', html);
+      if (wasLocked && this.noteLockingEnabled) {
+        this.lockBlock(targetBlock);
+      }
+    } else {
+      this.editor.insertAdjacentHTML('beforeend', html);
+    }
+  }
+
+  setEditorContent(html = '') {
+    const safeHtml = typeof html === 'string' ? html : '';
+    this.activeEditableBlock = null;
+    this.commentContainerMounted = false;
+    this.commentContainerElement = null;
+    this.commentContainerHTML = '';
+
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = safeHtml;
+    const nodes = Array.from(tempContainer.childNodes);
+    this.editor.innerHTML = '';
+
+    const fragment = document.createDocumentFragment();
+    let commentContainerNode = null;
+
+    nodes.forEach((node) => {
+      if (node.nodeType === Node.ELEMENT_NODE && node.id === 'commentContainer') {
+        commentContainerNode = node;
+        return;
+      }
+
+      if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() === '') {
+        return;
+      }
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'block note-block locked';
+      wrapper.dataset.noteBlock = 'true';
+      wrapper.setAttribute('tabindex', '0');
+      wrapper.setAttribute('contenteditable', 'false');
+
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        wrapper.appendChild(node);
+      } else {
+        const span = document.createElement('span');
+        span.textContent = node.textContent;
+        wrapper.appendChild(span);
+      }
+
+      fragment.appendChild(wrapper);
+    });
+
+    if (fragment.childNodes.length === 0) {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'block note-block locked';
+      placeholder.dataset.noteBlock = 'true';
+      placeholder.setAttribute('tabindex', '0');
+      placeholder.setAttribute('contenteditable', 'false');
+      placeholder.innerHTML = '<p><br></p>';
+      fragment.appendChild(placeholder);
+    }
+
+    this.editor.appendChild(fragment);
+
+    if (commentContainerNode) {
+      this.mountCommentContainer(commentContainerNode);
+    }
+    this.updateCommentContainerVisibility();
+
+    if (this.noteLockingEnabled) {
+      this.lockAllBlocks();
+    } else {
+      this.unlockAllBlocks();
+    }
+
+    try {
+      this.ensureGroupControls();
+    } catch (err) {
+      console.warn('ensureGroupControls failed after content update', err);
+    }
+  }
+
+  getFullNoteHTML() {
+    const parts = [];
+    Array.from(this.editor.childNodes).forEach((node) => {
+      if (node.nodeType === Node.ELEMENT_NODE && node.id === 'commentContainer') {
+        const clone = node.cloneNode(true);
+        clone.classList.remove('has-active');
+        if (clone.querySelectorAll) {
+          clone.querySelectorAll('.showcomment').forEach((el) => el.classList.remove('showcomment'));
+        }
+        parts.push(clone.outerHTML);
+        return;
+      }
+      if (node.nodeType === Node.ELEMENT_NODE && node.getAttribute && node.getAttribute('data-note-block') === 'true') {
+        parts.push(node.innerHTML);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        parts.push(node.outerHTML);
+      } else if (node.nodeType === Node.TEXT_NODE) {
+        parts.push(node.textContent);
+      }
+    });
+
+    return parts.join('');
+  }
+
+  canonicalizeHTML(html) {
+    const temp = document.createElement('div');
+    temp.innerHTML = html || '';
+    return temp.innerHTML;
+  }
+
+  ensureCommentContainerMounted() {
+    if (this.commentContainerElement && this.commentContainerElement.isConnected) {
+      this.commentContainerMounted = true;
+      return this.commentContainerElement;
+    }
+
+    const existing = this.editor.querySelector('#commentContainer');
+    if (existing) {
+      const mounted = this.mountCommentContainer(existing);
+      this.updateCommentContainerVisibility();
+      try {
+        this.ensureGroupControls();
+      } catch (err) {
+        console.warn('Failed to ensure comment controls', err);
+      }
+      return mounted;
+    }
+
+    if (this.commentContainerHTML) {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = this.commentContainerHTML.trim();
+      const container = wrapper.firstElementChild;
+      if (container) {
+        const mounted = this.mountCommentContainer(container);
+        this.updateCommentContainerVisibility();
+        try {
+          this.ensureGroupControls();
+        } catch (err) {
+          console.warn('Failed to ensure comment controls', err);
+        }
+        return mounted;
+      }
+    }
+
+    return null;
+  }
+
+  mountCommentContainer(container) {
+    if (!container) {
+      return null;
+    }
+
+    container.id = container.id || 'commentContainer';
+    container.classList.add('commentContainer');
+    container.setAttribute('contenteditable', 'false');
+    container.setAttribute('tabindex', '0');
+    container.setAttribute('data-comment-block', 'true');
+
+    if (container.parentElement !== this.editor || container !== this.editor.lastElementChild) {
+      this.editor.appendChild(container);
+    }
+
+    this.commentContainerElement = container;
+    this.commentContainerMounted = true;
+    const snapshot = container.cloneNode(true);
+    snapshot.classList.remove('has-active');
+    if (snapshot.querySelectorAll) {
+      snapshot.querySelectorAll('.showcomment').forEach((el) => el.classList.remove('showcomment'));
+    }
+    this.commentContainerHTML = snapshot.outerHTML;
+
+    return container;
+  }
+
+  updateCommentContainerVisibility() {
+    if (!this.commentContainerElement) {
+      return;
+    }
+
+    const hasActive = this.commentContainerElement.querySelector('.showcomment');
+    if (hasActive) {
+      this.commentContainerElement.classList.add('has-active');
+    } else {
+      this.commentContainerElement.classList.remove('has-active');
+    }
+
+    const snapshot = this.commentContainerElement.cloneNode(true);
+    snapshot.classList.remove('has-active');
+    if (snapshot.querySelectorAll) {
+      snapshot.querySelectorAll('.showcomment').forEach((el) => el.classList.remove('showcomment'));
+    }
+    this.commentContainerHTML = snapshot.outerHTML;
+  }
+
+  handleEditorClick(event) {
+    if (event.target && event.target.classList && event.target.classList.contains('commented-text')) {
+      this.ensureCommentContainerMounted();
+    }
+
+    if (!this.noteLockingEnabled) {
+      return;
+    }
+
+    const block = event.target.closest('[data-note-block="true"]');
+    if (!block) {
+      return;
+    }
+
+    if (this.activeEditableBlock !== block) {
+      this.unlockBlock(block);
+    }
+  }
+
+  handleEditorFocusOut(event) {
+    if (!this.noteLockingEnabled) {
+      return;
+    }
+
+    const block = event.target.closest && event.target.closest('[data-note-block="true"]');
+    if (!block) {
+      return;
+    }
+
+    const related = event.relatedTarget;
+    if (related && block.contains(related)) {
+      return;
+    }
+
+    this.lockBlock(block);
+  }
+
+  handleEditorKeydown(event) {
+    if (!this.noteLockingEnabled) {
+      return;
+    }
+
+    if (event.key === 'Escape' && this.activeEditableBlock) {
+      this.lockBlock(this.activeEditableBlock);
+      this.activeEditableBlock.blur();
+      event.preventDefault();
+    }
+  }
+
+  unlockBlock(block) {
+    if (!block) {
+      return;
+    }
+
+    if (this.activeEditableBlock && this.activeEditableBlock !== block) {
+      this.lockBlock(this.activeEditableBlock);
+    }
+
+    block.setAttribute('contenteditable', 'true');
+    block.classList.add('editing');
+    block.classList.remove('locked');
+    this.activeEditableBlock = block;
+    this.currentBlock = block;
+
+    block.focus();
+    const selection = window.getSelection();
+    const hasRange = selection && selection.rangeCount > 0;
+    const activeRange = hasRange ? selection.getRangeAt(0) : null;
+    const selectionInsideBlock = activeRange && block.contains(activeRange.commonAncestorContainer);
+
+    if (!selectionInsideBlock) {
+      block.focus();
+      const range = document.createRange();
+      range.selectNodeContents(block);
+      range.collapse(false);
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+  }
+
+  lockBlock(block) {
+    if (!block) {
+      return;
+    }
+
+    block.setAttribute('contenteditable', 'false');
+    block.classList.remove('editing');
+    block.classList.add('locked');
+
+    if (this.activeEditableBlock === block) {
+      this.activeEditableBlock = null;
+    }
+  }
+
+  lockAllBlocks() {
+    const blocks = this.editor.querySelectorAll('[data-note-block="true"]');
+    blocks.forEach((block) => {
+      block.setAttribute('contenteditable', 'false');
+      block.classList.remove('editing');
+      block.classList.add('locked');
+    });
+    this.activeEditableBlock = null;
+  }
+
+  unlockAllBlocks() {
+    const blocks = this.editor.querySelectorAll('[data-note-block="true"]');
+    blocks.forEach((block) => {
+      block.setAttribute('contenteditable', 'true');
+      block.classList.remove('locked');
+      block.classList.remove('editing');
+    });
+    this.activeEditableBlock = null;
   }
 
   toggleEditable() {
     this.isEditable = !this.isEditable;
-    this.editor.contentEditable = this.isEditable;
-    document.getElementById("noteTitle").contentEditable = this.isEditable;
+    this.noteLockingEnabled = !this.isEditable;
+
+    if (this.isEditable) {
+      this.editor.setAttribute('contenteditable', 'true');
+      this.unlockAllBlocks();
+    } else {
+      this.editor.setAttribute('contenteditable', 'false');
+      this.lockAllBlocks();
+    }
+
+    document.getElementById("noteTitle").contentEditable = true;
 
     // Update button icon
     const button = document.getElementById("toggleEditableBtn");
@@ -680,10 +1039,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       // Switching to source view
       this.editor.style.display = "none";
       this.sourceViewEditor.getWrapperElement().style.display = "block";
-      this.sourceViewEditor.setValue(editor.innerHTML);
+      this.sourceViewEditor.setValue(this.getFullNoteHTML());
 
       setTimeout(() => {
-        let formattedCode = prettier.format(this.editor.innerHTML, {
+        let formattedCode = prettier.format(this.getFullNoteHTML(), {
           parser: "html",
           plugins: [prettierPlugins.html],
           "trailingComma": "es5",
@@ -705,7 +1064,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
     } else {
       // Switching back to editor view
-      this.editor.innerHTML = this.sourceViewEditor.getValue();  // Apply source changes to editor
+      this.setEditorContent(this.sourceViewEditor.getValue());  // Apply source changes to editor
       this.editor.style.display = "block";
       this.sourceViewEditor.getWrapperElement().style.display = "none";
       this.delayedSaveNote();
@@ -1018,15 +1377,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         if (existingU) underlinedElem = existingU;
       }
       commentId = 'comment' + (underlinedElem ? underlinedElem.id : Date.now());
-      let commentContainer = document.getElementById('commentContainer');
+      let commentContainer = this.commentContainerElement;
+      if (!commentContainer || !commentContainer.isConnected) {
+        commentContainer = document.getElementById('commentContainer');
+      }
       if (!commentContainer) {
         commentContainer = document.createElement('div');
-        commentContainer.id = 'commentContainer';
-        commentContainer.classList.add('commentContainer');
-        this.editor.appendChild(commentContainer);
       }
-      // Ensure container is the last child for visibility
-      this.editor.appendChild(commentContainer);
+      this.mountCommentContainer(commentContainer);
 
              commentGroup = document.getElementById(commentId);
        if (!commentGroup) {
@@ -1042,6 +1400,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
        // Ensure edit/delete controls are present
        this.attachGroupControls(commentGroup);
        commentGroup.classList.add('showcomment');
+       this.updateCommentContainerVisibility();
     }
 
     // Make parallel requests to selected models
@@ -1837,7 +2196,16 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     console.log(target);
     let targetid = 'comment' + target;
     let targetElem = document.getElementById(targetid);
+    if (!targetElem) {
+      this.ensureCommentContainerMounted();
+      targetElem = document.getElementById(targetid);
+      if (!targetElem) {
+        console.warn('Unable to locate comment block for', targetid);
+        return;
+      }
+    }
     targetElem.classList.add('showcomment');
+    this.updateCommentContainerVisibility();
     //remove all other topcomment class
     let allComment = document.querySelectorAll('.topcomment');
     allComment.forEach((comment) => {
@@ -3272,7 +3640,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   // Helper method to update UI with note data
      updateNoteUI(note) {
-     this.editor.innerHTML = note.content || "";
+     this.setEditorContent(note.content || "");
      document.getElementById("noteTitle").textContent = note.title || "";
      this.currentNoteId = note.note_id;
      this.currentNoteTitle = note.title;
@@ -3526,8 +3894,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     // Get current title from the title element
     const currentTitle = document.getElementById("noteTitle").textContent.trim() || "Untitled";
     this.currentNoteTitle = currentTitle;
-    let targetNoteId = this.currentNoteId;
-    let targetNotecontent = this.editor.innerHTML;
+    const targetNoteId = this.currentNoteId;
+    const rawNoteContent = this.getFullNoteHTML();
+    const targetNotecontent = this.canonicalizeHTML(rawNoteContent);
+    const normalizedLocalContent = targetNotecontent;
     let targetlastUpdated = this.lastUpdated;
 
     const saveBtn = document.getElementById("saveNoteBtn");
@@ -3545,7 +3915,8 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       // Fetch current note from server to check last_updated
       const currentNote = await this.apiRequest("GET", `/notes/${this.currentNoteId}`, null, false, true);
       //compare content, if same return
-      if (currentNote && currentNote.content === this.editor.innerHTML) {
+      const normalizedRemoteContent = this.canonicalizeHTML(currentNote ? currentNote.content : '');
+      if (currentNote && normalizedRemoteContent === normalizedLocalContent) {
         // Show saved state
         spinnerIcon.style.display = "none";
         saveIcon.style.display = "inline-block";
@@ -3560,7 +3931,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
         if (this.currentNoteId !== currentNote.note_id) {
           return;
         }
-        this.editor.innerHTML = currentNote.content;
+        this.setEditorContent(currentNote.content);
         document.getElementById("noteTitle").textContent = currentNote.title;
         this.lastUpdated = currentNote.last_updated;
         //log why update this.lastupdated
@@ -3621,7 +3992,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   clearNotes() {
     document.getElementById("pagesList").innerHTML = "";
-    this.editor.innerHTML = "Start writing here...>";
+    this.setEditorContent("Start writing here...>");
   }
 
   cleanNote() {
@@ -4575,7 +4946,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
 
   recordSnapshot(reason = '') {
     if (!this.editor) return;
-    const currentContent = this.editor.innerHTML;
+    const currentContent = this.getFullNoteHTML();
     const last = this.undoStack[this.undoStack.length - 1];
     if (last && last.content === currentContent) return; // avoid duplicates
 
@@ -4601,7 +4972,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     // Push current to redo
     this.redoStack.push(current);
     // Restore previous
-    this.editor.innerHTML = previous.content;
+    this.setEditorContent(previous.content);
     this.restoreSelection(previous.selection);
     // Save after undo to cache/save system but avoid creating a new history entry
     this.delayedSaveNote();
@@ -4611,10 +4982,10 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
     if (!this.redoStack || this.redoStack.length === 0) return;
     const next = this.redoStack.pop();
     // Push current to undo
-    const currentSnapshot = { content: this.editor.innerHTML, selection: this.captureSelection(), reason: 'pre-redo', ts: Date.now() };
+    const currentSnapshot = { content: this.getFullNoteHTML(), selection: this.captureSelection(), reason: 'pre-redo', ts: Date.now() };
     this.undoStack.push(currentSnapshot);
     // Apply redo state
-    this.editor.innerHTML = next.content;
+    this.setEditorContent(next.content);
     this.restoreSelection(next.selection);
     // Save after redo
     this.delayedSaveNote();

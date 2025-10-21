@@ -688,6 +688,50 @@ iframe {
     overflow-wrap: anywhere;
 }
 
+.note-block {
+    content-visibility: auto;
+    contain-intrinsic-size: 400px 200px;
+    outline: none;
+    position: relative;
+    transition: box-shadow 0.2s ease;
+}
+
+.note-block.locked {
+    cursor: text;
+}
+
+.note-block.editing {
+    box-shadow: inset 0 0 0 2px rgba(0, 123, 255, 0.25);
+    background: rgba(0, 123, 255, 0.05);
+}
+
+.note-block {
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 4px 6px;
+    margin: 0;
+    background: transparent;
+    border: none;
+}
+
+.note-block + .note-block {
+    margin-top: 12px;
+}
+
+.note-block.locked {
+    cursor: text;
+}
+
+.comment-placeholder {
+    padding: 12px;
+    text-align: center;
+    color: #6c757d;
+    border: 1px dashed #ced4da;
+    border-radius: 6px;
+    margin: 16px 0;
+}
+
 [contenteditable=true]:empty:before {
     content: attr(placeholder);
     color: #888;
@@ -703,7 +747,23 @@ iframe {
     border-radius: 4px;
     height: 500px;
     border: 1px solid #e0e0e0;
-    
+
+}
+
+#commentContainer {
+    display: none;
+}
+
+#commentContainer.has-active {
+    display: block;
+}
+
+#commentContainer .comment-group {
+    display: none;
+}
+
+#commentContainer .comment-group.showcomment {
+    display: block;
 }
 
 .showcomment{
