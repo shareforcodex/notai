@@ -705,6 +705,24 @@ iframe {
     background: rgba(0, 123, 255, 0.05);
 }
 
+.note-block {
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 4px 6px;
+    margin: 0;
+    background: transparent;
+    border: none;
+}
+
+.note-block + .note-block {
+    margin-top: 12px;
+}
+
+.note-block.locked {
+    cursor: text;
+}
+
 .comment-placeholder {
     padding: 12px;
     text-align: center;
@@ -729,7 +747,23 @@ iframe {
     border-radius: 4px;
     height: 500px;
     border: 1px solid #e0e0e0;
-    
+
+}
+
+#commentContainer {
+    display: none;
+}
+
+#commentContainer.has-active {
+    display: block;
+}
+
+#commentContainer .comment-group {
+    display: none;
+}
+
+#commentContainer .comment-group.showcomment {
+    display: block;
 }
 
 .showcomment{

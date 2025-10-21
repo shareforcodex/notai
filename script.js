@@ -373,7 +373,11 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
           node = node.parentElement;
         }
 
-        document.querySelector('.showcomment')?.classList.remove('showcomment');
+        const active = this.commentContainerElement ? this.commentContainerElement.querySelector('.showcomment') : null;
+        if (active) {
+          active.classList.remove('showcomment');
+          this.updateCommentContainerVisibility();
+        }
         this.showCommentTooltip(e.target.id, e);
       }
       else {
@@ -384,9 +388,16 @@ when in voice mode, you need not wrap text in html tags like div br span ..., ju
           }
           node = node.parentElement;
         }
-        document.querySelectorAll('.showcomment').forEach(element => {
-          element.classList.remove('showcomment');
-        });
+        let removed = false;
+        if (this.commentContainerElement) {
+          this.commentContainerElement.querySelectorAll('.showcomment').forEach(element => {
+            element.classList.remove('showcomment');
+            removed = true;
+          });
+        }
+        if (removed) {
+          this.updateCommentContainerVisibility();
+        }
 
 
       }
@@ -704,10 +715,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     this.editor.innerHTML = '';
 
     const fragment = document.createDocumentFragment();
+    let commentContainerNode = null;
 
     nodes.forEach((node) => {
       if (node.nodeType === Node.ELEMENT_NODE && node.id === 'commentContainer') {
-        this.commentContainerHTML = node.outerHTML;
+        commentContainerNode = node;
         return;
       }
 
@@ -744,6 +756,11 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
     this.editor.appendChild(fragment);
 
+    if (commentContainerNode) {
+      this.mountCommentContainer(commentContainerNode);
+    }
+    this.updateCommentContainerVisibility();
+
     if (this.noteLockingEnabled) {
       this.lockAllBlocks();
     } else {
@@ -760,6 +777,15 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
   getFullNoteHTML() {
     const parts = [];
     Array.from(this.editor.childNodes).forEach((node) => {
+      if (node.nodeType === Node.ELEMENT_NODE && node.id === 'commentContainer') {
+        const clone = node.cloneNode(true);
+        clone.classList.remove('has-active');
+        if (clone.querySelectorAll) {
+          clone.querySelectorAll('.showcomment').forEach((el) => el.classList.remove('showcomment'));
+        }
+        parts.push(clone.outerHTML);
+        return;
+      }
       if (node.nodeType === Node.ELEMENT_NODE && node.getAttribute && node.getAttribute('data-note-block') === 'true') {
         parts.push(node.innerHTML);
       } else if (node.nodeType === Node.ELEMENT_NODE) {
@@ -768,10 +794,6 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         parts.push(node.textContent);
       }
     });
-
-    if (!this.commentContainerMounted && this.commentContainerHTML) {
-      parts.push(this.commentContainerHTML);
-    }
 
     return parts.join('');
   }
@@ -783,35 +805,87 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
   }
 
   ensureCommentContainerMounted() {
-    if (this.commentContainerMounted) {
-      return;
+    if (this.commentContainerElement && this.commentContainerElement.isConnected) {
+      this.commentContainerMounted = true;
+      return this.commentContainerElement;
     }
 
-    if (!this.commentContainerHTML) {
-      return;
+    const existing = this.editor.querySelector('#commentContainer');
+    if (existing) {
+      const mounted = this.mountCommentContainer(existing);
+      this.updateCommentContainerVisibility();
+      try {
+        this.ensureGroupControls();
+      } catch (err) {
+        console.warn('Failed to ensure comment controls', err);
+      }
+      return mounted;
     }
 
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = this.commentContainerHTML.trim();
-    const container = wrapper.firstElementChild;
+    if (this.commentContainerHTML) {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = this.commentContainerHTML.trim();
+      const container = wrapper.firstElementChild;
+      if (container) {
+        const mounted = this.mountCommentContainer(container);
+        this.updateCommentContainerVisibility();
+        try {
+          this.ensureGroupControls();
+        } catch (err) {
+          console.warn('Failed to ensure comment controls', err);
+        }
+        return mounted;
+      }
+    }
+
+    return null;
+  }
+
+  mountCommentContainer(container) {
     if (!container) {
-      return;
+      return null;
     }
 
-    container.classList.add('note-block', 'locked');
+    container.id = container.id || 'commentContainer';
+    container.classList.add('commentContainer');
     container.setAttribute('contenteditable', 'false');
     container.setAttribute('tabindex', '0');
     container.setAttribute('data-comment-block', 'true');
 
-    this.editor.appendChild(container);
+    if (container.parentElement !== this.editor || container !== this.editor.lastElementChild) {
+      this.editor.appendChild(container);
+    }
+
     this.commentContainerElement = container;
     this.commentContainerMounted = true;
-
-    try {
-      this.ensureGroupControls();
-    } catch (err) {
-      console.warn('Failed to ensure comment controls', err);
+    const snapshot = container.cloneNode(true);
+    snapshot.classList.remove('has-active');
+    if (snapshot.querySelectorAll) {
+      snapshot.querySelectorAll('.showcomment').forEach((el) => el.classList.remove('showcomment'));
     }
+    this.commentContainerHTML = snapshot.outerHTML;
+
+    return container;
+  }
+
+  updateCommentContainerVisibility() {
+    if (!this.commentContainerElement) {
+      return;
+    }
+
+    const hasActive = this.commentContainerElement.querySelector('.showcomment');
+    if (hasActive) {
+      this.commentContainerElement.classList.add('has-active');
+    } else {
+      this.commentContainerElement.classList.remove('has-active');
+    }
+
+    const snapshot = this.commentContainerElement.cloneNode(true);
+    snapshot.classList.remove('has-active');
+    if (snapshot.querySelectorAll) {
+      snapshot.querySelectorAll('.showcomment').forEach((el) => el.classList.remove('showcomment'));
+    }
+    this.commentContainerHTML = snapshot.outerHTML;
   }
 
   handleEditorClick(event) {
@@ -1303,15 +1377,14 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
         if (existingU) underlinedElem = existingU;
       }
       commentId = 'comment' + (underlinedElem ? underlinedElem.id : Date.now());
-      let commentContainer = document.getElementById('commentContainer');
+      let commentContainer = this.commentContainerElement;
+      if (!commentContainer || !commentContainer.isConnected) {
+        commentContainer = document.getElementById('commentContainer');
+      }
       if (!commentContainer) {
         commentContainer = document.createElement('div');
-        commentContainer.id = 'commentContainer';
-        commentContainer.classList.add('commentContainer');
-        this.editor.appendChild(commentContainer);
       }
-      // Ensure container is the last child for visibility
-      this.editor.appendChild(commentContainer);
+      this.mountCommentContainer(commentContainer);
 
              commentGroup = document.getElementById(commentId);
        if (!commentGroup) {
@@ -1327,6 +1400,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
        // Ensure edit/delete controls are present
        this.attachGroupControls(commentGroup);
        commentGroup.classList.add('showcomment');
+       this.updateCommentContainerVisibility();
     }
 
     // Make parallel requests to selected models
@@ -2131,6 +2205,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
       }
     }
     targetElem.classList.add('showcomment');
+    this.updateCommentContainerVisibility();
     //remove all other topcomment class
     let allComment = document.querySelectorAll('.topcomment');
     allComment.forEach((comment) => {
