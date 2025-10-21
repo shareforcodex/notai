@@ -6,7 +6,11 @@ self.addEventListener('install', event => {
           './',
           './index.html',
           './styles.css',
-          './script.js',
+          './js/main.js',
+          './js/editor.js',
+          './js/utils.js',
+          './js/constants.js',
+          './js/state.js',
           './icons/notai-192x192.png',
           './icons/notai-512x512.png',
           

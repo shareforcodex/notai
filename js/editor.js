@@ -1,197 +1,6 @@
-const API_BASE_URL = "https://notais.suisuy.eu.org";
-let currentUser = {
-  userId: localStorage.getItem("userId"),
-  credentials: localStorage.getItem("credentials"),
-};
-
-
-let globalDevices = {
-  mediaStream: null
-};
-
-
-let utils = {
-  getCurrentTimeString() {
-  const now = new Date();
-  const pad = n => n.toString().padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-},
-  underlineSelectedText() {
-    if (window.getSelection) {
-      const selection = window.getSelection();
-
-      if (selection.rangeCount > 0 && !selection.isCollapsed) {
-        const range = selection.getRangeAt(0);
-        //check if it already in <u>,do nothing then
-        if (range.startContainer.parentNode.nodeName === 'U') {
-          return;
-        }
-
-        // Create underline element
-        const uElement = document.createElement('u');
-        //set a id for u, the id is u+Date.now()
-        uElement.id = 'u' + Date.now();
-        //create a space text elem
-        const spaceText = document.createTextNode('\u00A0\u00A0');
-
-        try {
-          // Wrap selected content in the u element
-          range.surroundContents(uElement);
-          uElement.after(spaceText);
-          return uElement;
-
-          // Clear selection
-          //selection.removeAllRanges();
-        } catch (e) {
-          console.error("Cannot wrap selection that crosses multiple nodes:", e);
-          alert("Cannot underline text that spans across different elements or already includes formatting. Try selecting text within a single paragraph.");
-        }
-      } else {
-        alert("Please select some text first.");
-      }
-    }
-  },
-  insertTextAtCursor(insertedText, removeSelectionDelay = 1000) {
-    const activeElement = document.activeElement;
-
-    if (activeElement.isContentEditable) {
-      // For contenteditable elements
-      const selection = window.getSelection();
-      if (!selection.rangeCount) return false;
-      selection.deleteFromDocument();
-      const range = selection.getRangeAt(0);
-      //insertedText may be multiple lines, so split it and insert each line
-      let lines = insertedText.split('\n');
-      for (let i = lines.length - 1; i >= 0; i--) {
-        let line = lines[i];
-
-        if (i < lines.length - 1) {
-          range.insertNode(document.createElement('br'));
-        }
-        range.insertNode(document.createTextNode(line + ' '));
-      }
-      // If the selection is not collapsed, collapse it
-      selection.removeAllRanges();
-      selection.addRange(range);
-      setTimeout(() => {
-        selection.removeAllRanges();
-        range.collapse(false);
-        selection.addRange(range);
-
-      }, removeSelectionDelay);
-
-    } else if (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT') {
-      // For textarea or input elements
-      const startPos = activeElement.selectionStart;
-      const endPos = activeElement.selectionEnd;
-      const beforeText = activeElement.value.substring(0, startPos);
-      const afterText = activeElement.value.substring(endPos, activeElement.value.length);
-      activeElement.value = beforeText + insertedText + afterText;
-      // Move the cursor to the end of the inserted text
-      const cursorPosition = startPos + insertedText.length;
-      activeElement.setSelectionRange(cursorPosition, cursorPosition);
-      activeElement.focus();
-    } else {
-      // Unsupported element
-      console.warn('The active element is neither contenteditable nor a textarea/input.');
-      return false;
-    }
-  },
-  base64ToBlob(base64String) {
-    let mimeType;
-    let base64Data;
-
-    // Check if it's a data URL (starts with "data:")
-    if (base64String.startsWith('data:')) {
-      // Extract MIME type and base64 data
-      const matches = base64String.match(/^data:([^;]+);base64,(.+)$/);
-
-      if (!matches || matches.length !== 3) {
-        throw new Error('Invalid data URL format');
-      }
-
-      mimeType = matches[1];
-      base64Data = matches[2];
-    } else {
-      // If it's not a data URL, try to detect the type from content
-      base64Data = base64String;
-      mimeType = detectMimeTypeFromBase64(base64Data);
-    }
-
-    // Convert base64 to binary
-    const binaryString = atob(base64Data);
-
-    // Create array buffer from binary string
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-
-    // Create blob from array buffer
-    return new Blob([bytes], { type: mimeType });
-  },
-
-  detectMimeTypeFromBase64(base64String) {
-    // Decode a small portion of the beginning to check file signatures
-    const sample = atob(base64String.substring(0, 24));
-    const bytes = new Uint8Array(sample.length);
-    for (let i = 0; i < sample.length; i++) {
-      bytes[i] = sample.charCodeAt(i);
-    }
-
-    // Check file signatures (magic numbers)
-    // PNG signature: 89 50 4E 47 0D 0A 1A 0A
-    if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
-      return 'image/png';
-    }
-
-    // JPEG signature: FF D8 FF
-    if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
-      return 'image/jpeg';
-    }
-
-    // GIF signature: 47 49 46 38
-    if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) {
-      return 'image/gif';
-    }
-
-    // PDF signature: 25 50 44 46
-    if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
-      return 'application/pdf';
-    }
-
-    // MP3 signature: ID3 or FF FB
-    if ((bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) ||
-      (bytes[0] === 0xFF && bytes[1] === 0xFB)) {
-      return 'audio/mpeg';
-    }
-
-    // MP4/M4A signature: 66 74 79 70
-    if (bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70) {
-      return 'video/mp4';
-    }
-
-    // WebM signature: 1A 45 DF A3
-    if (bytes[0] === 0x1A && bytes[1] === 0x45 && bytes[2] === 0xDF && bytes[3] === 0xA3) {
-      return 'video/webm';
-    }
-
-    // OGG signature: 4F 67 67 53
-    if (bytes[0] === 0x4F && bytes[1] === 0x67 && bytes[2] === 0x67 && bytes[3] === 0x53) {
-      return 'audio/ogg';
-    }
-
-    // WEBP signature: 52 49 46 46 then WEBP at offset 8
-    if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
-      bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) {
-      return 'image/webp';
-    }
-
-    // Default to octet-stream if type cannot be determined
-    return 'application/octet-stream';
-  }
-}
-
+import { API_BASE_URL } from "./constants.js";
+import { currentUser, globalDevices, setCurrentUser, clearCurrentUser } from "./state.js";
+import { getCurrentTimeString, underlineSelectedText, insertTextAtCursor, base64ToBlob } from "./utils.js";
 
 class HTMLEditor {
   constructor() {
@@ -881,7 +690,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
   async handleAIAction(action, text, includeCurrentBlockMedia = false) {
 
-    this.lastUpdated= utils.getCurrentTimeString();
+    this.lastUpdated = getCurrentTimeString();
           //log last updated time
     console.log('handleaiaction update this.lastupdated:', this.lastUpdated);
 
@@ -1011,7 +820,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     let commentGroup = null;
     let commentId = null;
     if (useComment) {
-      let underlinedElem = utils.underlineSelectedText();
+      let underlinedElem = underlineSelectedText();
       if (!underlinedElem && selection && selection.anchorNode) {
         const anchor = selection.anchorNode.nodeType === Node.ELEMENT_NODE ? selection.anchorNode : selection.anchorNode.parentElement;
         const existingU = anchor && anchor.closest ? anchor.closest('u') : null;
@@ -2490,7 +2299,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
 
           clearTimeout(this.inputToUpdateLastUpdatedTimeoutID);
           this.inputToUpdateLastUpdatedTimeoutID= setTimeout(() => {
-          this.lastUpdated=utils.getCurrentTimeString();
+          this.lastUpdated = getCurrentTimeString();
           console.log(' this.editor.addEventListener input update this.lastupdated  :', this.lastUpdated);
             this.delayedSaveNote();
           this.updateTableOfContents();
@@ -2540,7 +2349,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
             const nonEditableGroup = anchorEl && anchorEl.closest ? anchorEl.closest('.comment-group, .ask-group') : null;
             if (nonEditableGroup) {
               e.preventDefault();
-              utils.insertTextAtCursor('\n', 50);
+              insertTextAtCursor('\n', 50);
               this.editor.lastKey = e.key;
               return;
             }
@@ -2611,7 +2420,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
               }
             } catch (_) {}
 
-            utils.insertTextAtCursor('\n', 50);
+            insertTextAtCursor('\n', 50);
             try { document.execCommand('removeFormat'); } catch (_) {}
 
           } else {
@@ -2710,7 +2519,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
                 let insertedText = this.aiSettings.prompts[key];
                 //remove {text} from prompt
                 insertedText = insertedText.replace('{text}', '');
-                utils.insertTextAtCursor(insertedText);
+                insertTextAtCursor(insertedText);
               });
               ol.appendChild(li);
 
@@ -2953,7 +2762,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     });
 
     if (result.success) {
-      currentUser = { userId, passwordHash };
+      setCurrentUser({ userId, credentials: passwordHash });
       localStorage.setItem("userId", userId);
       localStorage.setItem("passwordHash", passwordHash);
       this.updateAuthUI();
@@ -2968,7 +2777,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
     const result = await this.apiRequest("GET", "/notes"); // Test auth with notes endpoint
 
     if (!result.error) {
-      currentUser = { userId, passwordHash };
+      setCurrentUser({ userId, credentials: passwordHash });
       localStorage.setItem("userId", userId);
       localStorage.setItem("passwordHash", passwordHash);
       this.updateAuthUI();
@@ -2979,7 +2788,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/can?tab=readme-ov-file#intr
   }
 
   logout() {
-    currentUser = { userId: null, credentials: null };
+    clearCurrentUser();
     localStorage.removeItem("userId");
     localStorage.removeItem("credentials");
     this.updateAuthUI();
@@ -3632,7 +3441,7 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
       if (src.startsWith('data:')) {
         let type = src.split(';')[0].split(':')[1];
         let data = src.split(',')[1];
-        let blob = utils.base64ToBlob(src);
+        let blob = base64ToBlob(src);
         let file = new File([blob], `media.${type.split('/')[1]}`, { type });
         let url = await this.uploadFile(file, false, false);
         if(url){
@@ -4621,214 +4430,4 @@ go to <a href="https://github.com/suisuyy/notai/tree/dev2?tab=readme-ov-file#int
   }
 }
 
-window.addEventListener('blur', () => {
-  editor.stopMediaTracks();
-}, { once: true });
-
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    editor.stopMediaTracks();
-  }
-});
-
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    caches.open('app-cache').then(cache => {
-      cache.addAll([
-        './',
-        './index.html',
-        './styles.css',
-        './script.js',
-        './icons/notai-192x192.png',
-        './icons/notai-512x512.png',
-        
-      ]);
-
-      console.log('App cache updated');
-      cache.addAll(['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
-        'https://corsp.suisuy.eu.org?https://cdn.jsdelivr.net/npm/marked/marked.min.js',])
-    })
-  }, 5000);
-})
-
-// Initialize the editor and load folders
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    window.editor = new HTMLEditor();
-    window.editor.loadFolders();
-
-    // Profile Modal functionality
-    const profileModal = document.getElementById('profileModal');
-    const userProfileBtn = document.getElementById('userProfileBtn');
-    const closeProfileBtn = profileModal.querySelector('.close, .close-profile-btn');
-    const currentUserIdSpan = document.getElementById('currentUserId');
-
-    userProfileBtn.addEventListener('click', () => {
-      currentUserIdSpan.textContent = currentUser.userId || 'Unknown';
-      profileModal.style.display = 'block';
-    });
-
-    closeProfileBtn.addEventListener('click', () => {
-      profileModal.style.display = 'none';
-    });
-
-
-
-
-  } catch (error) {
-    console.error('Error initializing editor:', error);
-    // Redirect to auth page if initialization fails
-    //window.location.href = 'auth.html';
-  }
-  // Delegate click event to parent element
-  document.body.addEventListener('click', (event) => {
-    const target = event.target;
-    if (target.tagName === 'IMG' || target.tagName === 'VIDEO' || target.tagName === 'AUDIO') {
-      event.preventDefault(); // Prevent default behavior
-      document.activeElement.blur(); // Unfocus the contenteditable area
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      let url = target.src;
-      //if url more than 200 characters, remove the rest of the url and append last 10 at the end 
-      if (url.length > 200) {
-        url = url.substring(0, 200) + '...' + url.slice(-10);
-      }
-      midiaURLContainer.innerText = url;
-      midiaURLContainer.classList.remove('hidden');
-      //set height and width to auto , maxwidth 100%,maxheight to 100000px
-      // target.style.maxWidth = '100%';
-      // target.style.maxHeight = '100000px';
-      // target.style.width = 'auto';
-      // target.classList.add('adapt_img');
-      // setTimeout(() => {
-      //   target.classList.remove('adapt_img');
-
-      // }, 5000);
-
-      if(target.tagName === 'IMG'){
-        //create image tag to diplay the image
-        imgDisplay.src = target.src;
-        //imgDisplay.classList.remove('hidden');
-        
-      }
-        
-      else if(target.tagName === 'VIDEO'){
-        
-      }
-      else if(target.tagName === 'AUDIO'){
-        
-      }
-      
-    }
-    else if(target.id === 'midiaURLContainer'){
-      //copy innerhtml to clipboard and show toast copyed
-      navigator.clipboard.writeText(midiaURLContainer.innerHTML).then(() => {
-        editor.showToast('Copied to clipboard', 'success');
-        midiaURLContainer.classList.add('hidden');
-      }).catch(err => {
-        console.error('Failed to copy: ', err);
-        editor.showToast('Failed to copy', 'error');
-      });
-    }
-    else{
-      midiaURLContainer.classList.add('hidden');
-      imgDisplay.classList.add('hidden');
-    }
-    
-  });
-
-  // Prevent editing when clicking on non-editable blocks to prevent poping up keyboard on ios
-  let setEditableTimeoutID=0;
-  document.body.addEventListener('pointerdown', (event) => {
-    const target = event.target;
-    let blockElem = target;
-    while (blockElem && blockElem !== document.body) {
-      if (blockElem.classList && blockElem.classList.contains('block')) {
-      if (!blockElem.isContentEditable) {
-        editor.editor.setAttribute("contenteditable", "false");
-        clearTimeout(setEditableTimeoutID);
-        setEditableTimeoutID=setTimeout(() => {
-        editor.editor.setAttribute("contenteditable", "true");
-          
-        }, 500);
-        break;
-      }
-      }
-      blockElem = blockElem.parentElement;
-    }
-  });
-
-
-});
-// Add event listener for topbar pin button
-document.getElementById('topbarPinBtn').addEventListener('pointerdown', (e) => {
-  e.preventDefault();
-
-
-  const selection = window.getSelection();
-  if (selection.rangeCount === 0) return;
-  const range = selection.getRangeAt(0);
-  const currentBlock = range.startContainer.parentElement.closest('.block');
-  if (currentBlock) {
-    if (currentBlock.classList.contains('pinned')) {
-      currentBlock.classList.remove('pinned')
-      setTimeout(() => {
-        //scroll to the block
-        currentBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        //flash the block
-        currentBlock.classList.add('highlight');
-        setTimeout(() => {
-          currentBlock.classList.remove('highlight');
-        }, 1000);
-
-      }, 200);
-      return;
-    }
-    // Unpin other blocks
-    document.querySelectorAll('.pinned').forEach(b => b.classList.remove('pinned'));
-    currentBlock.classList.add('pinned');
-
-  }
-});
-
-window.addEventListener('pointerup', () => {
-  console.log('current selection:', window.getSelection().toString());
-  if (window.getSelection().toString().length > 0) {
-    window.selectionText = window.getSelection().toString();
-
-  }
-});
-
-document.querySelector('#updateAppBtn').addEventListener('click', () => {
-  //remove all caches
-  caches.delete('app-cache').then(() => {
-    console.log('Cache deleted');
-    //remove service worker
-    
-
-  });
-  navigator.serviceWorker.getRegistrations().then(registrations => {
-    registrations.forEach(registration => {
-      registration.unregister().then((res) => {
-        if (res) {
-          console.log('Service worker unregistered');
-          //confirm reload
-          setTimeout(() => {
-            if (confirm(' Reload the page to update?')) {
-              window.location.reload();
-            }
-          }, 2000);
-          
-        }
-
-      }
-      );
-
-    });
-  });
-  setTimeout(() => {
-    window.location.reload();
-    
-  }, 3000);
-
- 
-});
+export default HTMLEditor;
