@@ -1,4 +1,4 @@
-import HTMLEditor from "./editor.js";
+import HTMLEditor from "./editor/index.js";
 import { currentUser } from "./state.js";
 
 let editorInstance = null;
@@ -27,7 +27,17 @@ window.addEventListener("load", () => {
         "./index.html",
         "./styles.css",
         "./js/main.js",
-        "./js/editor.js",
+        "./js/editor/index.js",
+        "./js/editor/bootstrap.js",
+        "./js/editor/core.js",
+        "./js/editor/events.js",
+        "./js/editor/ai.js",
+        "./js/editor/comments.js",
+        "./js/editor/formatting.js",
+        "./js/editor/auth.js",
+        "./js/editor/library.js",
+        "./js/editor/notes.js",
+        "./js/editor/media.js",
         "./js/utils.js",
         "./js/constants.js",
         "./js/state.js",
