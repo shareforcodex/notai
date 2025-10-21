@@ -688,6 +688,32 @@ iframe {
     overflow-wrap: anywhere;
 }
 
+.note-block {
+    content-visibility: auto;
+    contain-intrinsic-size: 400px 200px;
+    outline: none;
+    position: relative;
+    transition: box-shadow 0.2s ease;
+}
+
+.note-block.locked {
+    cursor: text;
+}
+
+.note-block.editing {
+    box-shadow: inset 0 0 0 2px rgba(0, 123, 255, 0.25);
+    background: rgba(0, 123, 255, 0.05);
+}
+
+.comment-placeholder {
+    padding: 12px;
+    text-align: center;
+    color: #6c757d;
+    border: 1px dashed #ced4da;
+    border-radius: 6px;
+    margin: 16px 0;
+}
+
 [contenteditable=true]:empty:before {
     content: attr(placeholder);
     color: #888;
